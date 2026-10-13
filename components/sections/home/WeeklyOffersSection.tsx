@@ -13,7 +13,7 @@ const priceFormatter = new Intl.NumberFormat("de-AT", {style: "currency", curren
 function ActionLink({ card, fallback, className = "" }: { card?: AssortmentCardData; fallback: string; className?: string }) {
   if (!card?.cta) return null;
   return (
-    <Link className={`${styles.actionLink} ${className}`} href={card.cta.href}>
+    <Link className={`${styles.actionLink} ${className}`} href="/diese-woche#aktionen">
       {card.cta.label || fallback}
       <Image alt="" aria-hidden="true" width={12} height={12} src="/icons/arrow-right.svg" />
     </Link>

@@ -3,6 +3,7 @@ import "server-only";
 import { getAuth } from "firebase-admin/auth";
 import { getApps } from "firebase-admin/app";
 import type { NextRequest } from "next/server";
+import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
 
 export async function authorizeDashboard(request: NextRequest) {
   const header = request.headers.get("authorization");
@@ -11,6 +12,7 @@ export async function authorizeDashboard(request: NextRequest) {
   const allowed = (process.env.FIREBASE_ADMIN_UIDS ?? "").split(",").map((uid) => uid.trim()).filter(Boolean);
   if (!allowed.length) return { response: Response.json({ message: "Der Admin-Zugriff ist noch nicht konfiguriert." }, { status: 503 }) };
   try {
+    getPreorderFirestore();
     const identity = await getAuth(getApps()[0]).verifyIdToken(token, true);
     if (!allowed.includes(identity.uid)) return { response: Response.json({ message: "Keine Berechtigung für dieses Dashboard." }, { status: 403 }) };
     return { identity };
