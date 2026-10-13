@@ -1,0 +1,17 @@
+.badge { display: grid; width: 220px; min-height: 118px; place-content: center; padding: 20px 24px; border-radius: 47% 53% 48% 52% / 49% 42% 58% 51%; background: var(--color-orange); color: var(--color-ink); text-align: center; transform: rotate(7deg); }
+.badge strong { display: block; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.badge span { display: block; max-width: 180px; margin: 7px auto 0; font-size: 15px; font-weight: 700; line-height: 1.25; }
+@media (max-width: 700px) {
+  .badge {
+    width: min(100%, 286px);
+    min-height: 0;
+    justify-items: start;
+    padding: 16px 20px;
+    border-radius: 22px 28px 20px 26px / 24px 20px 26px 22px;
+    text-align: left;
+    transform: none;
+  }
+
+  .badge strong { font-size: 19px; }
+  .badge span { max-width: none; margin: 4px 0 0; font-size: 14px; }
+}

@@ -1,0 +1,26 @@
+.heading {
+  margin: 0;
+  color: var(--color-green-deep);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+.display {
+  max-width: var(--content-measure);
+  font-size: clamp(48px, 7vw, 80px);
+  font-weight: 800;
+  line-height: 0.91;
+}
+
+.section {
+  max-width: var(--content-measure);
+  font-size: var(--text-section-title);
+  font-weight: 800;
+  line-height: 1.22;
+}
+
+.feature {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+}

@@ -1,0 +1,54 @@
+.timeline { padding: clamp(32px, 3.5vw, 52px) 0 clamp(36px, 4vw, 60px); background: var(--color-canvas); color: var(--color-green-deep); }
+.milestones { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(32px, 7.4vw, 106px); padding: 0; margin: 0; list-style: none; }
+.milestones::before { position: absolute; z-index: 0; top: 34px; right: 15%; left: 15%; border-top: 2px dashed rgb(151 191 75 / 58%); content: ""; }
+.milestone { position: relative; min-width: 0; }
+.year { position: relative; z-index: 1; display: flex; width: 109px; min-height: 32px; align-items: center; justify-content: center; margin: 0 0 -14px 28px; border-radius: 999px; background: var(--color-green-deep); color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .03em; }
+.milestoneCard { display: grid; min-height: 221px; grid-template-columns: minmax(0, 1fr) 180px; align-items: center; gap: 18px; padding: 34px 28px 24px 32px; border-radius: var(--radius-card); background: var(--color-surface-botanical); }
+.milestoneCardTextOnly { grid-template-columns: 1fr; }
+.milestoneCopy h3 { margin: 0; color: var(--color-ink); font-size: clamp(21px, 2vw, 26px); font-weight: 800; line-height: 1.15; }
+.milestoneCopy p { margin: 12px 0 0; color: var(--color-ink-muted); font-size: 16px; line-height: 1.55; }
+.milestoneImage { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 43% 57% 52% 48% / 53% 44% 56% 47%; background: var(--color-canvas); }
+.milestoneImage img { object-fit: cover; }
+.benefits { padding: clamp(36px, 4vw, 60px) 0; color: var(--color-green-deep); }
+.benefitList { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(18px, 3vw, 40px); padding: 0; margin: 52px 0 0; list-style: none; text-align: center; }
+.benefitList li { min-width: 0; }
+.benefitIcon { width: clamp(118px, 13vw, 180px); height: auto; aspect-ratio: 1; object-fit: contain; margin: 0 auto 18px; }
+.benefitList h3 { margin: 0; color: var(--color-green-deep); font-size: clamp(18px, 1.7vw, 23px); font-weight: 800; line-height: 1.2; }
+.benefitList p { max-width: 240px; margin: 10px auto 0; color: var(--color-ink-muted); font-size: 16px; line-height: 1.5; }
+.contact { position: relative; isolation: isolate; overflow: hidden; padding: clamp(38px, 4vw, 61px) 0; color: var(--color-green-deep); }
+.contactBackground { position: absolute; z-index: -1; inset: 0; background: var(--color-surface-botanical); }
+.contactBackground::before { position: absolute; top: -38px; left: -8%; width: 116%; height: 70px; border-radius: 50%; background: var(--color-canvas); content: ""; }
+.contactContainer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .85fr); align-items: center; gap: clamp(44px, 7vw, 96px); }
+.contactCopy { max-width: 520px; }
+.contactCopy h2 { text-align: left; }
+.contactCopy p { margin: 24px 0 28px; color: var(--color-ink); font-size: 18px; line-height: 1.6; white-space: pre-line; }
+.contactImage { position: relative; justify-self: end; width: min(100%, 500px); aspect-ratio: 1.08; }
+.contactImage img { object-fit: contain; border-radius: 48% 42% 45% 55% / 43% 48% 52% 57%; }
+@media (max-width: 1050px) {
+  .milestoneCard { grid-template-columns: minmax(0, 1fr) 130px; gap: 12px; padding-inline: 24px; }
+  .milestoneCopy p { font-size: 15px; }
+  .contactContainer { grid-template-columns: minmax(0, 1fr) minmax(280px, .85fr); gap: 42px; }
+}
+@media (max-width: 760px) {
+  .milestones { grid-template-columns: 1fr; gap: 32px; max-width: 620px; margin: 44px auto 0; }
+  .milestones::before { top: 26px; bottom: 26px; left: 46px; right: auto; border-top: 0; border-left: 2px dashed rgb(151 191 75 / 58%); }
+  .year { margin-left: 18px; }
+  .milestoneCard { min-height: 190px; grid-template-columns: minmax(0, 1fr) minmax(104px, 30%); gap: 14px; padding: 30px 20px 22px; }
+  .milestoneCopy h3 { font-size: 21px; }
+  .milestoneCopy p { font-size: 15px; }
+  .benefitList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px 24px; margin-top: 40px; }
+  .benefitIcon { width: clamp(112px, 25vw, 150px); margin-bottom: 12px; }
+  .benefitList h3 { font-size: 19px; }
+  .benefitList p { font-size: 15px; }
+  .contact { padding: 34px 0 36px; }
+  .contactBackground::before { top: -45px; height: 60px; }
+  .contactContainer { grid-template-columns: 1fr; gap: 28px; }
+  .contactCopy { max-width: 620px; }
+  .contactCopy p { margin: 18px 0 22px; font-size: 17px; }
+  .contactImage { width: min(100%, 480px); margin-inline: auto; }
+}
+@media (max-width: 390px) {
+  .milestoneCard { grid-template-columns: 1fr; }
+  .milestoneImage { width: 132px; justify-self: center; }
+  .benefitList { grid-template-columns: 1fr; gap: 30px; }
+}

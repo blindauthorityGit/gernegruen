@@ -1,0 +1,25 @@
+.jumpLinks { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 30px; }
+.jumpLinks a { color: var(--color-green-link); font-size: 15px; font-weight: 800; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.weekCard {
+  position: relative;
+  display: grid;
+  width: 210px;
+  min-height: 126px;
+  place-content: center;
+  padding: 20px 25px;
+  border-radius: 47% 53% 48% 52% / 49% 42% 58% 51%;
+  background: var(--color-orange);
+  color: var(--color-ink);
+  text-align: center;
+  transform: rotate(-6deg);
+}
+
+.weekCard span { font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.weekCard strong { margin-top: 2px; font-size: 39px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+.weekCard small { margin-top: 7px; font-size: 12px; font-weight: 800; }
+
+@media (max-width: 700px) {
+  .jumpLinks { display: none; }
+  .weekCard { width: 154px; min-height: 94px; padding: 14px 17px; }
+  .weekCard strong { font-size: 28px; }
+}

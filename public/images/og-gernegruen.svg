@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f7f5e9" />
+  <circle cx="1070" cy="70" r="290" fill="#e6edc7" />
+  <circle cx="1110" cy="590" r="220" fill="#d5e5ab" />
+  <g transform="translate(98 148)">
+    <path d="M127 57c-5-37-36-49-68-48 6 32 24 53 61 57m76-20c9-35 41-47 70-43-6 32-29 52-66 54" fill="#a8c900" />
+    <path d="M253 113a102 102 0 1 0 9 86h-72v-41h118v20c0 80-55 133-133 133A160 160 0 1 1 311 101l-58 12Z" fill="#f39200" />
+    <path d="M207 147h92v39h-92c-4 26-26 44-56 44-39 0-66-28-66-65 0-36 27-65 66-65 24 0 43 11 54 29l-34 22c-5-7-11-11-20-11-15 0-25 10-25 25 0 16 10 26 25 26 11 0 21-7 23-23h33Z" fill="#f39200" />
+  </g>
+  <text x="445" y="285" fill="#a8c900" font-family="Arial, sans-serif" font-size="92" font-weight="700">GerneGrün</text>
+  <text x="451" y="350" fill="#245b35" font-family="Arial, sans-serif" font-size="34">Lebensmittel in Dreieich</text>
+  <path d="M450 395h450" stroke="#a8c900" stroke-width="5" stroke-linecap="round" />
+  <text x="451" y="455" fill="#245b35" font-family="Arial, sans-serif" font-size="26">Obst, Gemüse, Brot &amp; mehr</text>
+</svg>

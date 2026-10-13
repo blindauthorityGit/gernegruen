@@ -1,0 +1,17 @@
+.navigation { position: relative; z-index: 2; padding: 8px 0 46px; background: var(--color-canvas); }
+.navList { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.navLink { display: flex; min-height: 138px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 12px; padding: 8px 6px; border-radius: var(--radius-card); color: var(--color-green-deep); font-size: 15px; font-weight: 800; line-height: 1.3; text-align: center; text-decoration: none; transition: background-color 180ms ease, color 180ms ease; }
+.navLink:hover { background: var(--color-surface-cream); color: var(--color-green-cta); }
+.navLink:focus-visible { outline: 3px solid var(--color-green-cta); outline-offset: 3px; }
+.navIcon { position: relative; display: block; width: clamp(68px, 7vw, 100px); aspect-ratio: 1; overflow: hidden; border-radius: 45% 55% 52% 48% / 54% 45% 55% 46%; background: var(--color-surface-cream); }
+.navIcon img { object-fit: cover; }
+.directory { padding: 50px 0 var(--section-space); background: var(--color-surface-cream); }
+.group + .group { margin-top: clamp(72px, 8vw, 112px); }
+.group h2 { margin: 0; color: var(--color-green-deep); font-size: var(--text-section-title); font-weight: 800; line-height: 1.2; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: clamp(28px, 4vw, 58px); margin-top: 36px; }
+.cardAnchor { height: 100%; scroll-margin-top: 108px; }
+.cardAnchor :global(article) { height: 100%; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (max-width: 1050px) { .navList { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 8px; } .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 650px) { .navigation { padding: 4px 0 24px; } .navList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; } .navLink { min-height: 118px; font-size: 14px; } .navIcon { width: 74px; } .directory { padding-top: 36px; } .group + .group { margin-top: 64px; } .group h2 { font-size: 30px; } .cards { grid-template-columns: 1fr; gap: 32px; margin-top: 24px; } .cardAnchor { scroll-margin-top: 84px; } }
+@media (prefers-reduced-motion: reduce) { .navLink { transition: none; } }

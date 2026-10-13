@@ -1,0 +1,79 @@
+.section {
+  padding: 36px 0;
+  background: var(--color-surface-cream);
+}
+
+.heading { margin: 0 0 28px; color: var(--color-green-deep); font-size: var(--text-section-title); font-weight: 800; line-height: 1.2; text-align: center; }
+.empty { margin: -12px 0 24px; color: var(--color-green-link); font-size: 14px; text-align: center; }
+.placeholder { display: grid; width: 100%; min-height: 76px; place-items: center; padding: 12px 20px; border: 1px dashed rgb(8 82 43 / 25%); border-radius: var(--radius-control); color: var(--color-green-link); font-size: 14px; font-weight: 700; text-align: center; }
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+}
+
+.link {
+  display: grid;
+  width: 100%;
+  min-height: 76px;
+  place-items: center;
+  padding: 12px 20px;
+  border-radius: var(--radius-control);
+  transition: background-color 160ms ease;
+}
+
+.link:hover {
+  background: rgb(243 241 215 / 65%);
+}
+
+.logo {
+  width: auto;
+  max-width: min(100%, 180px);
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.spielbergerLogo {
+  max-height: 76px;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 24px 0;
+  }
+
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .link {
+    min-height: 64px;
+  }
+
+  .logo {
+    max-height: 44px;
+  }
+
+  .spielbergerLogo {
+    max-height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

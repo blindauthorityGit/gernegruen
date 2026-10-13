@@ -1,0 +1,147 @@
+.card {
+  --card-accent: var(--color-green-deep);
+  --card-accent-text: white;
+
+  position: relative;
+  display: flex;
+  min-height: 440px;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-botanical);
+  padding: 24px 32px 28px;
+  color: var(--color-ink);
+}
+
+.imageArea {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  flex: 0 0 190px;
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+}
+
+.imageWrap img {
+  object-fit: contain;
+  transform: rotate(180deg);
+}
+
+.card[data-category-variant="orange"] {
+  --card-accent: var(--color-orange);
+  --card-accent-text: var(--color-ink);
+}
+
+.card[data-category-variant="lime"] {
+  --card-accent: var(--color-lime);
+  --card-accent-text: var(--color-ink);
+}
+
+.card[data-category-variant="lightGreen"] {
+  --card-accent: var(--color-green-badge);
+}
+
+.badge {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  right: -1px;
+  display: inline-flex;
+  min-width: 72px;
+  min-height: 21px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17px;
+  padding: 2px 10px;
+  background: var(--card-accent);
+  color: var(--card-accent-text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+}
+
+.category,
+.title,
+.description {
+  margin: 0;
+}
+
+.category {
+  margin-top: 12px;
+  color: var(--color-green-badge);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+}
+
+.title {
+  min-height: 2.6em;
+  margin-top: 5px;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.description {
+  margin-top: 10px;
+  color: var(--color-ink-muted);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 20px;
+  gap: 6px;
+  color: var(--color-green-link);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.link img {
+  width: 11px;
+  height: 11px;
+  transition: transform 180ms ease;
+}
+
+.link:hover img {
+  transform: translateX(3px);
+}
+
+@media (max-width: 767px) {
+  .card {
+    min-height: 460px;
+    padding-inline: 28px;
+  }
+
+  .imageArea {
+    height: 175px;
+    flex-basis: 175px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .imageWrap {
+    transform: none !important;
+  }
+
+  .link img {
+    transition: none;
+  }
+}
