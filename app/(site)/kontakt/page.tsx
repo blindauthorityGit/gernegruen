@@ -4,32 +4,34 @@ import {PageHero} from "@/components/layout/PageHero";
 import {Container} from "@/components/layout/Container";
 import {ContactCards, DirectionsSection} from "@/components/sections/contact/ContactSections";
 import {getBusinessSettings} from "@/sanity/lib/businessSettings";
-import {sanityClient} from "@/sanity/lib/client";
+import {fetchSanity} from "@/sanity/lib/live";
 import {CONTACT_PAGE_QUERY} from "@/sanity/queries/contactPage";
 import type {BusinessSettings} from "@/sanity/types/business";
 import { createPageMetadata } from "@/lib/seo";
+import {stegaClean} from "next-sanity";
 
 type ContactPageContent = {
   seoTitle?: string;
   seoDescription?: string;
+  seoKeywords?: string[];
   hero?: {headline?: string; headlineAccent?: string; description?: string; image?: string; imageAlt?: string};
   cards?: {isVisible?: boolean; openingHoursHeading?: string; contactHeading?: string};
   directions?: {isVisible?: boolean; heading?: string; description?: string; mapZoom?: number; routeLabel?: string};
   travelBenefits?: {title: string; description: string; icon?: string; iconAlt?: string}[];
 } | null;
 
-const getContactPage = cache(async () => sanityClient.fetch<ContactPageContent>(CONTACT_PAGE_QUERY, {}, {next: {revalidate: 60}}).catch((error: unknown) => {
+const getContactPage = cache(async (stega = true) => fetchSanity<ContactPageContent>(CONTACT_PAGE_QUERY, {}, {stega}).catch((error: unknown) => {
   console.error("Kontaktseite konnte nicht aus Sanity geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
   return null;
 }));
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getContactPage();
+  const page = await getContactPage(false);
   return createPageMetadata({
     title: page?.seoTitle || "Kontakt & Anfahrt – GerneGrün Dreieich",
     description: page?.seoDescription || "Adresse, Öffnungszeiten und Anfahrt zu GerneGrün in Dreieich. Wir freuen uns auf deinen Besuch!",
     path: "/kontakt",
-    keywords: ["Öffnungszeiten", "Adresse", "Anfahrt", "Kontakt"],
+    keywords: page?.seoKeywords || ["Öffnungszeiten", "Adresse", "Anfahrt", "Kontakt"],
   });
 }
 
@@ -39,11 +41,11 @@ function localBusinessStructuredData(business: BusinessSettings) {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    name: business.businessName,
-    address: {"@type": "PostalAddress", streetAddress: business.street, postalCode: business.postalCode, addressLocality: business.city, addressCountry: "DE"},
-    telephone: business.phone,
-    email: business.email,
-    sameAs: business.instagramHandle ? [`https://www.instagram.com/${business.instagramHandle.replace(/^@/, "")}/`] : undefined,
+    name: stegaClean(business.businessName),
+    address: {"@type": "PostalAddress", streetAddress: stegaClean(business.street), postalCode: stegaClean(business.postalCode), addressLocality: stegaClean(business.city), addressCountry: "DE"},
+    telephone: stegaClean(business.phone),
+    email: stegaClean(business.email),
+    sameAs: business.instagramHandle ? [`https://www.instagram.com/${stegaClean(business.instagramHandle).replace(/^@/, "")}/`] : undefined,
     geo: {"@type": "GeoCoordinates", latitude: business.coordinates.latitude, longitude: business.coordinates.longitude},
     openingHoursSpecification: business.openingHours.filter((day) => !day.isClosed && day.opens && day.closes).map((day) => ({
       "@type": "OpeningHoursSpecification",
@@ -53,8 +55,8 @@ function localBusinessStructuredData(business: BusinessSettings) {
     })),
     specialOpeningHoursSpecification: business.exceptions?.filter((entry) => entry.isClosed || (entry.opens && entry.closes)).map((entry) => ({
       "@type": "OpeningHoursSpecification",
-      validFrom: entry.date,
-      validThrough: entry.date,
+      validFrom: stegaClean(entry.date),
+      validThrough: stegaClean(entry.date),
       opens: entry.isClosed ? "00:00" : entry.opens,
       closes: entry.isClosed ? "00:00" : entry.closes,
     })),

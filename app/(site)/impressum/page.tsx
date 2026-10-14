@@ -2,12 +2,16 @@ import type {Metadata} from "next";
 import {LegalPage, LegalSection} from "@/components/sections/LegalPage";
 import {getBusinessSettings} from "@/sanity/lib/businessSettings";
 import {createPageMetadata} from "@/lib/seo";
+import {stegaClean} from "next-sanity";
 
-export const metadata: Metadata = createPageMetadata({
-  title: "Impressum – GerneGrün",
-  description: "Anbieterkennzeichnung und Kontakt zum GerneGrün Lebensmittelgeschäft in Dreieich.",
-  path: "/impressum",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getBusinessSettings();
+  return createPageMetadata({
+    title: settings?.legalSeo?.imprintTitle || "Impressum – GerneGrün",
+    description: settings?.legalSeo?.imprintDescription || "Anbieterkennzeichnung und Kontakt zum GerneGrün Lebensmittelgeschäft in Dreieich.",
+    path: "/impressum",
+  });
+}
 
 export default async function ImprintPage() {
   const business = await getBusinessSettings();
@@ -21,8 +25,8 @@ export default async function ImprintPage() {
         {business ? <>{business.street}<br />{business.postalCode} {business.city}</> : <span className="legal-placeholder">[Straße, Hausnummer, Postleitzahl, Ort und Staat]</span>}
       </p>
       {business && <p><strong>Ladenanschrift laut Website:</strong><br />{business.businessName}<br />{business.street}<br />{business.postalCode} {business.city}<br /><span className="legal-placeholder">[Bitte bestätigen, ob dies zugleich die Niederlassungs-/ladungsfähige Anschrift des Anbieters ist.]</span></p>}
-      <p>E-Mail: {business?.email ? <a href={`mailto:${business.email}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse]</span>}<br />
-        Telefon: {business?.phone ? <a href={`tel:${business.phone.replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer]</span>}</p>
+      <p>E-Mail: {business?.email ? <a href={`mailto:${stegaClean(business.email)}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse]</span>}<br />
+        Telefon: {business?.phone ? <a href={`tel:${stegaClean(business.phone).replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer]</span>}</p>
     </LegalSection>
     <LegalSection title="Weitere Angaben, sofern zutreffend">
       <ul>

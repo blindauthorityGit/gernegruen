@@ -1,9 +1,6 @@
 import {CalendarIcon} from "@sanity/icons/Calendar"
 import {defineArrayMember, defineField, defineType} from "sanity"
 
-const defaultDescription =
-  "Ab Donnerstag zeigen wir dir, was ab Montag frisch bei uns eintrifft. Hier schon ein kleiner Vorgeschmack – Änderungen vorbehalten."
-
 export const nextWeekPreview = defineType({
   name: "nextWeekPreview",
   title: "Vorschau nächste Woche",
@@ -47,7 +44,6 @@ export const nextWeekPreview = defineType({
       title: "Titel",
       type: "string",
       group: "content",
-      initialValue: "Nächste Woche bei uns",
       validation: (rule) => rule.required().max(100),
     }),
     defineField({
@@ -56,7 +52,6 @@ export const nextWeekPreview = defineType({
       type: "text",
       rows: 3,
       group: "content",
-      initialValue: defaultDescription,
       validation: (rule) => rule.required().max(320),
     }),
     defineField({
@@ -66,7 +61,7 @@ export const nextWeekPreview = defineType({
       group: "content",
       description: "Produkte hinzufügen und per Drag & Drop in die gewünschte Reihenfolge bringen.",
       of: [defineArrayMember({type: "nextWeekProduct"})],
-      validation: (rule) => rule.required().min(1).max(12),
+      validation: (rule) => rule.min(1).max(12),
     }),
   ],
   orderings: [

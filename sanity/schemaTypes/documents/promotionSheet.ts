@@ -7,6 +7,7 @@ export const promotionSheet = defineType({
   type: "document",
   icon: DocumentIcon,
   fields: [
+    defineField({name: "isEnabled", title: "Aktionsblatt aktiv", type: "boolean", initialValue: true, description: "Aktive Aktionsblätter werden während ihres Gültigkeitszeitraums auf der Seite „Diese Woche“ angezeigt."}),
     defineField({ name: "title", title: "Titel", type: "string", validation: (rule) => rule.required().max(100) }),
     defineField({ name: "description", title: "Beschreibung", type: "text", rows: 3, validation: (rule) => rule.max(300) }),
     defineField({ name: "pdf", title: "PDF-Datei", type: "file", options: { accept: "application/pdf" }, validation: (rule) => rule.required() }),

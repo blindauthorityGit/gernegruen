@@ -26,6 +26,7 @@
 .hours li { display: grid; grid-template-columns: minmax(88px, .72fr) 1fr; gap: 14px; }
 .address { display: grid; gap: 5px; margin: 0 0 16px 48px; color: var(--color-surface-cream); font-size: 14px; font-style: normal; line-height: 1.35; }
 .links { margin-left: 48px; gap: 7px; }
+.cookieSettings { margin: 10px 0 0 48px; color: var(--color-surface-cream); font-size: 14px; }
 .address a, .links a, .instagram { color: inherit; text-decoration: none; text-underline-offset: 3px; }
 .address a:hover, .links a:hover, .instagram:hover { text-decoration: underline; }
 .instagram { display: inline-flex; align-items: center; gap: 9px; margin-left: 48px; font-size: 14px; }

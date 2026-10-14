@@ -39,6 +39,18 @@ uses natural content height. Avoid fixed section heights and clipped copy.
 
 ## Foundations
 
+### Sanity Studio
+
+The Studio uses the existing GerneGrün palette and Nunito typeface: deep green
+navigation, warm cream surfaces, botanical statistic cards, and lime accents.
+Custom Studio tools should use Sanity UI primitives and keep their extra layout
+styles in a local CSS Module. The **Bestellungen & Wünsche** tool uses a deep
+green welcome panel, pale botanical metric cards, and clear green labels for new
+requests; its data view remains read-only.
+In custom tools, set explicit line heights on Sanity UI `Text` and `Heading`
+elements. Keep at least a 12px vertical gap between a heading and its supporting
+copy so the Studio's compact defaults do not make separate lines appear joined.
+
 ### Color
 
 | Role | Value | Evidence / use |

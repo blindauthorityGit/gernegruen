@@ -6,16 +6,7 @@ import {HomeIcon} from "@sanity/icons/Home"
 import {SparklesIcon} from "@sanity/icons/Sparkles"
 import {TagIcon} from "@sanity/icons/Tag"
 import {PinIcon} from "@sanity/icons/Pin"
-import {createElement} from "react"
 import type {StructureResolver} from "sanity/structure"
-
-function SettingsPlaceholder() {
-  return createElement(
-    "div",
-    {style: {padding: "2rem", fontFamily: "sans-serif"}},
-    "Weitere Website-Einstellungen werden hier später ergänzt.",
-  )
-}
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -38,6 +29,10 @@ export const structure: StructureResolver = (S) =>
                     .title("Startseite"),
                 ),
               S.listItem()
+                .title("Ein Laden mit Herz")
+                .icon(HomeIcon)
+                .child(S.document().schemaType("storeIntroSettings").documentId("storeIntroSettings").title("Ein Laden mit Herz")),
+              S.listItem()
                 .title("Sortimentsseite")
                 .icon(TagIcon)
                 .child(S.document().schemaType("assortmentPage").documentId("assortmentPage").title("Sortimentsseite")),
@@ -47,12 +42,17 @@ export const structure: StructureResolver = (S) =>
                 .child(S.document().schemaType("aboutPage").documentId("aboutPage").title("Über uns")),
               S.listItem().title("Kontakt & Anfahrt").icon(PinIcon).child(S.document().schemaType("contactPage").documentId("contactPage").title("Kontakt & Anfahrt")),
               S.documentTypeListItem("weeklyOverview").title("Diese Woche").icon(CalendarIcon),
+              S.listItem().title("Seitentexte: Diese Woche").icon(CalendarIcon).child(S.document().schemaType("weeklyPageSettings").documentId("weeklyPageSettings").title("Seitentexte: Diese Woche")),
               S.documentTypeListItem("nextWeekPreview").title("Nächste Woche").icon(CalendarIcon),
             ]),
         ),
       S.divider(),
-      S.listItem().title("Geschäftsdaten").icon(CogIcon).child(S.document().schemaType("businessSettings").documentId("businessSettings").title("Geschäftsdaten")),
-      S.listItem().title("Obst- & Gemüselisten").icon(CalendarIcon).child(S.documentTypeList("weeklyProduceList").title("Obst- & Gemüselisten")),
+      S.listItem().title("EINSTELLUNGEN").icon(CogIcon).child(
+        S.list().title("Einstellungen").items([
+          S.listItem().title("Geschäftsdaten").icon(CogIcon).child(S.document().schemaType("businessSettings").documentId("businessSettings").title("Geschäftsdaten")),
+          S.listItem().title("Footer").icon(DocumentIcon).child(S.document().schemaType("footerSettings").documentId("footerSettings").title("Footer")),
+        ]),
+      ),
       S.divider(),
       S.listItem()
         .title("INHALTE")
@@ -66,15 +66,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem("supplierBrand").title("Marken und Hersteller").icon(DocumentsIcon),
               S.documentTypeListItem("bakeryCatalog").title("Backwarensortimente").icon(DocumentsIcon),
               S.documentTypeListItem("promotionSheet").title("Aktionsblätter").icon(DocumentIcon),
-              S.documentTypeListItem("highlightItem")
-                .title("Aktuelles / Highlights")
-                .icon(SparklesIcon),
-              S.documentTypeListItem("contentCategory").title("Kategorien").icon(TagIcon),
+              S.listItem().title("Obst- & Gemüselisten").icon(CalendarIcon).child(S.documentTypeList("weeklyProduceList").title("Obst- & Gemüselisten")),
             ]),
         ),
-      S.divider(),
-      S.listItem()
-        .title("EINSTELLUNGEN")
-        .icon(CogIcon)
-        .child(S.component(SettingsPlaceholder).title("Einstellungen")),
     ])

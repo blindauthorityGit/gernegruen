@@ -2,7 +2,7 @@ import {defineQuery} from "next-sanity";
 
 export const CONTACT_PAGE_QUERY = defineQuery(/* groq */ `
   *[_id == "contactPage" && _type == "contactPage" && isVisible != false][0] {
-    seoTitle, seoDescription,
+    seoTitle, seoDescription, seoKeywords,
     hero {headline, headlineAccent, description, imageAlt, "image": image.asset->url},
     cards {isVisible, openingHoursHeading, contactHeading},
     directions {isVisible, heading, description, mapZoom, routeLabel},

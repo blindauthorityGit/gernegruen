@@ -22,6 +22,7 @@ type PageHeroProps = {
   centerBadgeVertically?: boolean;
   variant?: "default" | "botanical" | "editorial";
   compact?: boolean;
+  dataAttributes?: {title?: string; description?: string; illustration?: string; photo?: string; badge?: string};
 };
 
 export function PageHero({
@@ -39,6 +40,7 @@ export function PageHero({
   centerBadgeVertically = false,
   variant = "default",
   compact = false,
+  dataAttributes,
 }: PageHeroProps) {
   // Motion's reduced-motion hook may be unresolved on the server and already
   // resolved in the browser. Keep the server and first client render identical.
@@ -56,7 +58,7 @@ export function PageHero({
         <div className={styles.copy}>
           {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
           <div className={styles.titleGroup}>
-            <motion.h1 className={styles.title} id="page-title" {...reveal(0)}>
+            <motion.h1 className={styles.title} id="page-title" data-sanity={dataAttributes?.title} {...reveal(0)}>
               {title}{accentTitle && <><br /><span className={styles.titleAccent}>{accentTitle}</span></>}
             </motion.h1>
             {showAccent && (
@@ -71,7 +73,7 @@ export function PageHero({
               </motion.span>
             )}
           </div>
-          <motion.p className={styles.description} {...reveal(0.18)}>{description}</motion.p>
+          <motion.p className={styles.description} data-sanity={dataAttributes?.description} {...reveal(0.18)}>{description}</motion.p>
           {children && <motion.div className={styles.childContent} {...reveal(0.27)}>{children}</motion.div>}
         </div>
         {(illustration || aside || badge) && (
@@ -83,15 +85,15 @@ export function PageHero({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 1.1, delay: reducedMotion ? 0 : 0.32, ease: easing }}
               >
-                <Image alt={illustration.alt} className={styles.illustration} fill priority sizes="(max-width: 700px) 96vw, 530px" src={illustration.src} />
+                <Image alt={illustration.alt} className={styles.illustration} fill priority sizes="(max-width: 700px) 96vw, 530px" src={illustration.src} unoptimized={illustration.src.includes(".svg")} data-sanity={dataAttributes?.illustration} />
               </motion.div>
             )}
             {aside && <div className={styles.aside}>{aside}</div>}
-            {badge && <motion.div className={styles.badge} initial={reducedMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: reducedMotion ? 0 : 0.3, ease: easing }}>{badge}</motion.div>}
+          {badge && <div className={styles.badge} data-sanity={dataAttributes?.badge}>{badge}</div>}
           </div>
         )}
         {photo && (
-          <motion.div className={styles.editorialPhoto} initial={false} animate={{opacity: 1, y: 0}} transition={{duration: 0.9, delay: reducedMotion ? 0 : 0.28, ease: easing}}>
+          <motion.div className={styles.editorialPhoto} data-sanity={dataAttributes?.photo} initial={false} animate={{opacity: 1, y: 0}} transition={{duration: 0.9, delay: reducedMotion ? 0 : 0.28, ease: easing}}>
             <Image alt={photo.alt} fill priority sizes="(max-width: 700px) 92vw, (max-width: 1100px) 48vw, 600px" src={photo.src} />
           </motion.div>
         )}

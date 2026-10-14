@@ -1,4 +1,5 @@
 export type OpeningHoursDay = {
+  _key?: string;
   dayOfWeek: number;
   day: string;
   shortDay: string;
@@ -8,6 +9,7 @@ export type OpeningHoursDay = {
 };
 
 export type OpeningHoursException = {
+  _key?: string;
   date: string;
   label?: string;
   isClosed?: boolean;
@@ -23,6 +25,7 @@ export type BusinessSettings = {
   phone: string;
   email: string;
   instagramHandle?: string;
+  legalSeo?: {imprintTitle?: string; imprintDescription?: string; privacyTitle?: string; privacyDescription?: string; accessibilityTitle?: string; accessibilityDescription?: string};
   coordinates: {latitude: number; longitude: number};
   openingHours: OpeningHoursDay[];
   exceptions?: OpeningHoursException[];

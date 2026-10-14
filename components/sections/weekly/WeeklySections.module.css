@@ -38,6 +38,7 @@
 .category li small { display: block; margin-top: 2px; color: var(--color-ink-muted); }
 
 .promotionSection { padding: var(--section-space) 0; background: var(--color-canvas); }
+.pdfCollection { display: grid; gap: 24px; }
 .pdfLayout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .55fr); overflow: hidden; border-radius: var(--radius-panel); background: #efc8dc; }
 .pdfFrame { min-height: 650px; background: #dedbd3; }
 .pdfFrame object { width: 100%; height: 100%; min-height: 650px; border: 0; }

@@ -4,12 +4,14 @@ import {PageHero} from "@/components/layout/PageHero";
 import {Container} from "@/components/layout/Container";
 import {AssortmentGallery, type AssortmentGalleryContent, type AssortmentGalleryItem} from "@/components/sections/AssortmentGallery";
 import {AboutBenefits, AboutContact, AboutTimeline, type AboutBenefit, type AboutMilestone} from "@/components/sections/about/AboutSections";
-import {sanityClient} from "@/sanity/lib/client";
+import {fetchSanity} from "@/sanity/lib/live";
 import {ABOUT_PAGE_QUERY} from "@/sanity/queries/aboutPage";
 import { createPageMetadata } from "@/lib/seo";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
 type AboutPageContent = {
-  seoTitle?: string; seoDescription?: string;
+  _id?: string;
+  seoTitle?: string; seoDescription?: string; seoKeywords?: string[];
   hero?: {headline?: string; headlineAccent?: string; description?: string; image?: string; imageAlt?: string};
   timeline?: {isVisible?: boolean; heading?: string; milestones?: (Omit<AboutMilestone, "image"> & {image?: string})[]};
   gallery?: {isVisible?: boolean; images?: (AssortmentGalleryItem & {title?: string})[]} & Omit<AssortmentGalleryContent, "images">;
@@ -17,18 +19,18 @@ type AboutPageContent = {
   contact?: {heading?: string; description?: string; ctaLabel?: string; ctaHref?: string; image?: string; imageAlt?: string};
 } | null;
 
-const getAboutPage = cache(async () => sanityClient.fetch<AboutPageContent>(ABOUT_PAGE_QUERY, {}, {next: {revalidate: 60}}).catch((error: unknown) => {
+const getAboutPage = cache(async (stega = true) => fetchSanity<AboutPageContent>(ABOUT_PAGE_QUERY, {}, {stega}).catch((error: unknown) => {
   console.error("Über-uns-Seite konnte nicht aus Sanity geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
   return null;
 }));
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getAboutPage();
+  const page = await getAboutPage(false);
   return createPageMetadata({
     title: page?.seoTitle || "Über uns – GerneGrün in Dreieich",
     description: page?.seoDescription || "Lerne GerneGrün kennen: die Geschichte unseres Ladens und die Menschen hinter dem Markt in Dreieich.",
     path: "/ueber-uns",
-    keywords: ["Team", "Geschichte", "Lebensmittelgeschäft Dreieich"],
+    keywords: page?.seoKeywords || ["Team", "Geschichte", "Lebensmittelgeschäft Dreieich"],
   });
 }
 
@@ -39,6 +41,8 @@ export default async function AboutPage() {
   const milestones: AboutMilestone[] = (page.timeline?.milestones ?? []).map(({image, ...item}) => ({...item, image: image ? {src: image} : undefined}));
   const benefits: AboutBenefit[] = (page.benefits?.items ?? []).map(({icon, ...item}) => ({...item, icon: icon ? {src: icon} : undefined}));
   const gallery: AssortmentGalleryContent | undefined = page.gallery && {
+    _sourceId: page._id,
+    _sourceType: "aboutPage",
     eyebrow: page.gallery.eyebrow,
     heading: page.gallery.heading,
     description: page.gallery.description,
@@ -54,11 +58,12 @@ export default async function AboutPage() {
       mobileAccentPosition="farther"
       title={page.hero.headline || ""}
       variant="editorial"
+      dataAttributes={{photo: sanityDataAttribute("aboutPage", "aboutPage", "hero.image")}}
     >
     </PageHero>}
-    {page.timeline?.isVisible !== false && page.timeline && <AboutTimeline milestones={milestones} />}
+    {page.timeline?.isVisible !== false && page.timeline && <AboutTimeline heading={page.timeline.heading} milestones={milestones} sourceId={page._id} />}
     {gallery?.images?.length && page.gallery?.isVisible !== false && <AssortmentGallery content={gallery} layout="carousel" />}
-    {page.benefits?.isVisible !== false && page.benefits && <AboutBenefits benefits={benefits} />}
-    {page.contact && <AboutContact content={{...page.contact, image: page.contact.image ? {src: page.contact.image} : undefined}} />}
+    {page.benefits?.isVisible !== false && page.benefits && <AboutBenefits heading={page.benefits.heading} benefits={benefits} sourceId={page._id} />}
+    {page.contact && <AboutContact content={{...page.contact, image: page.contact.image ? {src: page.contact.image} : undefined}} sourceId={page._id} />}
   </main>;
 }

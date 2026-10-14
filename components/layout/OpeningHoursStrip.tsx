@@ -6,6 +6,7 @@ import {Container} from "./Container";
 import {addBerlinCalendarDays, formatOpeningHours, getBerlinDateKey, getOpeningHoursForDate} from "@/lib/content/openingHours";
 import type {OpeningHoursDay, OpeningHoursException} from "@/sanity/types/business";
 import styles from "./Header.module.css";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
 export function OpeningHoursStrip({openingHours, exceptions, initialDateKey}: {openingHours: OpeningHoursDay[]; exceptions: OpeningHoursException[]; initialDateKey: string}) {
   const [todayKey, setTodayKey] = useState(initialDateKey);
@@ -25,8 +26,8 @@ export function OpeningHoursStrip({openingHours, exceptions, initialDateKey}: {o
       <Container className={styles.infoContainer}>
         <div className={styles.infoStripSummary}>
           <p className={styles.todayHours}>
-            <span className={styles.todayLong}>Heute, {today?.day}: {todayHours}</span>
-            <span className={styles.todayShort}>Heute, {today?.shortDay}: {todayHours}</span>
+            <span className={styles.todayLong} data-sanity={today?._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${today._key}"]`) : undefined}>Heute, {today?.day}: {todayHours}</span>
+            <span className={styles.todayShort} data-sanity={today?._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${today._key}"]`) : undefined}>Heute, {today?.shortDay}: {todayHours}</span>
           </p>
           <button
             aria-controls="weekly-opening-hours"
@@ -50,8 +51,8 @@ export function OpeningHoursStrip({openingHours, exceptions, initialDateKey}: {o
               const isToday = index === 0;
               return (
                 <li aria-current={isToday ? "date" : undefined} className={styles.weekday} key={dateKey}>
-                  <span>{hours.day}{isToday ? " · Heute" : ""}{hours.label ? ` · ${hours.label}` : ""}</span>
-                  <span>{formatOpeningHours(hours)}</span>
+                  <span data-sanity={hours._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${hours._key}"].day`) : undefined}>{hours.day}{isToday ? " · Heute" : ""}{hours.label ? ` · ${hours.label}` : ""}</span>
+                  <span data-sanity={hours._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${hours._key}"]`) : undefined}>{formatOpeningHours(hours)}</span>
                 </li>
               );
             })}

@@ -7,6 +7,9 @@ export const startPage = defineType({
   type: "document",
   icon: DocumentIcon,
   fields: [
+    defineField({name: "seoTitle", title: "SEO-Titel", type: "string", validation: (rule) => rule.max(70)}),
+    defineField({name: "seoDescription", title: "SEO-Beschreibung", type: "text", rows: 2, validation: (rule) => rule.max(180)}),
+    defineField({name: "seoKeywords", title: "SEO-Suchbegriffe", type: "array", of: [defineArrayMember({type: "string"})], validation: (rule) => rule.max(10)}),
     defineField({
       name: "assortmentSection", title: "Aktuelles Sortiment", type: "object",
       description: "Die aktuelle Ausgabe wird automatisch anhand ihres Zeitraums ausgewählt. Ausgaben können im Voraus vorbereitet und veröffentlicht werden.",
@@ -21,21 +24,6 @@ export const startPage = defineType({
       type: "startHero",
       description: "Der einleitende Bereich direkt unter der Hauptnavigation.",
       validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: "storeIntroSection",
-      title: "Laden-Einleitung",
-      type: "storeIntroSection",
-      description: "Ladenfoto, Beschreibung, Highlights und Sortimentsbereiche unterhalb der Herstellerlogos.",
-    }),
-    defineField({
-      name: "currentContentSection",
-      title: "Das gibt’s gerade Neues",
-      type: "contentCardSection",
-      description: "Der Kartenbereich direkt unter dem Hero.",
-      deprecated: {reason: "Die Startseite nutzt jetzt Aktuelles Sortiment mit zeitlich geplanten Ausgaben."},
-      readOnly: true,
-      hidden: true,
     }),
   ],
   preview: {

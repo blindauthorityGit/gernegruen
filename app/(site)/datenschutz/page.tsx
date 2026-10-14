@@ -2,22 +2,26 @@ import type {Metadata} from "next";
 import {LegalPage, LegalSection} from "@/components/sections/LegalPage";
 import {getBusinessSettings} from "@/sanity/lib/businessSettings";
 import {createPageMetadata} from "@/lib/seo";
+import {stegaClean} from "next-sanity";
 
-export const metadata: Metadata = createPageMetadata({
-  title: "Datenschutz – GerneGrün",
-  description: "Informationen zur Verarbeitung personenbezogener Daten auf der GerneGrün-Website.",
-  path: "/datenschutz",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getBusinessSettings();
+  return createPageMetadata({
+    title: settings?.legalSeo?.privacyTitle || "Datenschutz – GerneGrün",
+    description: settings?.legalSeo?.privacyDescription || "Informationen zur Verarbeitung personenbezogener Daten auf der GerneGrün-Website.",
+    path: "/datenschutz",
+  });
+}
 
 export default async function PrivacyPage() {
   const business = await getBusinessSettings();
-  const mailLink = business?.email ? <a href={`mailto:${business.email}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse ergänzen]</span>;
+  const mailLink = business?.email ? <a href={`mailto:${stegaClean(business.email)}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse ergänzen]</span>;
   return <LegalPage title="Datenschutzerklärung" intro="Hier erklären wir, welche personenbezogenen Daten diese Website verarbeitet, zu welchen Zwecken dies geschieht und welche Rechte du hast.">
     <LegalSection title="1. Verantwortliche Stelle">
       <p><strong>Gernegrün GmbH &amp; Co. KG</strong><br />
         Waldstraße 4<br />
         63303 Dreieich<br />
-        E-Mail: {mailLink}<br />Telefon: {business?.phone ? <a href={`tel:${business.phone.replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer ergänzen]</span>}</p>
+        E-Mail: {mailLink}<br />Telefon: {business?.phone ? <a href={`tel:${stegaClean(business.phone).replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer ergänzen]</span>}</p>
       <p>Die Gernegrün GmbH &amp; Co. KG ist im Handelsregister des Amtsgerichts Offenbach am Main unter HRA 43047 eingetragen. Eine Datenschutzbeauftragte oder ein Datenschutzbeauftragter ist im Projekt nicht benannt; ob eine Benennung gesetzlich erforderlich ist, muss der Betreiber anhand seiner Beschäftigtenzahl und Verarbeitungstätigkeit prüfen.</p>
     </LegalSection>
 
@@ -50,7 +54,9 @@ export default async function PrivacyPage() {
     </LegalSection>
 
     <LegalSection title="6. Cookies und vergleichbare Technologien">
-      <p>Im geprüften Anwendungscode werden keine eigenen Cookies, kein LocalStorage und kein SessionStorage gesetzt oder ausgelesen. Auch Analyse- oder Marketingtechnologien sind nicht eingerichtet. Die Vorbestellungs- und Produktwunschdialoge halten ihre Bedienzustände nur im laufenden Arbeitsspeicher; eine Consent-pflichtige Speicherung durch diese Website wurde nicht gefunden. Deshalb wird derzeit kein Cookie-Banner angezeigt und es gibt keine Cookie-Einstellungen. Falls künftig einwilligungspflichtige Technologien hinzukommen, müssen diese vor einer Einwilligung technisch blockiert und ein geeignetes Consent-Management eingerichtet werden. Technische Speicherung durch Hosting- oder Sicherheitsdienste sowie der tatsächliche Netzwerkverkehr im produktiven Deployment sind vor Veröffentlichung gesondert zu kontrollieren.</p>
+      <p>Die öffentliche Website setzt derzeit keine Analyse- oder Marketing-Cookies ein und bindet keine externen Karten, Videos oder Social-Media-Inhalte automatisch ein. Beim ersten Besuch wird ein Cookie-Hinweis angezeigt. Wenn du ihn schließt, speichern wir dafür das technisch notwendige Cookie <code>gg_cookie_notice</code> für 180 Tage. Es enthält lediglich den Wert „1“, keine eindeutige Kennung und keine Einwilligungsentscheidung. Über „Cookie-Hinweis“ im Footer kannst du die Informationen jederzeit erneut öffnen.</p>
+      <p>Das angemeldete Betreiber-Studio verwendet zusätzlich das technisch notwendige Sitzungscookie <code>gg_studio_session</code> zur Anmeldung. Es gilt nur für den Pfad <code>/api/studio</code>, ist vor JavaScript geschützt und wird nach spätestens 14 Tagen ungültig. Es wird Website-Besucher:innen nicht gesetzt.</p>
+      <p>Im geprüften Anwendungscode werden kein LocalStorage und kein SessionStorage verwendet. Die Vorbestellungs- und Produktwunschdialoge halten ihre Bedienzustände nur im laufenden Arbeitsspeicher. Wenn künftig einwilligungspflichtige Technologien hinzukommen, müssen diese vor einer wirksamen Einwilligung technisch blockiert werden. Technische Speicherung durch Hosting- oder Sicherheitsdienste sowie der tatsächliche Netzwerkverkehr im produktiven Deployment sind vor Veröffentlichung gesondert zu kontrollieren.</p>
     </LegalSection>
 
     <LegalSection title="7. Empfänger und Drittlandübermittlungen">

@@ -14,9 +14,15 @@ const entry = target === "next"
         ? resolve("scripts/seed-about-page.mjs")
         : target === "seed-contact-page"
           ? resolve("scripts/seed-contact-page.mjs")
+          : target === "seed-weekly-editorial"
+            ? resolve("scripts/seed-weekly-editorial.mjs")
+            : target === "repair-business-settings-keys"
+              ? resolve("scripts/repair-business-settings-keys.mjs")
+              : target === "seed-footer-settings"
+                ? resolve("scripts/seed-footer-settings.mjs")
         : null;
 
-if (!entry) throw new Error("Choose `next`, `seed`, `seed-homepage`, `seed-assortment-gallery`, `seed-about-page`, or `seed-contact-page`.");
+if (!entry) throw new Error("Choose `next`, `seed`, `seed-homepage`, `seed-assortment-gallery`, `seed-about-page`, `seed-contact-page`, `seed-weekly-editorial`, `repair-business-settings-keys`, or `seed-footer-settings`.");
 
 const child = spawn(process.execPath, [entry, ...args], {
   stdio: "inherit",

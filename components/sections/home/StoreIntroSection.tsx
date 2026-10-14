@@ -1,4 +1,6 @@
 import Image from "next/image";
+import {stegaClean} from "next-sanity";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 import styles from "./StoreIntroSection.module.css";
@@ -20,6 +22,7 @@ export type StoreIntroSectionData = {
   headingLine2?: string;
   description?: string;
   imageAlt?: string;
+  imageUrl?: string;
   parkingText?: string;
   highlights?: { _key?: string; title: string; description: string }[];
   categories?: { _key?: string; title: string; icon: StoreCategoryIcon }[];
@@ -52,31 +55,31 @@ export function StoreIntroSection({ data }: { data?: StoreIntroSectionData | nul
   const content = { ...defaultData, ...data };
   const highlights = content.highlights ?? defaultData.highlights ?? [];
   const categories = (content.categories ?? defaultData.categories ?? []).filter(
-    (category): category is NonNullable<StoreIntroSectionData["categories"]>[number] & { icon: StoreCategoryIcon } => category.icon in categoryImages,
+    (category): category is NonNullable<StoreIntroSectionData["categories"]>[number] & { icon: StoreCategoryIcon } => stegaClean(category.icon) in categoryImages,
   );
   const cta = { ...defaultData.cta, ...content.cta };
 
   return (
-    <section className={styles.section} aria-labelledby="store-intro-heading">
+    <section className={styles.section} aria-labelledby="store-intro-heading" data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content")}>
       <div className={styles.background} aria-hidden="true" />
       <Container>
         <div className={styles.intro}>
           <div className={styles.photoWrap}>
-            <Image className={styles.photo} src="/images/store-interior.png" alt={content.imageAlt ?? ""} fill sizes="(max-width: 767px) 88vw, (max-width: 1100px) 44vw, 460px" />
-            <p className={styles.parking}>{content.parkingText}</p>
+            <Image className={styles.photo} src={content.imageUrl || "/images/store-interior.png"} alt={content.imageAlt ?? ""} fill sizes="(max-width: 767px) 88vw, (max-width: 1100px) 44vw, 460px" unoptimized={Boolean(content.imageUrl)} data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content.image")} />
+            <p className={styles.parking} data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content.parkingText")}>{content.parkingText}</p>
           </div>
           <div className={styles.copy}>
-            <h2 id="store-intro-heading">{content.headingLine1}<br />{content.headingLine2}<span className={styles.spark} aria-hidden="true"><i /><i /><i /></span></h2>
-            <p className={styles.description}>{content.description}</p>
+            <h2 id="store-intro-heading" data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content.headingLine1")}>{content.headingLine1}<br /><span data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content.headingLine2")}>{content.headingLine2}</span><span className={styles.spark} aria-hidden="true"><i /><i /><i /></span></h2>
+            <p className={styles.description} data-sanity={sanityDataAttribute("storeIntroSettings", "storeIntroSettings", "content.description")}>{content.description}</p>
             <div className={styles.highlights}>
-              {highlights.map((highlight, index) => <p key={highlight._key ?? `${highlight.title}-${index}`}><strong>{highlight.title}</strong> {highlight.description}</p>)}
+              {highlights.map((highlight, index) => <p key={highlight._key ?? `${highlight.title}-${index}`} data-sanity={highlight._key ? sanityDataAttribute("storeIntroSettings", "storeIntroSettings", `content.highlights[_key=="${highlight._key}"]`) : undefined}><strong>{highlight.title}</strong> {highlight.description}</p>)}
             </div>
           </div>
         </div>
         <ul className={styles.categories} aria-label="Unser Sortiment">
           {categories.map((category) => (
-              <li className={styles.category} key={category._key ?? category.icon}>
-              <Image src={categoryImages[category.icon]} alt="" width={132} height={132} sizes="(max-width: 767px) 26vw, 132px" />
+              <li className={styles.category} key={category._key ?? category.icon} data-sanity={category._key ? sanityDataAttribute("storeIntroSettings", "storeIntroSettings", `content.categories[_key=="${category._key}"]`) : undefined}>
+              <Image src={categoryImages[stegaClean(category.icon)]} alt="" width={132} height={132} sizes="(max-width: 767px) 26vw, 132px" />
               <span>{category.title}</span>
             </li>
           ))}

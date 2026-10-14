@@ -11,6 +11,14 @@ export const businessSettings = defineType({
     defineField({name: "phone", title: "Telefonnummer", type: "string", validation: (rule) => rule.required()}),
     defineField({name: "email", title: "E-Mail-Adresse", type: "string", validation: (rule) => rule.required().email()}),
     defineField({name: "instagramHandle", title: "Instagram-Profilname", type: "string"}),
+    defineField({name: "legalSeo", title: "SEO für rechtliche Seiten", type: "object", fields: [
+      defineField({name: "imprintTitle", title: "Impressum: SEO-Titel", type: "string", validation: rule => rule.max(70)}),
+      defineField({name: "imprintDescription", title: "Impressum: SEO-Beschreibung", type: "text", rows: 2, validation: rule => rule.max(180)}),
+      defineField({name: "privacyTitle", title: "Datenschutz: SEO-Titel", type: "string", validation: rule => rule.max(70)}),
+      defineField({name: "privacyDescription", title: "Datenschutz: SEO-Beschreibung", type: "text", rows: 2, validation: rule => rule.max(180)}),
+      defineField({name: "accessibilityTitle", title: "Barrierefreiheit: SEO-Titel", type: "string", validation: rule => rule.max(70)}),
+      defineField({name: "accessibilityDescription", title: "Barrierefreiheit: SEO-Beschreibung", type: "text", rows: 2, validation: rule => rule.max(180)}),
+    ]}),
     defineField({name: "coordinates", title: "Standortkoordinaten", type: "object", fields: [
       defineField({name: "latitude", title: "Breitengrad", type: "number", validation: (rule) => rule.required().min(-90).max(90)}),
       defineField({name: "longitude", title: "Längengrad", type: "number", validation: (rule) => rule.required().min(-180).max(180)}),

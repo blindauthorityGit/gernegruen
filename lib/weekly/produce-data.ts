@@ -1,4 +1,5 @@
-import {sanityClient} from "@/sanity/lib/client"
+import {fetchSanity} from "@/sanity/lib/live"
+import {stegaClean} from "next-sanity"
 import {CURRENT_WEEKLY_PRODUCE_LIST_QUERY} from "@/sanity/queries/weekly"
 
 export type ProduceCategory = "fruit" | "vegetables" | "saladsHerbs" | "mushrooms" | "other"
@@ -22,6 +23,8 @@ export type WeeklyProduceProduct = {
 }
 
 export type WeeklyProduceList = {
+  _id?: string
+  _type?: "weeklyProduceList"
   week: number
   year: number
   products: WeeklyProduceProduct[]
@@ -36,8 +39,8 @@ export const produceCategoryOrder: {id: ProduceCategory; title: string}[] = [
 ]
 
 export function getProductBrand(product: Pick<WeeklyProduceProduct, "name" | "brand" | "originalBrandMarker">): string | undefined {
-  if (product.brand?.trim()) return product.brand.trim()
-  if (product.originalBrandMarker?.trim() === "b*" || /^b\*/i.test(product.name.trim())) return "bioladen*"
+  if (product.brand && stegaClean(product.brand).trim()) return product.brand.trim()
+  if ((product.originalBrandMarker && stegaClean(product.originalBrandMarker).trim() === "b*") || /^b\*/i.test(stegaClean(product.name).trim())) return "bioladen*"
   return undefined
 }
 
@@ -51,8 +54,9 @@ const categoryMatchers: {category: ProduceCategory; terms: string[]}[] = [
 ]
 
 export function categorizeProduce(product: WeeklyProduceProduct): ProduceCategory {
-  if (product.categoryOverride && produceCategoryOrder.some(({id}) => id === product.categoryOverride)) return product.categoryOverride
-  const name = normalized(product.name)
+  const categoryOverride = product.categoryOverride ? stegaClean(product.categoryOverride) : undefined
+  if (categoryOverride && produceCategoryOrder.some(({id}) => id === categoryOverride)) return categoryOverride
+  const name = normalized(stegaClean(product.name))
   return categoryMatchers.find(({terms}) => terms.some((term) => name.includes(term)))?.category ?? "other"
 }
 
@@ -100,10 +104,9 @@ export function getCurrentIsoWeek(timeZone = "Europe/Vienna") {
 export async function getCurrentWeeklyProduceList(): Promise<WeeklyProduceList | null> {
   const currentWeek = getCurrentIsoWeek()
   try {
-    const data = await sanityClient.withConfig({perspective: "published", useCdn: false}).fetch<WeeklyProduceList | null>(
+    const data = await fetchSanity<WeeklyProduceList | null>(
       CURRENT_WEEKLY_PRODUCE_LIST_QUERY,
       currentWeek,
-      {useCdn: false, next: {revalidate: 60}},
     )
     if (!data || !Array.isArray(data.products) || data.products.length === 0) return null
     return {...data, products: [...data.products].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}

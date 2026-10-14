@@ -141,6 +141,7 @@ export const weeklyPageFallback: WeeklyPageData = {
       ],
     },
   ],
+  promotionSheets: [],
   promotionSheet: {
     title: "Aktionsblatt ansehen",
     description: "Das beigefügte Blatt zeigt beispielhaft, wie Angebote künftig direkt auf dieser Seite erscheinen.",

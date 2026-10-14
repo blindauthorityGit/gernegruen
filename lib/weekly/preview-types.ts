@@ -19,5 +19,4 @@ export type NextWeekPreviewData = {
   offerWeek: string
   publicationDate?: string
   products: NextWeekPreviewProduct[]
-  isDevelopmentPreview?: boolean
 }

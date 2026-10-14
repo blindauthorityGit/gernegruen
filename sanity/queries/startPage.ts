@@ -14,6 +14,9 @@ export const START_HERO_QUERY = defineQuery(/* groq */ `
 
 export const START_PAGE_CONTENT_QUERY = defineQuery(/* groq */ `
   *[_id == "startPage"][0] {
+    seoTitle,
+    seoDescription,
+    seoKeywords,
     "hero": hero {
       headlineLine1,
       headlineLine2,
@@ -23,46 +26,20 @@ export const START_PAGE_CONTENT_QUERY = defineQuery(/* groq */ `
       "imageUrl": image.asset->url,
       imageAlt
     },
-    storeIntroSection {
-      headingLine1,
-      headingLine2,
-      description,
-      imageAlt,
-      parkingText,
-      highlights[]{_key, title, description},
-      categories[]{_key, title, icon},
-      cta {label, href}
-    }
   }
 `)
 
-export const START_PAGE_QUERY = defineQuery(/* groq */ `
-  *[_id == "startPage"][0] {
-    hero,
-    currentContentSection {
-      heading,
-      intro,
-      "cta": sectionCta,
-      "items": selectedItems[]->[
-        isActive != false &&
-        (!defined(startDate) || startDate <= now()) &&
-        (!defined(endDate) || endDate >= now())
-      ] {
-        "id": _id,
-        title,
-        description,
-        "category": contentCategory->{
-          title,
-          shortLabel,
-          styleVariant
-        },
-        image,
-        imageAlt,
-        "cta": {
-          "label": ctaLabel,
-          "href": ctaHref
-        }
-      }
-    }
+export const STORE_INTRO_QUERY = defineQuery(/* groq */ `
+  *[_id == "storeIntroSettings" && _type == "storeIntroSettings"][0].content {
+    headingLine1,
+    headingLine2,
+    description,
+    imageAlt,
+    "imageUrl": image.asset->url,
+    parkingText,
+    highlights[]{_key, title, description},
+    categories[]{_key, title, icon},
+    cta {label, href}
   }
 `)
+

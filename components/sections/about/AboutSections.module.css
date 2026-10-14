@@ -1,5 +1,6 @@
 .timeline { padding: clamp(32px, 3.5vw, 52px) 0 clamp(36px, 4vw, 60px); background: var(--color-canvas); color: var(--color-green-deep); }
 .milestones { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(32px, 7.4vw, 106px); padding: 0; margin: 0; list-style: none; }
+.sectionHeading { margin: 0 auto 36px; text-align: center; }
 .milestones::before { position: absolute; z-index: 0; top: 34px; right: 15%; left: 15%; border-top: 2px dashed rgb(151 191 75 / 58%); content: ""; }
 .milestone { position: relative; min-width: 0; }
 .year { position: relative; z-index: 1; display: flex; width: 109px; min-height: 32px; align-items: center; justify-content: center; margin: 0 0 -14px 28px; border-radius: 999px; background: var(--color-green-deep); color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .03em; }

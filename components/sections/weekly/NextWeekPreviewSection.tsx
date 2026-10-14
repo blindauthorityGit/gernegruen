@@ -7,33 +7,35 @@ import {Heading} from "@/components/ui/Heading"
 import type {NextWeekPreviewData} from "@/lib/weekly/preview-types"
 
 import styles from "./NextWeekPreviewSection.module.css"
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute"
+import {stegaClean} from "next-sanity"
 
 export function NextWeekPreviewSection({preview}: {preview: NextWeekPreviewData}) {
   return (
-    <section className={styles.section} aria-labelledby="next-week-preview-title">
+    <section className={styles.section} aria-labelledby="next-week-preview-title" data-sanity={sanityDataAttribute(preview._id, "nextWeekPreview", "products")}>
       <Container>
         <div className={styles.layout}>
           <div className={styles.content}>
             <Reveal className={styles.intro}>
               <p className={styles.eyebrow}>Ein kleiner Vorgeschmack</p>
-              <Heading id="next-week-preview-title">{preview.title}</Heading>
-              <p>{preview.description}</p>
+              <Heading id="next-week-preview-title" data-sanity={sanityDataAttribute(preview._id, "nextWeekPreview", "title")}>{preview.title}</Heading>
+              <p data-sanity={sanityDataAttribute(preview._id, "nextWeekPreview", "description")}>{preview.description}</p>
             </Reveal>
 
             <div className={styles.products}>
               {preview.products.map((product, index) => (
                 <Reveal className={styles.product} delay={Math.min(index * 0.06, 0.3)} key={product._key}>
-                  <div className={styles.imageFrame}>
+                  <div className={styles.imageFrame} data-sanity={sanityDataAttribute(preview._id, "nextWeekPreview", `products[_key=="${product._key}"].image`)}>
                     <Image
                       alt={product.name}
                       fill
                       placeholder={product.image.lqip ? "blur" : "empty"}
-                      blurDataURL={product.image.lqip}
+                      blurDataURL={product.image.lqip ? stegaClean(product.image.lqip) : undefined}
                       sizes="(max-width: 520px) 38vw, (max-width: 900px) 24vw, 150px"
-                      src={product.image.src}
+                      src={stegaClean(product.image.src)}
                     />
                   </div>
-                  <div className={styles.productCopy}>
+                  <div className={styles.productCopy} data-sanity={sanityDataAttribute(preview._id, "nextWeekPreview", `products[_key=="${product._key}"]`)}>
                     {product.label && <span className={styles.label}>{product.label}</span>}
                     <h3>{product.name}</h3>
                     {product.additionalText && <p>{product.additionalText}</p>}

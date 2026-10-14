@@ -12,6 +12,7 @@ export const aboutPage = defineType({
     defineField({name: "isVisible", title: "Seite veröffentlichen", type: "boolean", initialValue: true}),
     defineField({name: "seoTitle", title: "SEO-Titel", type: "string", description: "Keine pauschalen Bio-, Umwelt- oder Regionalitätsversprechen für den gesamten Betrieb verwenden.", validation: (rule) => rule.max(70)}),
     defineField({name: "seoDescription", title: "SEO-Beschreibung", type: "text", rows: 2, description: "Umwelt- oder Herkunftsaussagen konkret auf Produkte beziehen und intern belegbar halten.", validation: (rule) => rule.max(180)}),
+    defineField({name: "seoKeywords", title: "SEO-Suchbegriffe", type: "array", of: [defineArrayMember({type: "string"})], validation: (rule) => rule.max(10)}),
     defineField({name: "hero", title: "Hero", type: "object", fields: [
       defineField({name: "headline", title: "Headline – erste Zeile", type: "string", validation: (rule) => rule.required().max(40)}),
       defineField({name: "headlineAccent", title: "Headline – Akzentzeile", type: "string", validation: (rule) => rule.required().max(40)}),

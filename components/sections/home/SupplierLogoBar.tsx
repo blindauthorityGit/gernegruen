@@ -1,10 +1,12 @@
 import Image from "next/image";
+import {stegaClean} from "next-sanity";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
 import { Container } from "@/components/layout/Container";
 
 import styles from "./SupplierLogoBar.module.css";
 
-type Supplier = {name: string; href?: string; src: string; width: number; height: number; description?: string};
+type Supplier = {_id?: string; name: string; href?: string; src: string; width: number; height: number; description?: string};
 
 export function SupplierLogoBar({ title, suppliers = [], showTitle = true, showEmptyState = false }: { title?: string; suppliers?: Supplier[]; showTitle?: boolean; showEmptyState?: boolean } = {}) {
   return (
@@ -14,9 +16,9 @@ export function SupplierLogoBar({ title, suppliers = [], showTitle = true, showE
         {!suppliers.length && showEmptyState && <p className={styles.empty}>Noch keine Herstellerlogos in Sanity veröffentlicht.</p>}
         <ul className={styles.list}>
           {suppliers.map((supplier) => (
-            <li className={styles.item} key={supplier.name}>
+            <li className={styles.item} key={supplier._id ?? supplier.name} data-sanity={supplier._id ? sanityDataAttribute(supplier._id, "supplierBrand", "logo") : undefined}>
               {supplier.src ? (supplier.href ? <a className={styles.link} href={supplier.href} target="_blank" rel="noreferrer" aria-label={`${supplier.name} – externe Website`}><Image
-                  className={`${styles.logo} ${supplier.name === "Spielberger Mühle" ? styles.spielbergerLogo : ""}`}
+                  className={`${styles.logo} ${stegaClean(supplier.name) === "Spielberger Mühle" ? styles.spielbergerLogo : ""}`}
                   src={supplier.src}
                   alt={supplier.name}
                   width={supplier.width}

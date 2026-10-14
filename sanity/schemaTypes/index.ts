@@ -1,7 +1,4 @@
-import {contentCategory} from "./documents/contentCategory"
-import {highlightItem} from "./documents/highlightItem"
 import {startPage} from "./documents/startPage"
-import {contentCardSection} from "./objects/contentCardSection"
 import {startHero} from "./objects/startHero"
 import {storeCategory, storeIntroHighlight, storeIntroSection} from "./objects/storeIntroSection"
 import {contentLink} from "./objects/contentLink"
@@ -23,16 +20,17 @@ import {businessSettings} from "./documents/businessSettings"
 import {contactPage} from "./documents/contactPage"
 import {weeklyProduceList} from "./documents/weeklyProduceList"
 import {weeklyProduceImportProduct} from "./objects/weeklyProduceImportProduct"
+import {weeklyPageSettings} from "./documents/weeklyPageSettings"
+import {storeIntroSettings} from "./documents/storeIntroSettings"
+import {weeklyPromotion} from "./objects/weeklyPromotion"
+import {footerSettings} from "./documents/footerSettings"
 
 export const schemaTypes = [
   startPage,
-  highlightItem,
-  contentCategory,
   startHero,
   storeIntroSection,
   storeIntroHighlight,
   storeCategory,
-  contentCardSection,
   contentLink,
   assortmentCard,
   assortmentEntry,
@@ -55,4 +53,8 @@ export const schemaTypes = [
   contactPage,
   weeklyProduceList,
   weeklyProduceImportProduct,
+  weeklyPageSettings,
+  storeIntroSettings,
+  weeklyPromotion,
+  footerSettings,
 ]

@@ -6,6 +6,8 @@ import {Reveal} from "@/components/motion/Reveal";
 import {formatOpeningHours, getBerlinDateKey, getOpeningHoursForDate} from "@/lib/content/openingHours";
 import type {BusinessSettings} from "@/sanity/types/business";
 import styles from "./ContactSections.module.css";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
+import {stegaClean} from "next-sanity";
 
 type TravelBenefit = {title: string; description: string; icon?: string; iconAlt?: string};
 
@@ -23,9 +25,9 @@ function CardIcon({kind}: {kind: "clock" | "pin" | "phone" | "mail" | "instagram
 export function ContactCards({business, cards}: {business: BusinessSettings; cards?: {openingHoursHeading?: string; contactHeading?: string};}) {
   if (!business) return null;
   const route = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=;${business.coordinates.latitude}%2C${business.coordinates.longitude}`;
-  const instagram = business.instagramHandle?.replace(/^@/, "");
+  const instagram = business.instagramHandle ? stegaClean(business.instagramHandle).replace(/^@/, "") : undefined;
   const today = getOpeningHoursForDate(business.openingHours, business.exceptions ?? [], getBerlinDateKey());
-  const phoneHref = `tel:${business.phone.replace(/[^\d+]/g, "")}`;
+  const phoneHref = `tel:${stegaClean(business.phone).replace(/[^\d+]/g, "")}`;
 
   return <section className={styles.cardsSection} aria-label="Öffnungszeiten und Kontakt">
     <Container className={styles.cardsGrid}>
@@ -37,25 +39,25 @@ export function ContactCards({business, cards}: {business: BusinessSettings; car
             {business.openingHours.map((day) => {
               const todayOverride = day.dayOfWeek === today?.dayOfWeek ? today : day;
               return <li key={day.dayOfWeek}>
-                <span>{day.day}</span><span>{formatOpeningHours(todayOverride)}</span>
+                <span data-sanity={day._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${day._key}"].day`) : undefined}>{day.day}</span><span data-sanity={day._key ? sanityDataAttribute("businessSettings", "businessSettings", `openingHours[_key=="${day._key}"]`) : undefined}>{formatOpeningHours(todayOverride)}</span>
               </li>;
             })}
           </ul>
-          {(business.exceptions ?? []).filter((item) => item.date >= getBerlinDateKey()).length > 0 && <div className={styles.specialHours}>
+          {(business.exceptions ?? []).filter((item) => stegaClean(item.date) >= getBerlinDateKey()).length > 0 && <div className={styles.specialHours}>
             <h3>Sonderöffnungszeiten</h3>
-            <ul>{business.exceptions?.filter((item) => item.date >= getBerlinDateKey()).map((item) => <li key={item.date}><span>{item.label || new Intl.DateTimeFormat("de-DE", {dateStyle: "medium", timeZone: "Europe/Berlin"}).format(new Date(`${item.date}T12:00:00Z`))}</span><span>{item.isClosed ? "geschlossen" : item.opens && item.closes ? `${item.opens}–${item.closes} Uhr` : "Öffnungszeiten siehe Laden"}</span></li>)}</ul>
+            <ul>{business.exceptions?.filter((item) => stegaClean(item.date) >= getBerlinDateKey()).map((item) => <li key={item.date}><span data-sanity={item._key ? sanityDataAttribute("businessSettings", "businessSettings", `exceptions[_key=="${item._key}"].label`) : undefined}>{item.label || new Intl.DateTimeFormat("de-DE", {dateStyle: "medium", timeZone: "Europe/Berlin"}).format(new Date(`${stegaClean(item.date)}T12:00:00Z`))}</span><span data-sanity={item._key ? sanityDataAttribute("businessSettings", "businessSettings", `exceptions[_key=="${item._key}"]`) : undefined}>{item.isClosed ? "geschlossen" : item.opens && item.closes ? `${item.opens}–${item.closes} Uhr` : "Öffnungszeiten siehe Laden"}</span></li>)}</ul>
           </div>}
         </article>
       </Reveal>
       <Reveal className={styles.reveal} delay={0.08}>
         <article className={`${styles.infoCard} ${styles.contactCard}`}>
           {cards?.contactHeading && <h2><CardIcon kind="pin"/>{cards.contactHeading}</h2>}
-          <p className={styles.businessName}>{business.businessName}</p>
-          <address>{business.street}<br/>{business.postalCode} {business.city}</address>
+          <p className={styles.businessName} data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "businessName")}>{business.businessName}</p>
+          <address><span data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "street")}>{business.street}</span><br/><span data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "postalCode")}>{business.postalCode}</span> <span data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "city")}>{business.city}</span></address>
           <ul className={styles.contactList}>
-            <li><CardIcon kind="phone"/><a href={phoneHref}>{business.phone}</a></li>
-            <li><CardIcon kind="mail"/><a href={`mailto:${business.email}`}>{business.email}</a></li>
-            {instagram && <li><CardIcon kind="instagram"/><a href={`https://www.instagram.com/${instagram}/`} rel="noreferrer" target="_blank">{instagram}</a></li>}
+            <li><CardIcon kind="phone"/><a href={phoneHref} data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "phone")}>{business.phone}</a></li>
+            <li><CardIcon kind="mail"/><a href={`mailto:${stegaClean(business.email)}`} data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "email")}>{business.email}</a></li>
+            {instagram && <li><CardIcon kind="instagram"/><a href={`https://www.instagram.com/${instagram}/`} rel="noreferrer" target="_blank" data-sanity={sanityDataAttribute("businessSettings", "businessSettings", "instagramHandle")}>{instagram}</a></li>}
           </ul>
           <Button className={styles.routeLink} href={route} rel="noreferrer" target="_blank" variant="outline"><CardIcon kind="pin"/>Adresse in OpenStreetMap</Button>
         </article>

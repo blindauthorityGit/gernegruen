@@ -5,6 +5,7 @@ import {useClient} from "sanity"
 import {Button, Card, Flex, Heading, Stack, Text, TextInput} from "@sanity/ui"
 import ExcelJS from "exceljs"
 import {readFirstSheet} from "xls-reader"
+import styles from "./ProduceImportTool.module.css"
 
 type Product = {name: string; unit: string; price: string; origin: string; certification: string; bioladenCertified: string; sourceRow: number}
 type ExistingProduct = {name: string; normalizedName?: string; unit: string; price: number; brand?: string; originalBrandMarker?: string; origin?: string; originRegion?: string; certification?: string; bioStatus?: "confirmed" | "unconfirmed" | "unknown"; bioEvidenceReference?: string; bioladenCertified?: boolean; categoryOverride?: string}
@@ -192,9 +193,9 @@ export function ProduceImportTool() {
     return {added, removed, changed}
   }, [existing, products])
 
-  return <div style={{padding: "clamp(1rem, 3vw, 2.5rem)", maxWidth: 1600, margin: "0 auto"}}>
+  return <div className={styles.tool} style={{padding: "clamp(1rem, 3vw, 2.5rem)", maxWidth: 1600, margin: "0 auto"}}>
     <Stack gap={5}>
-      <Stack gap={2}><Heading size={3}>Produktlisten importieren</Heading><Text muted>Excel-Datei prüfen und Obst- & Gemüseliste als Sanity-Entwurf übernehmen.</Text><Text muted>Ein Präfix b* im Originalnamen wird als Produktmarke bioladen* erkannt. Verbands- und Bio-Angaben bleiben getrennte Lieferantenangaben und werden beim Import nicht als geprüft bestätigt. Die frühere Spalte „Bioladen-Zertifikat“ wird nur aus Kompatibilitätsgründen übernommen und erzeugt keinen öffentlichen Claim.</Text></Stack>
+      <Stack gap={4}><Heading size={3}>Produktlisten importieren</Heading><Text muted>Excel-Datei prüfen und Obst- & Gemüseliste als Sanity-Entwurf übernehmen.</Text><Text muted>Ein Präfix b* im Originalnamen wird als Produktmarke bioladen* erkannt. Verbands- und Bio-Angaben bleiben getrennte Lieferantenangaben und werden beim Import nicht als geprüft bestätigt. Die frühere Spalte „Bioladen-Zertifikat“ wird nur aus Kompatibilitätsgründen übernommen und erzeugt keinen öffentlichen Claim.</Text></Stack>
       <Card padding={4} radius={2} border><Stack gap={3}><Heading size={1}>1. Excel-Datei auswählen</Heading><Text muted>Unterstützte Formate: .xlsx und .xls. Artikelbezeichnung, Einheit und Preis sind erforderlich; weitere Spalten sind optional.</Text><input type="file" accept=".xlsx,.xls" onChange={(event) => void selectFile(event.currentTarget.files?.[0])} /></Stack></Card>
       {phase === "error" && <Card padding={3} tone="critical" border><Text>{message}</Text></Card>}
       {products.length > 0 && <>

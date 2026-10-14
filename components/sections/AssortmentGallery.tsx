@@ -8,6 +8,8 @@ import {Swiper, SwiperSlide} from "swiper/react";
 import Lightbox from "yet-another-react-lightbox";
 import {Captions, Counter} from "yet-another-react-lightbox/plugins";
 import {useReducedMotion} from "motion/react";
+import {useIsPresentationTool} from "next-sanity/hooks";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -36,6 +38,8 @@ export type AssortmentGalleryItem = {
 };
 
 export type AssortmentGalleryContent = {
+  _sourceId?: string;
+  _sourceType?: "assortmentPage" | "aboutPage";
   eyebrow?: string;
   heading?: string;
   description?: string;
@@ -60,6 +64,8 @@ function GalleryImageButton({
   registerButton,
   onOpen,
   shouldSuppressClick,
+  disableLightbox,
+  dataAttribute,
 }: {
   item: AssortmentGalleryItem;
   index: number;
@@ -67,6 +73,8 @@ function GalleryImageButton({
   registerButton: (location: "desktop" | "mobile", index: number, element: HTMLButtonElement | null) => void;
   onOpen: (index: number, element: HTMLButtonElement) => void;
   shouldSuppressClick?: () => boolean;
+  disableLightbox: boolean;
+  dataAttribute?: string;
 }) {
   const image = item.image;
   if (!image?.src) return null;
@@ -76,8 +84,9 @@ function GalleryImageButton({
       aria-haspopup="dialog"
       aria-label={`Bild vergrößern: ${item.caption || item.altText}`}
       className={styles.imageButton}
+      data-sanity={dataAttribute}
       onClick={(event) => {
-        if (shouldSuppressClick?.()) return;
+        if (disableLightbox || shouldSuppressClick?.()) return;
         onOpen(index, event.currentTarget);
       }}
       ref={(element) => registerButton(location, index, element)}
@@ -111,6 +120,7 @@ export function AssortmentGallery({content, layout = "grid"}: {content: Assortme
   const pointerRef = useRef<{x: number; scrollLeft: number} | null>(null);
   const draggedRef = useRef(false);
   const reducedMotion = useReducedMotion();
+  const isPresentation = useIsPresentationTool();
 
   useEffect(() => {
     const media = window.matchMedia(mobileBreakpoint);
@@ -179,7 +189,7 @@ export function AssortmentGallery({content, layout = "grid"}: {content: Assortme
           {items.map((item, index) => (
             <li className={styles.item} key={item._key}>
               <figure className={styles.figure}>
-                <GalleryImageButton index={index} item={item} location="desktop" onOpen={openAt} registerButton={registerButton} shouldSuppressClick={layout === "carousel" ? suppressDraggedClick : undefined} />
+                <GalleryImageButton index={index} item={item} location="desktop" onOpen={openAt} registerButton={registerButton} shouldSuppressClick={layout === "carousel" ? suppressDraggedClick : undefined} disableLightbox={isPresentation === true} dataAttribute={content._sourceId ? sanityDataAttribute(content._sourceId, content._sourceType ?? "assortmentPage", `gallery.images[_key=="${item._key}"].image`) : undefined} />
                 {item.caption && <figcaption className={styles.caption}>{item.caption}</figcaption>}
               </figure>
             </li>
@@ -204,7 +214,7 @@ export function AssortmentGallery({content, layout = "grid"}: {content: Assortme
           {items.map((item, index) => (
             <SwiperSlide className={styles.mobileSlide} key={item._key}>
               <figure className={styles.figure}>
-                <GalleryImageButton index={index} item={item} location="mobile" onOpen={openAt} registerButton={registerButton} />
+                <GalleryImageButton index={index} item={item} location="mobile" onOpen={openAt} registerButton={registerButton} disableLightbox={isPresentation === true} dataAttribute={content._sourceId ? sanityDataAttribute(content._sourceId, content._sourceType ?? "assortmentPage", `gallery.images[_key=="${item._key}"].image`) : undefined} />
                 {item.caption && <figcaption className={styles.caption}>{item.caption}</figcaption>}
               </figure>
             </SwiperSlide>

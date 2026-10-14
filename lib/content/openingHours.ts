@@ -1,4 +1,5 @@
 import type {OpeningHoursDay, OpeningHoursException} from "@/sanity/types/business";
+import {stegaClean} from "next-sanity";
 
 export function getBerlinDateKey(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit"}).formatToParts(date);
@@ -20,7 +21,7 @@ export function addBerlinCalendarDays(dateKey: string, amount: number) {
 export function getOpeningHoursForDate(openingHours: OpeningHoursDay[], exceptions: OpeningHoursException[] = [], dateKey = getBerlinDateKey()) {
   const weekdayNumber = new Date(`${dateKey}T12:00:00Z`).getUTCDay() || 7;
   const regular = openingHours.find((entry) => entry.dayOfWeek === weekdayNumber);
-  const exception = exceptions.find((entry) => entry.date === dateKey);
+  const exception = exceptions.find((entry) => stegaClean(entry.date) === dateKey);
   if (!regular) return null;
   if (!exception) return {...regular, label: undefined};
   return {

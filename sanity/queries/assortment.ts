@@ -7,6 +7,7 @@ export const CURRENT_ASSORTMENT_QUERY = defineQuery(/* groq */ `
       isEnabled == true && startAt <= now() && endAt > now()
     ] | order(startAt desc, _id asc))[0] {
       "id": _id,
+      _type,
       topline, heading, description, callout, cta,
       cards[] {
         _key, title, intro, note, marker, cta,

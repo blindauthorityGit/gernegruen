@@ -7,6 +7,7 @@ import styles from "./AssortmentSection.module.css";
 
 export type AssortmentSectionData = {
   id: string;
+  _type?: "assortmentEdition";
   topline?: string;
   heading: string;
   description?: string;
@@ -30,7 +31,7 @@ export function AssortmentSection({data}: {data: AssortmentSectionData}) {
           {data.callout && <Reveal className={styles.callout} delay={0.12}><span>{data.callout}</span></Reveal>}
         </div>
         <div className={styles.cards}>
-          {data.cards.map((card, i) => <Reveal key={card._key} delay={Math.min(i, 2) * 0.09}><AssortmentCard data={card} /></Reveal>)}
+          {data.cards.map((card, i) => <Reveal key={card._key} delay={Math.min(i, 2) * 0.09}><AssortmentCard data={{...card, _source: {id: data.id, type: "assortmentEdition", path: `cards[_key=="${card._key}"].image`}}} /></Reveal>)}
         </div>
       </div>
     </Container>

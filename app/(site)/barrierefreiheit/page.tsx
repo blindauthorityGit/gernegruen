@@ -2,12 +2,16 @@ import type {Metadata} from "next";
 import {LegalPage, LegalSection} from "@/components/sections/LegalPage";
 import {getBusinessSettings} from "@/sanity/lib/businessSettings";
 import {createPageMetadata} from "@/lib/seo";
+import {stegaClean} from "next-sanity";
 
-export const metadata: Metadata = createPageMetadata({
-  title: "Barrierefreiheit – GerneGrün",
-  description: "Vorläufige Informationen zum Stand der Barrierefreiheit und zum Feedback bei GerneGrün.",
-  path: "/barrierefreiheit",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getBusinessSettings();
+  return createPageMetadata({
+    title: settings?.legalSeo?.accessibilityTitle || "Barrierefreiheit – GerneGrün",
+    description: settings?.legalSeo?.accessibilityDescription || "Vorläufige Informationen zum Stand der Barrierefreiheit und zum Feedback bei GerneGrün.",
+    path: "/barrierefreiheit",
+  });
+}
 
 export default async function AccessibilityPage() {
   const business = await getBusinessSettings();
@@ -40,7 +44,7 @@ export default async function AccessibilityPage() {
       <p>Auch die Ausnahme für Kleinstunternehmen, die Dienstleistungen erbringen, kann einschlägig sein, wenn die gesetzlichen Beschäftigten- und Umsatz-/Bilanzgrenzen erfüllt sind. Unternehmensgröße und Kennzahlen sind nicht bekannt. Deshalb lässt sich aus dem Repository keine abschließende Aussage zur BFSG-Pflicht oder zur Pflicht für die nach BFSG erforderlichen Verbraucherinformationen treffen. Die Seite wird bis zur Klärung als freiwillige Statusinformation veröffentlicht, ohne Konformität zu behaupten.</p>
     </LegalSection>
     <LegalSection title="Feedback und Kontakt">
-      <p>Wenn du auf ein konkretes Barriereproblem stößt oder Inhalte in einem anderen Format benötigst, schreib uns bitte an {business?.email ? <a href={`mailto:${business.email}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse ergänzen]</span>} oder ruf uns an: {business?.phone ? <a href={`tel:${business.phone.replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer ergänzen]</span>}.</p>
+      <p>Wenn du auf ein konkretes Barriereproblem stößt oder Inhalte in einem anderen Format benötigst, schreib uns bitte an {business?.email ? <a href={`mailto:${stegaClean(business.email)}`}>{business.email}</a> : <span className="legal-placeholder">[E-Mail-Adresse ergänzen]</span>} oder ruf uns an: {business?.phone ? <a href={`tel:${stegaClean(business.phone).replace(/[^\d+]/g, "")}`}>{business.phone}</a> : <span className="legal-placeholder">[Telefonnummer ergänzen]</span>}.</p>
       <p>Bitte ergänze vor Veröffentlichung die zuständige Stelle für Rückmeldungen, einen verbindlichen Prüf- und Aktualisierungsstand und – falls das BFSG anwendbar ist – alle Pflichtinformationen nach Anlage 3 BFSG sowie die zuständige Marktüberwachungsbehörde.</p>
     </LegalSection>
   </LegalPage>;

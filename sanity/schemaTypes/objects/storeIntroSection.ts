@@ -47,6 +47,7 @@ export const storeIntroSection = defineType({
     defineField({name: "headingLine2", title: "Überschrift, Zeile 2", type: "string", validation: rule => rule.required().max(40)}),
     defineField({name: "description", title: "Einleitungstext", type: "text", rows: 3, validation: rule => rule.required().max(300)}),
     defineField({name: "imageAlt", title: "Alternativtext Ladenfoto", type: "string", validation: rule => rule.required().max(160)}),
+    defineField({name: "image", title: "Ladenfoto", type: "image", options: {hotspot: true}}),
     defineField({name: "parkingText", title: "Parkhinweis", type: "string", validation: rule => rule.required().max(60)}),
     defineField({name: "highlights", title: "Highlights", type: "array", of: [defineArrayMember({type: "storeIntroHighlight"})], validation: rule => rule.required().min(1).max(3)}),
     defineField({name: "categories", title: "Sortimentsbereiche", type: "array", of: [defineArrayMember({type: "storeCategory"})], validation: rule => rule.required().min(1).max(7)}),

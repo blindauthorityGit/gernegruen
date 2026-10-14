@@ -51,8 +51,10 @@ provided; editors can add one in Studio.
 
 ## Startseite
 
-`startPage` is the controlled homepage document. It contains the required `hero`,
-the `assortmentSection` configuration, and the optional `storeIntroSection`.
+`startPage` is the controlled homepage document. It contains the editable SEO
+title and description, the required `hero`, and the `assortmentSection`
+configuration. The separate `storeIntroSettings` singleton controls the
+"Ein Laden mit Herz" section and is listed under **SEITEN**.
 Later homepage sections should continue to be added explicitly rather than
 through a universal page builder.
 
@@ -61,7 +63,29 @@ The nested `startHero` object contains:
 - two headline lines
 - subline / description
 - primary and secondary actions, with editable labels and destinations
-- optional hero graphic and alternative text (required for uploaded graphics)
+- editable hero image and alternative text (required for uploaded images)
+
+`storeIntroSettings.content` is a `storeIntroSection` object with the store
+photo, intro copy, parking note, highlights, ordered assortment categories, and
+Sortiment link. Its image uses Sanity hotspot and alt text. The homepage preview
+links its weekly offer cards to the active `assortmentEdition`, produce rows to
+the current `weeklyProduceList`, supplier marks to their `supplierBrand`
+documents, and the store introduction to `storeIntroSettings`. Keep those
+datasets fetched with Stega enabled in Presentation mode; URLs and values used
+for comparisons are cleaned before rendering or logic.
+
+Run `npm run sanity:seed-homepage-content` to add the current homepage store
+copy and existing local store photo when those fields are missing. The script
+also fills missing page SEO fields with the metadata defaults currently used by
+the app, while preserving any existing values. It requires both `SANITY_API_READ_TOKEN`
+and `SANITY_API_TOKEN` in `.env.local`.
+
+SEO titles, descriptions, and page-specific keywords are editable for the
+homepage, assortment, weekly, about, and contact pages in their respective page
+documents. Open Graph and Twitter title/description reuse those values; the
+canonical URL follows the fixed route. Legal-page titles and descriptions live
+under `Geschäftsdaten → SEO für rechtliche Seiten` because the legal routes do
+not have separate page documents.
 
 The hero is static and has no rotating content or scroll animation. The frontend
 loads its published content on the server, with a 60-second revalidation interval.
@@ -70,19 +94,23 @@ current Figma copy and supplied store photo as fallbacks.
 The header, footer and contact page share opening hours and contact details from
 the `businessSettings` singleton. The collapsed header strip and date-specific
 exceptions use the `Europe/Berlin` timezone.
-Legacy teaser-title and content-section fields are retained as hidden,
-read-only, deprecated fields to preserve existing data; the frontend no longer
-reads them.
 
+The global footer also reads its section headings and ordered legal links from
+the `footerSettings` singleton (**EINSTELLUNGEN → Footer**). The hours, store
+address, phone, e-mail and Instagram remain sourced from `businessSettings`, so
+they stay consistent with the header and contact page. Footer presentation
+fields are editable in Presentation mode and link destinations are cleaned
+before navigation.
 Homepage supplier logos are stored as `supplierBrand` documents. The homepage
 and assortment page share the same ordered, visibility-filtered Sanity query.
 
-`storeIntroSection` controls the homepage section with the store photo, intro
-copy, parking note, highlights, ordered assortment categories, and Sortiment
-link. Category illustrations remain fixed design assets in the frontend; editors
-choose from the matching category keys and can change labels and ordering. Until
-the existing `startPage` singleton has this field populated, the frontend keeps
-the current copy as a preview fallback.
+`storeIntroSettings` is a fixed singleton document with ID `storeIntroSettings`
+and appears as **SEITEN → Ein Laden mit Herz**. It controls the homepage section
+with the store photo, intro copy, parking note, highlights, ordered assortment
+categories, and Sortiment link. Category illustrations remain fixed design
+assets in the frontend; editors choose from the matching category keys and can
+change labels and ordering. The previous nested `startPage.storeIntroSection`
+field has been migrated and is no longer used.
 
 The background curve, colors, decorative marks, typography, spacing, and motion
 remain implementation details and are intentionally not editable in Sanity.
@@ -99,39 +127,13 @@ Sanity asset as the About page. Card headings and directions copy are editable
 there; the bike and parking illustrations and copy reuse the existing About-page
 benefits. The OpenStreetMap embed is loaded only after the visitor activates it.
 
-### Legacy current content section
-
-`contentCardSection` is a reusable object containing:
-
-- heading and introduction
-- optional section CTA
-- an ordered array of references to `highlightItem` documents
-
-The order selected by editors is preserved. The number of referenced items is
-not limited by the normal three-card desktop viewport.
-
-`highlightItem` is the reusable document behind each card. It stores the
-editor-facing identifier, public title, optional slug, a required reference to
-`contentCategory`, description, image and alt text, CTA, optional start/end
-dates, and visibility. The homepage stores references only and does not
-duplicate this content.
-
-`contentCategory` is the central taxonomy for card content. It contains the
-public title, stable slug, optional short badge label, and one controlled
-semantic style variant (`green`, `orange`, `lime`, or `lightGreen`). The
-frontend maps those variants to existing GerneGrün color tokens; editors cannot
-enter CSS or arbitrary colors.
-
-The Studio exposes the fixed `startPage` document with ID `startPage` as a
-singleton under **SEITEN**, while highlights and categories live under
-**INHALTE**. Singleton creation, duplication, and deletion are removed from the
-normal editor flow.
-
 ## Aktuelles Sortiment (homepage)
 
 The homepage now uses `assortmentSection` instead of the former highlight slider.
-The previous `currentContentSection` field remains hidden, read-only and deprecated
-so existing content is preserved.
+The previous highlight slider schemas (`contentCardSection`, `highlightItem`,
+and `contentCategory`) were removed after confirming there were no matching
+documents in the production dataset and no active frontend usage. The old
+`currentContentSection` field is no longer part of the Startseite schema.
 
 In Studio, open **INHALTE → Sortimentsausgaben / Wochenplanung**. Each
 `assortmentEdition` contains its own topline, headline, description, optional
@@ -197,8 +199,32 @@ token in `.env.local`.
 
 - `weeklyOverview` schedules one calendar week and contains the produce list plus two bakery highlights.
 - `bakeryCatalog` stores the slower-changing categorized bakery assortment independently.
-- `promotionSheet` stores a PDF and its validity period independently.
+- `promotionSheet` stores one PDF, its active state and its validity period. A week can reference multiple sheets; active sheets in their validity period are also listed without requiring a weekly overview.
 - Future Excel ingestion normalizes files server-side into the contracts in `lib/weekly/import-contract.ts`; spreadsheet parsing does not happen in React components.
+
+The fixed `weeklyPageSettings` document controls the editorial copy, the
+replaceable hero illustration and SEO fields for `/diese-woche`; weekly product,
+bakery and promotion records remain separate. In Presentation mode, hero and
+section copy map to this singleton, while product rows, bakery highlights,
+catalog entries and the promotion PDF map to their source documents.
+Presentation uses the current `weeklyProduceList` as the route's primary document,
+because the page can be populated before a `weeklyOverview` is created. The page
+does not fall back to sample bakery prices, products or action sheets when weekly
+Sanity content is missing. Missing content stays empty until an editor publishes it.
+
+## Content coverage audit (2026-10-14)
+
+The production dataset was checked through the read-only API token. Published
+documents exist for the homepage, assortment page/categories, about page, contact
+page, business settings, supplier brands, one assortment edition and the KW 42
+produce list. No published `weeklyOverview`, `bakeryCatalog` or
+`nextWeekPreview` exists yet. One inactive example `promotionSheet` now contains
+the existing August 2026 PDF asset. Editors can create and schedule current sheets in Studio; the website will
+not show the old hard-coded sample offers as if they were current.
+
+The product-wish callout is shared by the assortment and weekly pages. Its copy,
+visibility, illustration and alt text are stored in `assortmentPage.productWish`
+and mapped to that document in Presentation.
 
 ## Vorschau nächste Woche
 
@@ -216,7 +242,9 @@ without valid products are not rendered. If several eligible documents target
 the same Monday, the one with the latest effective publication start wins;
 `_updatedAt` and `_id` provide deterministic tie-breakers.
 
-During local development only, the section falls back to the five-product
-fixture in `lib/weekly/preview-mock-data.ts` when no live preview is eligible.
-Set `NEXT_WEEK_PREVIEW_DEV=false` to inspect the production empty state. The
-fixture is never used in a production build.
+The dataset currently contains no `nextWeekPreview` document. The frontend
+renders this section only when an eligible Sanity document contains real
+products; it does not insert sample content in development or production.
+Creating a document does not prefill its title, description, or products.
+Presentation hotspots map the preview title, text, images and products to the
+selected `nextWeekPreview`.

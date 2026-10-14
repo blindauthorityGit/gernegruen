@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import {stegaClean} from "next-sanity";
+import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 import { Container } from "@/components/layout/Container";
 import { Reveal } from "@/components/motion/Reveal";
 import type { AssortmentSectionData } from "@/components/sections/AssortmentSection";
@@ -13,7 +15,7 @@ const priceFormatter = new Intl.NumberFormat("de-AT", {style: "currency", curren
 function ActionLink({ card, fallback, className = "" }: { card?: AssortmentCardData; fallback: string; className?: string }) {
   if (!card?.cta) return null;
   return (
-    <Link className={`${styles.actionLink} ${className}`} href="/diese-woche#aktionen">
+    <Link className={`${styles.actionLink} ${className}`} href={stegaClean(card.cta.href) || "/diese-woche#aktionen"}>
       {card.cta.label || fallback}
       <Image alt="" aria-hidden="true" width={12} height={12} src="/icons/arrow-right.svg" />
     </Link>
@@ -31,11 +33,11 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
       </Container>
     </section>;
   }
-  const produce = data?.cards.find((card) => card.marker === "leaf");
-  const bakery = data?.cards.find((card) => card.marker === "bread");
-  const promotions = data?.cards.find((card) => card.marker === "promotion");
-  const breadEntry = bakery?.entries?.find((entry) => /brot/i.test(entry.title));
-  const cakeEntry = bakery?.entries?.find((entry) => /kuchen/i.test(entry.title));
+  const produce = data?.cards.find((card) => stegaClean(card.marker) === "leaf");
+  const bakery = data?.cards.find((card) => stegaClean(card.marker) === "bread");
+  const promotions = data?.cards.find((card) => stegaClean(card.marker) === "promotion");
+  const breadEntry = bakery?.entries?.find((entry) => /brot/i.test(stegaClean(entry.title)));
+  const cakeEntry = bakery?.entries?.find((entry) => /kuchen/i.test(stegaClean(entry.title)));
   const promotionalEntries = promotions?.entries?.slice(0, 2) ?? [];
   const teaserProducts = getProduceTeaserProducts(produceList, 4);
   const bakeryCards: WeeklyBakeryCardData[] = [
@@ -66,14 +68,14 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
         <div className={styles.bento}>
           {(produce || produceList) && (
             <Reveal className={`${styles.produceWrap} ${!data ? styles.produceOnly : ""}`}>
-              <article className={styles.produceCard}>
+              <article className={styles.produceCard} data-sanity={data && produce ? sanityDataAttribute(data.id, data._type ?? "assortmentEdition", `cards[_key=="${produce._key}"]`) : undefined}>
                 <div className={styles.produceText}>
                   <p className={styles.eyebrow}>Unsere Obst- und Gemüseauswahl</p>
                   <h3>{produce?.title || "Frisches Obst & Gemüse"}</h3>
                   {produce?.intro && <p className={styles.tileIntro}>{produce.intro}</p>}
                   {teaserProducts.length > 0 ? <ul className={styles.produceList}>
-                    {teaserProducts.map((product) => <li key={product._key}>
-                      <span>{product.name.replace(/^b\*/i, "")}{(getProductBrand(product) || product.certification || product.origin || product.originRegion) && <small>{[product.origin && `Herkunftsland: ${product.origin}`, product.originRegion && `Herkunftsregion: ${product.originRegion}`, getProductBrand(product) && `Marke: ${getProductBrand(product)}`, product.certification && `Lieferantenangabe: ${product.certification} · nicht unabhängig geprüft`].filter(Boolean).join(" · ")}</small>}</span>
+                    {teaserProducts.map((product) => <li key={product._key} data-sanity={produceList?._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", `products[_key=="${product._key}"]`) : undefined}>
+                      <span>{stegaClean(product.name).replace(/^b\*/i, "")}{(getProductBrand(product) || product.certification || product.origin || product.originRegion) && <small>{[product.origin && `Herkunftsland: ${product.origin}`, product.originRegion && `Herkunftsregion: ${product.originRegion}`, getProductBrand(product) && `Marke: ${getProductBrand(product)}`, product.certification && `Lieferantenangabe: ${product.certification} · nicht unabhängig geprüft`].filter(Boolean).join(" · ")}</small>}</span>
                       {typeof product.price === "number" && <strong>{priceFormatter.format(product.price)}</strong>}
                     </li>)}
                   </ul> : null}

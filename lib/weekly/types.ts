@@ -5,6 +5,7 @@ export type ProduceGroup = {
 };
 
 export type WeeklyHighlight = {
+  _key?: string;
   title: string;
   name: string;
   description: string;
@@ -26,18 +27,23 @@ export type BakeryCategory = {
 };
 
 export type PromotionSheet = {
+  _id?: string;
   title: string;
-  description: string;
+  description?: string;
   validLabel: string;
   pdfUrl?: string;
 };
 
 export type WeeklyPageData = {
+  _id?: string;
+  _type?: "weeklyOverview";
   week: number;
   year: number;
   dateRange: string;
   produceGroups: ProduceGroup[];
   bakeryHighlights: WeeklyHighlight[];
   bakeryCategories: BakeryCategory[];
+  bakeryCatalogId?: string;
+  promotionSheets: PromotionSheet[];
   promotionSheet: PromotionSheet | null;
 };
