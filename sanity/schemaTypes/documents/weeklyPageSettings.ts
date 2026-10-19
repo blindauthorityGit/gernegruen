@@ -39,7 +39,7 @@ export const weeklyPageSettings = defineType({
     defineField({name: "promotionsDescription", title: "Einleitung", type: "text", rows: 2, group: "promotions", initialValue: "Entdecke unsere aktuellen Angebote und besonderen Aktionen im Laden.", validation: (rule) => rule.max(240)}),
     defineField({name: "promotionsEmptyHeading", title: "Hinweis ohne Aktionsblatt: Überschrift", type: "string", group: "promotions", initialValue: "Derzeit ist kein Aktionsblatt verfügbar.", validation: (rule) => rule.max(100)}),
     defineField({name: "promotionsEmptyDescription", title: "Hinweis ohne Aktionsblatt: Text", type: "text", rows: 2, group: "promotions", initialValue: "Schau bald wieder vorbei oder frag uns direkt im Laden nach aktuellen Angeboten.", validation: (rule) => rule.max(240)}),
-    defineField({name: "promotionSheets", title: "Aktionsblätter (mehrere PDFs)", type: "array", group: "promotions", description: "PDFs direkt hier hochladen. Aktive Blätter werden nur innerhalb ihres Gültigkeitszeitraums angezeigt.", of: [defineArrayMember({type: "weeklyPromotion"})]}),
+    defineField({name: "promotionSheets", title: "Aktionsblätter (mehrere PDFs)", type: "array", group: "promotions", description: "PDFs direkt hier hochladen. Blätter werden manuell ersetzt; für die Anzeige steuert nur „Aktionsblatt aktiv“.", of: [defineArrayMember({type: "weeklyPromotion"})]}),
   ],
   preview: {prepare: () => ({title: "Diese Woche", subtitle: "Seitentexte für die Wochenübersicht"})},
 });

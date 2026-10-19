@@ -7,13 +7,13 @@ import ExcelJS from "exceljs"
 import {readFirstSheet} from "xls-reader"
 import styles from "./ProduceImportTool.module.css"
 
-type Product = {name: string; unit: string; price: string; origin: string; certification: string; bioladenCertified: string; sourceRow: number}
-type ExistingProduct = {name: string; normalizedName?: string; unit: string; price: number; brand?: string; originalBrandMarker?: string; origin?: string; originRegion?: string; certification?: string; bioStatus?: "confirmed" | "unconfirmed" | "unknown"; bioEvidenceReference?: string; bioladenCertified?: boolean; categoryOverride?: string}
+type Product = {name: string; unit: string; price: string; origin: string; certification: string; sourceRow: number}
+type ExistingProduct = {name: string; normalizedName?: string; unit: string; price: number; brand?: string; originalBrandMarker?: string; origin?: string; originRegion?: string; certification?: string; categoryOverride?: string}
 type ExistingList = {_id: string; _rev: string; title: string; products: ExistingProduct[]}
 type Column = keyof Omit<Product, "sourceRow">
 const columns: {key: Column; header: string}[] = [
   {key: "name", header: "Artikelbezeichnung"}, {key: "unit", header: "Einheit kg/Stk"}, {key: "price", header: "Preis pro Einheit"},
-  {key: "origin", header: "Herkunft"}, {key: "certification", header: "Verband/Zertifikat"}, {key: "bioladenCertified", header: "Bioladen Zertifikat Ja/Nein"},
+  {key: "origin", header: "Herkunft"}, {key: "certification", header: "Verband/Zertifikat"},
 ]
 const normalize = (value: string) => value.trim().normalize("NFKC").toLocaleLowerCase("de")
 const parsePrice = (value: string) => {
@@ -35,7 +35,7 @@ function analyze(rows: unknown[][], fileName: string) {
     if (values.every((value) => value === undefined || value === null || String(value).trim() === "")) return
     products.push({
       name: String(values[0] ?? ""), unit: String(values[1] ?? ""), price: String(values[2] ?? ""),
-      origin: String(values[3] ?? ""), certification: String(values[4] ?? ""), bioladenCertified: String(values[5] ?? ""), sourceRow: headerIndex + offset + 2,
+      origin: String(values[3] ?? ""), certification: String(values[4] ?? ""), sourceRow: headerIndex + offset + 2,
     })
   })
   if (!products.length) throw new Error("Unterhalb der Kopfzeile wurden keine Produkte erkannt.")
@@ -115,7 +115,7 @@ export function ProduceImportTool() {
     if (!canImport) return
     try {
       const found = await client.fetch<ExistingList | null>(
-        '*[_type == "weeklyProduceList" && week == $week && year == $year] | order(_updatedAt desc)[0]{_id, _rev, title, products[]{name, normalizedName, unit, price, brand, originalBrandMarker, origin, originRegion, certification, bioStatus, bioEvidenceReference, bioladenCertified, categoryOverride}}',
+        '*[_type == "weeklyProduceList" && week == $week && year == $year] | order(_updatedAt desc)[0]{_id, _rev, title, products[]{name, normalizedName, unit, price, brand, originalBrandMarker, origin, originRegion, certification, categoryOverride}}',
         {week: weekNumber, year: yearNumber},
       )
       setExisting(found ? {...found, products: found.products ?? []} : null)
@@ -131,9 +131,6 @@ export function ProduceImportTool() {
     const normalizedProducts = products.map((product, index) => {
       const unit = product.unit.trim()
       const isKg = /^(kg|kilo(?:gramm)?)$/i.test(unit)
-      const legacyFlag = /^(ja|yes|true|1)$/i.test(product.bioladenCertified.trim())
-        ? true
-        : /^(nein|no|false|0)$/i.test(product.bioladenCertified.trim()) ? false : undefined
       const price = parsePrice(product.price)
       const previous = existing?.products.find((item) => (item.normalizedName || normalize(item.name)) === normalize(product.name))
       const marker = /^b\*/i.test(product.name.trim()) ? product.name.trim().slice(0, 2) : undefined
@@ -148,9 +145,6 @@ export function ProduceImportTool() {
         ...((product.origin.trim() || previous?.origin) ? {origin: product.origin.trim() || previous?.origin} : {}),
         ...(previous?.originRegion ? {originRegion: previous.originRegion} : {}),
         ...((product.certification.trim() || previous?.certification) ? {certification: product.certification.trim() || previous?.certification} : {}),
-        bioStatus: previous?.bioStatus ?? "unknown",
-        ...(previous?.bioEvidenceReference ? {bioEvidenceReference: previous.bioEvidenceReference} : {}),
-        ...((legacyFlag !== undefined || previous?.bioladenCertified !== undefined) ? {bioladenCertified: legacyFlag ?? previous?.bioladenCertified} : {}),
         order: index + 1,
         ...(previous?.categoryOverride ? {categoryOverride: previous.categoryOverride} : {}),
       }
@@ -187,15 +181,14 @@ export function ProduceImportTool() {
     const removed = [...previous.keys()].filter((key) => !next.has(key)).map((key) => previous.get(key)!.name)
     const changed = [...next.entries()].filter(([key, product]) => {
       const before = previous.get(key)
-      const parsedLegacyFlag = /^(ja|yes|true|1)$/i.test(product.bioladenCertified.trim()) ? true : /^(nein|no|false|0)$/i.test(product.bioladenCertified.trim()) ? false : undefined
-      return before && (before.unit !== product.unit || before.price !== parsePrice(product.price) || (before.origin ?? "") !== product.origin || (before.certification ?? "") !== product.certification || (parsedLegacyFlag !== undefined && before.bioladenCertified !== parsedLegacyFlag))
+      return before && (before.unit !== product.unit || before.price !== parsePrice(product.price) || (before.origin ?? "") !== product.origin || (before.certification ?? "") !== product.certification)
     }).map(([, product]) => product.name)
     return {added, removed, changed}
   }, [existing, products])
 
   return <div className={styles.tool} style={{padding: "clamp(1rem, 3vw, 2.5rem)", maxWidth: 1600, margin: "0 auto"}}>
     <Stack gap={5}>
-      <Stack gap={4}><Heading size={3}>Produktlisten importieren</Heading><Text muted>Excel-Datei prüfen und Obst- & Gemüseliste als Sanity-Entwurf übernehmen.</Text><Text muted>Ein Präfix b* im Originalnamen wird als Produktmarke bioladen* erkannt. Verbands- und Bio-Angaben bleiben getrennte Lieferantenangaben und werden beim Import nicht als geprüft bestätigt. Die frühere Spalte „Bioladen-Zertifikat“ wird nur aus Kompatibilitätsgründen übernommen und erzeugt keinen öffentlichen Claim.</Text></Stack>
+      <Stack gap={4}><Heading size={3}>Produktlisten importieren</Heading><Text muted>Excel-Datei prüfen und Obst- & Gemüseliste als Sanity-Entwurf übernehmen.</Text><Text muted>Herkunft und Verbands-/Bio-Angabe werden getrennt gespeichert.</Text></Stack>
       <Card padding={4} radius={2} border><Stack gap={3}><Heading size={1}>1. Excel-Datei auswählen</Heading><Text muted>Unterstützte Formate: .xlsx und .xls. Artikelbezeichnung, Einheit und Preis sind erforderlich; weitere Spalten sind optional.</Text><input type="file" accept=".xlsx,.xls" onChange={(event) => void selectFile(event.currentTarget.files?.[0])} /></Stack></Card>
       {phase === "error" && <Card padding={3} tone="critical" border><Text>{message}</Text></Card>}
       {products.length > 0 && <>
@@ -207,12 +200,10 @@ export function ProduceImportTool() {
             <Text>{products.length} erkannt · {validCount} gültig · {errorCount} fehlerhaft · {duplicateCount} mögliche Duplikatzeilen</Text>
           </Flex>
           {weekIssue && <Text size={1} style={{color: "#b42318"}}>Bitte eine Kalenderwoche von 1 bis 53 und ein Jahr von 2020 bis 2100 eingeben.</Text>}
-          <div style={{overflowX: "auto"}}><table style={{width: "100%", borderCollapse: "collapse", minWidth: 1280, fontSize: 13}}><thead><tr>{["Zeile", "Artikelbezeichnung (Original)", "Einheit", "Preis pro Einheit", "Herkunftsland", "Verbands-/Bio-Angabe (Lieferant)", "Alt: Bioladen-Zertifikat (Legacy)", "Erkannte Produktmarke", "Bio-Status / Nachweis", "Validierung", ""].map((label) => <th key={label} style={{textAlign: "left", padding: 8, borderBottom: "1px solid #ddd"}}>{label}</th>)}</tr></thead><tbody>{products.map((product, index) => <tr key={`${product.sourceRow}-${index}`} style={{background: rowIssues[index].length ? "#fff3f0" : undefined}}>
+          <div style={{overflowX: "auto"}}><table style={{width: "100%", borderCollapse: "collapse", minWidth: 900, fontSize: 13}}><thead><tr>{["Zeile", "Artikelbezeichnung (Original)", "Einheit", "Preis pro Einheit", "Herkunftsland", "Verbands-/Bio-Angabe", "Validierung", ""].map((label) => <th key={label} style={{textAlign: "left", padding: 8, borderBottom: "1px solid #ddd"}}>{label}</th>)}</tr></thead><tbody>{products.map((product, index) => <tr key={`${product.sourceRow}-${index}`} style={{background: rowIssues[index].length ? "#fff3f0" : undefined}}>
             <td style={{padding: 6}}>{product.sourceRow}</td>
             {columns.map(({key}) => <td key={key} style={{padding: 6}}><input aria-label={`${columns.find((column) => column.key === key)?.header}, Zeile ${product.sourceRow}`} value={product[key]} disabled={phase === "confirm" || phase === "saving" || phase === "success"} onChange={(event) => updateProduct(index, key, event.currentTarget.value)} style={{width: key === "name" ? 230 : key === "origin" || key === "certification" ? 140 : 100, padding: 6, border: "1px solid #bbb", borderRadius: 4}} /></td>)}
-            <td style={{padding: 6}}>{/^b\*/i.test(product.name.trim()) ? "bioladen* (aus Präfix b*)" : "Keine eindeutige Marke erkannt"}</td>
-            <td style={{padding: 6}}>Unbekannt · {product.certification.trim() ? "Lieferantenangabe; kein Beleg aus Excel, nicht unabhängig geprüft" : "kein Bio-/Verbandsnachweis"}</td>
-            <td style={{padding: 6, color: rowIssues[index].length ? "#b42318" : "#18794e"}}>{rowIssues[index].length ? rowIssues[index].join(" · ") : "Gültig"}</td>
+            <td style={{padding: 6, color: rowIssues[index].length ? "#b42318" : "#18794e"}}>{rowIssues[index].join(" · ") || "Gültig"}</td>
             <td style={{padding: 6}}><button type="button" disabled={phase === "confirm" || phase === "saving" || phase === "success"} onClick={() => setProducts((current) => current.filter((_, rowIndex) => rowIndex !== index))} aria-label={`Zeile ${product.sourceRow} entfernen`}>Entfernen</button></td>
           </tr>)}</tbody></table></div>
           <Flex justify="flex-end"><Button text="Vorschau erneut prüfen" tone="primary" disabled={!canImport || phase === "saving"} onClick={() => void prepareConfirmation()} /></Flex>

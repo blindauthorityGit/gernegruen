@@ -10,7 +10,7 @@ import styles from "./WeeklySections.module.css";
 import type {WeeklyPageSettings} from "@/sanity/queries/weeklyPageSettings";
 import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
-export function WeeklyBakeryHighlights({highlights, settings, sourceId}: {highlights: WeeklyHighlight[]; settings?: WeeklyPageSettings; sourceId?: string}) {
+export function WeeklyBakeryHighlights({highlights, settings, sourceId, sourceType}: {highlights: WeeklyHighlight[]; settings?: WeeklyPageSettings; sourceId?: string; sourceType?: "weeklyOverview" | "weeklyPageSettings" | "assortmentEdition"}) {
   return (
     <section className={styles.highlightSection} id="wochenbackwaren" aria-labelledby="bakery-highlight-title">
       <Container>
@@ -23,7 +23,9 @@ export function WeeklyBakeryHighlights({highlights, settings, sourceId}: {highli
           </div>
           <p data-sanity={sanityDataAttribute("weeklyPageSettings", "weeklyPageSettings", "bakeryDescription")}>{settings?.bakeryDescription || "Unsere beiden Backstuben-Lieblinge wechseln regelmäßig – solange der Vorrat reicht."}</p>
         </Reveal>
-        <WeeklyBakeryCards items={highlights} sourceId={sourceId} />
+        {highlights.length > 0
+          ? <WeeklyBakeryCards items={highlights} sourceId={sourceId} sourceType={sourceType} />
+          : <p className={styles.produceEmpty} role="status">Unsere Brot- und Kuchen-Highlights werden gerade vorbereitet. Schau bald wieder vorbei!</p>}
       </Container>
     </section>
   );

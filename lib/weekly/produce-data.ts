@@ -15,9 +15,6 @@ export type WeeklyProduceProduct = {
   origin?: string
   originRegion?: string
   certification?: string
-  bioStatus?: "confirmed" | "unconfirmed" | "unknown"
-  bioEvidenceReference?: string
-  bioladenCertified?: boolean
   order?: number
   categoryOverride?: ProduceCategory
 }

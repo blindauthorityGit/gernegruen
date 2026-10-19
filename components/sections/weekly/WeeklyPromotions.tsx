@@ -10,9 +10,8 @@ import {stegaClean} from "next-sanity";
 type PromotionEntry = { _id?: string; _key?: string; title: string; description?: string; validLabel?: string; dateRange?: string; pdfUrl?: string; isEnabled?: boolean; validFrom?: string; validUntil?: string };
 
 export function WeeklyPromotions({sheets, settings, showInactive = false}: {sheets: PromotionEntry[]; settings?: WeeklyPageSettings; showInactive?: boolean}) {
-  const today = new Intl.DateTimeFormat("en-CA", {timeZone: "Europe/Vienna", year: "numeric", month: "2-digit", day: "2-digit"}).format(new Date());
   const currentSheets = sheets.filter((sheet) =>
-    showInactive || (sheet.isEnabled !== false && (!sheet.validFrom || sheet.validFrom <= today) && (!sheet.validUntil || sheet.validUntil >= today)),
+    showInactive || sheet.isEnabled !== false,
   );
   return (
     <section className={styles.promotionSection} id="aktionen" aria-labelledby="promotions-title">

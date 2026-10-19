@@ -64,7 +64,9 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem("assortmentEdition").title("Sortimentsausgaben / Wochenplanung").icon(SparklesIcon),
               S.documentTypeListItem("assortmentCategory").title("Sortimentskategorien").icon(TagIcon),
               S.documentTypeListItem("supplierBrand").title("Marken und Hersteller").icon(DocumentsIcon),
-              S.documentTypeListItem("bakeryCatalog").title("Backwarensortimente").icon(DocumentsIcon),
+              S.listItem().title("Backwarensortiment").icon(DocumentsIcon).child(
+                S.document().schemaType("bakeryCatalog").documentId("bakeryCatalog-main").title("Backwarensortiment"),
+              ),
               S.documentTypeListItem("promotionSheet").title("Aktionsblätter").icon(DocumentIcon),
               S.listItem().title("Obst- & Gemüselisten").icon(CalendarIcon).child(S.documentTypeList("weeklyProduceList").title("Obst- & Gemüselisten")),
             ]),

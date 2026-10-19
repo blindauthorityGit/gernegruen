@@ -62,7 +62,7 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
             <h2 className={styles.heading} id="weekly-offers-heading">{data?.heading || "Diese Woche"}</h2>
             {data?.description && <p className={styles.intro}>{data.description}</p>}
           </Reveal>
-          {data?.callout && <Reveal className={styles.weekBadge}><span>{data.callout}</span></Reveal>}
+          {produceList && <Reveal className={styles.weekBadge} data-sanity={produceList._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", "week") : undefined}><span>KW {produceList.week}</span></Reveal>}
         </div>
 
         <div className={styles.bento}>
@@ -74,10 +74,12 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
                   <h3>{produce?.title || "Frisches Obst & Gemüse"}</h3>
                   {produce?.intro && <p className={styles.tileIntro}>{produce.intro}</p>}
                   {teaserProducts.length > 0 ? <ul className={styles.produceList}>
-                    {teaserProducts.map((product) => <li key={product._key} data-sanity={produceList?._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", `products[_key=="${product._key}"]`) : undefined}>
-                      <span>{stegaClean(product.name).replace(/^b\*/i, "")}{(getProductBrand(product) || product.certification || product.origin || product.originRegion) && <small>{[product.origin && `Herkunftsland: ${product.origin}`, product.originRegion && `Herkunftsregion: ${product.originRegion}`, getProductBrand(product) && `Marke: ${getProductBrand(product)}`, product.certification && `Lieferantenangabe: ${product.certification} · nicht unabhängig geprüft`].filter(Boolean).join(" · ")}</small>}</span>
+                    {teaserProducts.map((product) => {
+                      const certification = product.certification?.trim();
+                      return <li key={product._key} data-sanity={produceList?._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", `products[_key=="${product._key}"]`) : undefined}>
+                      <span>{stegaClean(product.name).replace(/^b\*/i, "")}{(getProductBrand(product) || certification || product.origin || product.originRegion) && <small>{[product.origin && `Herkunftsland: ${product.origin}`, product.originRegion && `Herkunftsregion: ${product.originRegion}`, getProductBrand(product) && `Marke: ${getProductBrand(product)}`, certification].filter(Boolean).join(" · ")}</small>}</span>
                       {typeof product.price === "number" && <strong>{priceFormatter.format(product.price)}</strong>}
-                    </li>)}
+                    </li>})}
                   </ul> : null}
                   {!teaserProducts.length && <p className={styles.tileIntro}>Unsere aktuelle Auswahl wird gerade zusammengestellt.</p>}
                   <Link className={`${styles.actionLink} ${styles.produceActionLink}`} href="/diese-woche#frisches">UND VIELES MEHR<Image alt="" aria-hidden="true" width={12} height={12} src="/icons/arrow-right.svg" /></Link>

@@ -41,14 +41,15 @@ export function FreshProduceSection({list, settings}: {list: WeeklyProduceList |
                     : product.unitKind === "piece" || /^(stk|stück|stueck)$/i.test(product.unit ?? "")
                       ? "pro Stk."
                       : product.unit ? `pro ${product.unit}` : undefined;
+                  const certification = product.certification?.trim();
                   return <li className={styles.produceProduct} key={product._key} data-sanity={list?._id ? sanityDataAttribute(list._id, "weeklyProduceList", `products[_key=="${product._key}"]`) : undefined}>
                     <div className={styles.produceDetails}>
                       <span className={styles.produceName}>{product.name.replace(/^b\*/i, "")}</span>
-                      {(product.origin || product.originRegion || getProductBrand(product) || product.certification) && <div className={styles.produceMeta}>
+                      {(product.origin || product.originRegion || getProductBrand(product) || certification) && <div className={styles.produceMeta}>
                         {product.origin && <span className={styles.produceOrigin}>Herkunftsland: {product.origin}</span>}
                         {product.originRegion && <span className={styles.produceOrigin}>Herkunftsregion: {product.originRegion}</span>}
                         {getProductBrand(product) && <span className={styles.produceOrigin}>Marke: {getProductBrand(product)}</span>}
-                        {product.certification && <span className={styles.produceOrigin}>Lieferantenangabe: {product.certification} · nicht unabhängig geprüft</span>}
+                        {certification && <span className={styles.produceOrigin}>{certification}</span>}
                       </div>}
                     </div>
                     <div className={styles.producePrice}>

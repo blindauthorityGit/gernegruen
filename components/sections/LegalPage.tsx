@@ -15,9 +15,9 @@ export function LegalPage({title, intro, children}: {title: string; intro: strin
   </main>;
 }
 
-export function LegalSection({title, children}: {title: string; children: ReactNode}) {
-  return <section className={styles.section}>
+export function LegalSection({title, children}: {title?: string; children: ReactNode}) {
+  return title ? <section className={styles.section}>
     <h2>{title}</h2>
     {children}
-  </section>;
+  </section> : <div className={styles.section}>{children}</div>;
 }

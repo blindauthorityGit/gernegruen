@@ -4,18 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./CookieNotice.module.css";
 
-const noticeCookie = "gg_cookie_notice";
-const noticeLifetime = 60 * 60 * 24 * 180;
-
-function hasDismissedNotice() {
-  return document.cookie.split(";").some((cookie) => cookie.trim() === `${noticeCookie}=1`);
-}
-
-function saveDismissal() {
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${noticeCookie}=1; Path=/; Max-Age=${noticeLifetime}; SameSite=Lax${secure}`;
-}
-
 export function CookieSettingsButton() {
   return <button className={styles.settingsLink} type="button" onClick={() => window.dispatchEvent(new Event("gg:open-cookie-notice"))}>Cookie-Hinweis</button>;
 }
@@ -27,7 +15,7 @@ export function CookieNotice() {
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      setVisible(!hasDismissedNotice());
+      setVisible(true);
       setReady(true);
     });
     const open = () => {
@@ -42,7 +30,6 @@ export function CookieNotice() {
   }, []);
 
   const close = () => {
-    saveDismissal();
     setVisible(false);
     setDetails(false);
   };
@@ -59,7 +46,7 @@ export function CookieNotice() {
             <div className={styles.details}>
               <div className={styles.item}>
                 <strong>Notwendige Speicherung</strong>
-                <p>Wir speichern deine Auswahl zu diesem Hinweis in einem eigenen Cookie, damit er nicht bei jedem Besuch erneut erscheint. Es enthält keine Kennung und läuft nach 180 Tagen ab. Das Studio verwendet außerdem ein notwendiges Sitzungscookie ausschließlich für angemeldete Betreiber:innen.</p>
+                <p>Dieser Hinweis informiert über eingesetzte Technologien und holt keine Einwilligung ein. Die öffentliche Website setzt selbst keine Cookies. Nur das angemeldete Betreiber-Studio verwendet für die Anmeldung das notwendige Sitzungscookie <code>gg_studio_session</code> für höchstens 14 Tage.</p>
               </div>
               <div className={styles.item}>
                 <strong>Statistik und Marketing</strong>

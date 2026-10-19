@@ -11,8 +11,8 @@ export const weeklyPromotion = defineType({
     defineField({name: "title", title: "Titel", type: "string", validation: (rule) => rule.required().max(100)}),
     defineField({name: "description", title: "Beschreibung", type: "text", rows: 3, validation: (rule) => rule.max(300)}),
     defineField({name: "pdf", title: "PDF-Datei", type: "file", options: {accept: "application/pdf"}, validation: (rule) => rule.required()}),
-    defineField({name: "validFrom", title: "Gültig ab", type: "date", validation: (rule) => rule.required()}),
-    defineField({name: "validUntil", title: "Gültig bis", type: "date", validation: (rule) => rule.required().custom((value, context) => {
+    defineField({name: "validFrom", title: "Gültig ab (Info)", type: "date", description: "Redaktionelle Datumsangabe; die Anzeige wird manuell über „Aktionsblatt aktiv“ gesteuert.", validation: (rule) => rule.required()}),
+    defineField({name: "validUntil", title: "Gültig bis (Info)", type: "date", description: "Redaktionelle Datumsangabe; ein aktives Aktionsblatt wird nicht automatisch ausgeblendet.", validation: (rule) => rule.required().custom((value, context) => {
       const start = context.document?.validFrom;
       return !value || typeof start !== "string" || value >= start || "Das Enddatum muss nach dem Startdatum liegen.";
     })}),

@@ -8,7 +8,7 @@ export const bakeryCatalog = defineType({
   icon: DocumentIcon,
   fields: [
     defineField({ name: "title", title: "Interner Name", type: "string", validation: (rule) => rule.required() }),
-    defineField({ name: "sourceFileName", title: "Letzte Importdatei", type: "string", readOnly: true, description: "Wird später durch den serverseitigen Excel-Import gesetzt." }),
+    defineField({ name: "sourceFileName", title: "Letzte Importdatei", type: "string", readOnly: true, description: "Wird beim Excel-Import automatisch aktualisiert." }),
     defineField({ name: "categories", title: "Kategorien", type: "array", of: [defineArrayMember({ type: "bakeryCategory" })], validation: (rule) => rule.required().min(1) }),
   ],
   preview: { select: { title: "title", categories: "categories" }, prepare: ({ title, categories }) => ({ title, subtitle: `${categories?.length ?? 0} Kategorien` }) },

@@ -56,6 +56,17 @@ export const CURRENT_WEEKLY_PAGE_QUERY = defineQuery(/* groq */ `
     }
 `);
 
+export const CURRENT_BAKERY_CATALOG_QUERY = defineQuery(/* groq */ `
+  *[_type == "bakeryCatalog" && _id == "bakeryCatalog-main"][0] {
+    _id,
+    categories[] {
+      _key,
+      title,
+      products[] { _key, name, price, note }
+    }
+  }
+`);
+
 export const CURRENT_PROMOTION_SHEETS_QUERY = defineQuery(/* groq */ `
   *[
     _type == "promotionSheet" &&
@@ -94,8 +105,6 @@ export const CURRENT_WEEKLY_PRODUCE_LIST_QUERY = defineQuery(/* groq */ `
       origin,
       originRegion,
       certification,
-      bioStatus,
-      bioladenCertified,
       order,
       categoryOverride
     }

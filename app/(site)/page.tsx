@@ -13,6 +13,8 @@ import { createPageMetadata } from "@/lib/seo";
 import type {Metadata} from "next";
 import {stegaClean} from "next-sanity";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const content = await fetchSanity<{seoTitle?: string; seoDescription?: string; seoKeywords?: string[]} | null>(
     START_PAGE_CONTENT_QUERY,

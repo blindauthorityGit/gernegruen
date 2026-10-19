@@ -22,6 +22,14 @@ export type BusinessSettings = {
   street: string;
   postalCode: string;
   city: string;
+  legalName?: string;
+  authorizedRepresentatives?: { _key?: string; fullName: string; role?: string }[];
+  representationNote?: string;
+  registerCourt?: string;
+  registerNumber?: string;
+  vatId?: string;
+  organicCertification?: string;
+  organicControlBody?: string;
   phone: string;
   email: string;
   instagramHandle?: string;

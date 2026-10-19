@@ -6,9 +6,9 @@ export const assortmentEdition = defineType({
   groups: [{name: "schedule", title: "Zeitraum", default: true}, {name: "content", title: "Texte & Störer"}, {name: "cards", title: "Karten"}],
   fields: [
     defineField({name: "internalTitle", title: "Interner Name", type: "string", group: "schedule", description: "Zum Wiederfinden, z. B. Sortiment KW 38–39 / September 2026.", validation: r => r.required()}),
-    defineField({name: "isEnabled", title: "Ausgabe freigeben", type: "boolean", initialValue: true, group: "schedule", description: "Nur veröffentlichte, freigegebene Ausgaben erscheinen im angegebenen Zeitraum."}),
-    defineField({name: "startAt", title: "Anzeigen ab", type: "datetime", group: "schedule", validation: r => r.required()}),
-    defineField({name: "endAt", title: "Anzeigen bis", type: "datetime", group: "schedule", description: "Ab diesem Zeitpunkt ist die Ausgabe nicht mehr sichtbar. Bei Überschneidungen gewinnt die Ausgabe mit dem neuesten Startzeitpunkt.", validation: r => r.required().custom((v, ctx) => {
+    defineField({name: "isEnabled", title: "Ausgabe freigeben", type: "boolean", initialValue: true, group: "schedule", description: "Die neueste veröffentlichte, freigegebene Ausgabe versorgt den Startseiten-Teaser und die Brot-/Kuchen-Highlights."}),
+    defineField({name: "startAt", title: "Geplanter Zeitraum beginnt", type: "datetime", group: "schedule", description: "Planungsinformation; die Website blendet die manuell gepflegten Teaser nicht automatisch nach diesem Zeitpunkt aus.", validation: r => r.required()}),
+    defineField({name: "endAt", title: "Geplanter Zeitraum endet", type: "datetime", group: "schedule", description: "Planungsinformation; zum Wechsel die gewünschte Ausgabe bearbeiten/veröffentlichen oder deaktivieren.", validation: r => r.required().custom((v, ctx) => {
       const start = ctx.document?.startAt
       return !v || typeof start !== "string" || Date.parse(v) > Date.parse(start) || "Das Ende muss nach dem Beginn liegen."
     })}),

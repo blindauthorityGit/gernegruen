@@ -1,8 +1,9 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
 import { sendProductWishMail } from "@/lib/preorder/mail";
+import { productWishExpiresAt } from "@/lib/preorder/retention";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,7 @@ const rateStore = globalRateStore.productWishRateStore ??= new Map<string, RateE
 
 function isRateLimited(ip: string) {
   const now = Date.now();
+  for (const [key, entry] of rateStore) if (entry.resetAt <= now) rateStore.delete(key);
   const entry = rateStore.get(ip);
   if (!entry || entry.resetAt <= now) {
     rateStore.set(ip, { count: 1, resetAt: now + 15 * 60_000 });
@@ -66,6 +68,8 @@ export async function POST(request: NextRequest) {
         environment: isDev ? "dev" : "live",
         emailStatus: "pending",
         createdAt: Timestamp.fromDate(createdAt),
+        lastSubstantiveActivityAt: Timestamp.fromDate(createdAt),
+        expiresAt: Timestamp.fromDate(productWishExpiresAt(createdAt)),
       });
       return null;
     });
@@ -80,22 +84,23 @@ export async function POST(request: NextRequest) {
       mailWasSent = true;
       await reference.update({ emailStatus: "sent", emailSentAt: Timestamp.now() });
       return NextResponse.json({ status: "success", requestId });
-    } catch (mailError) {
-      console.error(mailWasSent ? "Produktwunsch-Mailstatus konnte nicht aktualisiert werden:" : "Produktwunsch-E-Mail konnte nicht versendet werden:", mailError);
+    } catch {
+      console.error(mailWasSent ? "Produktwunsch-Mailstatus konnte nicht aktualisiert werden." : "Produktwunsch-E-Mail konnte nicht versendet werden.");
       if (mailWasSent) return NextResponse.json({ status: "success", requestId });
       try {
         await reference.update({
           emailStatus: "failed",
-          emailError: mailError instanceof Error ? mailError.message.slice(0, 500) : "Unbekannter Versandfehler",
+          emailErrorCode: "delivery_failed",
+          emailError: FieldValue.delete(),
           emailLastAttemptAt: Timestamp.now(),
         });
-      } catch (statusError) {
-        console.error("Fehlgeschlagener Produktwunsch-Versand konnte nicht dokumentiert werden:", statusError);
+      } catch {
+        console.error("Fehlgeschlagener Produktwunsch-Versandstatus konnte nicht gespeichert werden.");
       }
       return NextResponse.json({ status: "stored_email_failed", requestId }, { status: 202 });
     }
-  } catch (storageError) {
-    console.error("Produktwunsch konnte nicht gespeichert werden:", storageError);
+  } catch {
+    console.error("Produktwunsch konnte nicht in Firestore gespeichert werden.");
     return error("Dein Wunsch konnte gerade nicht gespeichert werden. Bitte versuche es später erneut.", 503);
   }
 }

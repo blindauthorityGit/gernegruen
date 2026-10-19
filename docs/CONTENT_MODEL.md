@@ -9,6 +9,13 @@ und Produktnamen werden zusätzlich normalisiert gespeichert. Preise werden als
 Zahlen gespeichert. Leere Herkunfts- und Zertifizierungsfelder bleiben leer.
 Fehler und doppelte Produktnamen müssen vor dem Import behoben werden.
 
+Das Feld `certification` wird unverändert und getrennt von Herkunft und Marke
+übernommen und öffentlich genauso ausgegeben. Es gibt dafür keine zusätzliche
+Bio-Status- oder Angabe-Validierung. Das Quellpräfix `b*` wird nur der
+Produktmarke `bioladen*` zugeordnet und leitet keine Zertifizierung ab.
+Die frühere Excel-Spalte „Bioladen Zertifikat Ja/Nein“ wird ignoriert; sie ist
+weder für die Markenerkennung noch für den Produktimport erforderlich.
+
 `weeklyProduceList` ist bewusst getrennt von `weeklyOverview`, das die bestehende
 Website-Wochenübersicht samt weiteren Pflichtfeldern steuert. Ein stabiler
 Dokumentname je Jahr/KW verhindert doppelte Wochenlisten. Die Produkte liegen
@@ -118,9 +125,14 @@ remain implementation details and are intentionally not editable in Sanity.
 ## Geschäftsdaten und Kontakt
 
 `businessSettings` is the global singleton for the store name, postal address,
-contact details, coordinates, weekly opening hours and date-specific exceptions.
-Day exceptions override the matching regular weekday in the header and contact
-schedule.
+legal company details, authorized representatives, register and tax identifiers,
+organic certification, contact details, coordinates, weekly opening hours and
+date-specific exceptions. Legal details also feed `/impressum`; the public
+imprint omits optional register, tax and certification entries when they are
+empty. `npm run sanity:update-imprint` writes the provided legal company name,
+register, VAT ID and organic certification to the production singleton while
+preserving all other business settings. Day exceptions override the matching
+regular weekday in the header and contact schedule.
 
 `contactPage` controls the `/kontakt` page. Its hero image references the same
 Sanity asset as the About page. Card headings and directions copy are editable
@@ -148,18 +160,17 @@ so duplicating an edition produces an independent set of editable cards.
    by dragging. Three cards form the desktop row; more cards form further rows.
 3. Publish the edition and add its reference under **SEITEN → Startseite →
    Aktuelles Sortiment → Sortimentsausgaben**, then publish the homepage.
-4. Prepare future editions in advance. Published, enabled editions become
-   eligible at `startAt` and cease to be eligible at `endAt` (exclusive).
-   Overlaps resolve to the latest start time, then document ID for ties.
+4. Publish the edition whose manually maintained bakery highlights and action
+   link should be shown. The latest updated, enabled edition is used;
+   `startAt` and `endAt` remain planning information and do not hide the cards.
 
-The server fetches the current edition and revalidates on requests every 60
-seconds; this is not a background publishing job. Sanity stores timestamps in
-UTC; choose the intended local times in Studio. When a configured section has no
-current edition, or is disabled, it is hidden. Before the section is configured,
-the original Figma copy/assets serve as a preview fallback. Background artwork,
-layout and motion stay in code. The section's organic background owns the visual
-transition below the hero. Motion uses once-only scroll reveals and subtle image
-hover, with reduced-motion support; all content renders as server HTML.
+The server fetches the latest enabled edition on each request. The start/end
+fields remain planning information. When the section is disabled, it is hidden.
+Before the section is configured, the original Figma copy/assets serve as a
+preview fallback. Background artwork, layout and motion stay in code. The
+section's organic background owns the visual transition below the hero. Motion
+uses once-only scroll reveals and subtle image hover, with reduced-motion
+support; all content renders as server HTML.
 
 ## Sortimentsseite
 
@@ -197,16 +208,20 @@ token in `.env.local`.
 
 ## Weekly overview
 
-- `weeklyOverview` schedules one calendar week and contains the produce list plus two bakery highlights.
-- `bakeryCatalog` stores the slower-changing categorized bakery assortment independently.
-- `promotionSheet` stores one PDF, its active state and its validity period. A week can reference multiple sheets; active sheets in their validity period are also listed without requiring a weekly overview.
+- The KW badges and fresh produce come only from the current `weeklyProduceList`. The manually exchanged bread and cake cards, plus the homepage action link box, come from the latest enabled `assortmentEdition`; its date range does not hide them when a week passes.
+- `weeklyOverview` supplies the legacy bakery price list fallback and older weekly content. It does not control the KW badge or bread and cake highlights.
+- The KW badges on the homepage/assortment teaser and `/diese-woche` are derived only from the published, non-archived `weeklyProduceList` for the current ISO week in `Europe/Vienna`. They are hidden when that list is unavailable; `weeklyOverview.week` and the assortment edition's optional callout do not supply or override the badge. The homepage, assortment and weekly page are request-rendered so the selected week rolls over without a new build.
+- `bakeryCatalog` stores the slower-changing categorized bakery assortment independently of the weekly produce list. The fixed `bakeryCatalog-main` document is shown on the weekly page and supplies the preorder dialog. Use **Backwaren importieren** in Studio to replace it from an Excel sheet with category, product name, price, and optional note columns; each import creates a draft for review and publication.
+- `/diese-woche` action PDFs are maintained inline in `weeklyPageSettings.promotionSheets`; active entries remain visible until removed or disabled. Their date range is an editorial label, not an automatic visibility rule. The homepage action link box comes from the latest enabled assortment edition.
 - Future Excel ingestion normalizes files server-side into the contracts in `lib/weekly/import-contract.ts`; spreadsheet parsing does not happen in React components.
 
 The fixed `weeklyPageSettings` document controls the editorial copy, the
-replaceable hero illustration and SEO fields for `/diese-woche`; weekly product,
-bakery and promotion records remain separate. In Presentation mode, hero and
-section copy map to this singleton, while product rows, bakery highlights,
-catalog entries and the promotion PDF map to their source documents.
+replaceable hero illustration, SEO fields and manually exchanged promotion PDFs
+for `/diese-woche`. Bakery highlights come from the latest enabled
+`assortmentEdition`; the current produce list and bakery price catalog remain
+separate. In Presentation mode, hero, section copy and promotion PDFs map to
+this singleton, while bakery cards, product rows and catalog entries map to
+their source documents.
 Presentation uses the current `weeklyProduceList` as the route's primary document,
 because the page can be populated before a `weeklyOverview` is created. The page
 does not fall back to sample bakery prices, products or action sheets when weekly

@@ -11,6 +11,8 @@ import { NextWeekPreviewSection } from "@/components/sections/weekly/NextWeekPre
 import { getWeeklyPageData } from "@/lib/weekly/data";
 import { getNextWeekPreview } from "@/lib/weekly/preview-data";
 import { getCurrentWeeklyProduceList } from "@/lib/weekly/produce-data";
+import {type AssortmentSectionData} from "@/components/sections/AssortmentSection";
+import {CURRENT_ASSORTMENT_QUERY} from "@/sanity/queries/assortment";
 import {fetchSanity} from "@/sanity/lib/live";
 import {WEEKLY_PAGE_SETTINGS_QUERY, type WeeklyPageSettings} from "@/sanity/queries/weeklyPageSettings";
 import {PRODUCT_WISH_QUERY} from "@/sanity/queries/assortmentCategories";
@@ -20,6 +22,8 @@ import {stegaClean} from "next-sanity";
 import {draftMode} from "next/headers";
 
 export const dynamic = "force-dynamic";
+
+type CurrentAssortment = {enabled?: boolean; edition: (AssortmentSectionData & {_type: "assortmentEdition"}) | null} | null;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSanity<WeeklyPageSettings>(WEEKLY_PAGE_SETTINGS_QUERY, {}, {stega: false}).catch(() => null);
@@ -32,11 +36,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function WeeklyPage() {
-  const [draft, data, nextWeekPreview, produceList, settings, wishPage] = await Promise.all([
+  const [draft, data, nextWeekPreview, produceList, assortment, settings, wishPage] = await Promise.all([
     draftMode(),
     getWeeklyPageData(),
     getNextWeekPreview(),
     getCurrentWeeklyProduceList(),
+    fetchSanity<CurrentAssortment>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
+      console.error("Brot- und Kuchen-Highlights konnten nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
+      return null;
+    }),
     fetchSanity<WeeklyPageSettings>(WEEKLY_PAGE_SETTINGS_QUERY).catch((error: unknown) => {
       console.error("Seitentexte für Diese Woche konnten nicht aus Sanity geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
       return null;
@@ -46,11 +54,29 @@ export default async function WeeklyPage() {
       return null;
     }),
   ]);
+  const assortmentEdition = assortment?.enabled === false ? null : assortment?.edition;
+  const bakeryCard = assortmentEdition?.cards.find((card) => stegaClean(card.marker) === "bread");
+  const bakeryHighlights = bakeryCard ? (bakeryCard.entries ?? [])
+    .filter((entry) => /brot|kuchen/i.test(stegaClean(entry.title)))
+    .map((entry) => {
+      const isCake = /kuchen/i.test(stegaClean(entry.title));
+      return {
+        _key: entry._key,
+        sanityPath: `cards[_key=="${bakeryCard._key}"].entries[_key=="${entry._key}"]`,
+        title: stegaClean(entry.title),
+        name: stegaClean(entry.description || entry.title),
+        description: stegaClean(bakeryCard.intro ?? ""),
+        image: {
+          src: isCake ? "/graphics/weekly-cake-illustration.png" : "/graphics/weekly-bread-illustration.png",
+          alt: isCake ? "Illustration eines Kuchens" : "Illustration eines Brots",
+        },
+      };
+    }) : [];
 
   return (
     <main>
       <PageHero
-        badge={<WeekSummary week={produceList?.week ?? data.week} dataAttribute={produceList?._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", "week") : data._id ? sanityDataAttribute(data._id, "weeklyOverview", "week") : undefined} />}
+        badge={produceList ? <WeekSummary week={produceList.week} dataAttribute={produceList._id ? sanityDataAttribute(produceList._id, "weeklyProduceList", "week") : undefined} /> : undefined}
         description={settings?.heroDescription || "Frisch eingetroffen, frisch gebacken und aktuell im Angebot – entdecke, was es diese Woche bei GerneGrün gibt."}
         illustration={{ src: settings?.heroIllustrationSrc ? stegaClean(settings.heroIllustrationSrc) : "/graphics/weekly-page-hero.svg", alt: settings?.heroIllustrationAlt || "Illustrierte Auswahl frischer Wochenprodukte" }}
         showAccent
@@ -67,9 +93,9 @@ export default async function WeeklyPage() {
       </PageHero>
       <FreshProduceSection list={produceList} settings={settings} />
       {nextWeekPreview && <NextWeekPreviewSection preview={nextWeekPreview} />}
-      {data.bakeryHighlights.length > 0 && <WeeklyBakeryHighlights highlights={data.bakeryHighlights} settings={settings} sourceId={data._id} />}
+      <WeeklyBakeryHighlights highlights={bakeryHighlights} settings={settings} sourceId={assortmentEdition?.id} sourceType="assortmentEdition" />
       {data.bakeryCategories.length > 0 && <BakeryPriceList categories={data.bakeryCategories} settings={settings} catalogId={data.bakeryCatalogId} />}
-      <WeeklyPromotions sheets={settings?.promotionSheets ?? data.promotionSheets} settings={settings} showInactive={draft.isEnabled} />
+      <WeeklyPromotions sheets={settings?.promotionSheets ?? []} settings={settings} showInactive={draft.isEnabled} />
       {wishPage?.productWish?.isVisible !== false && <ProductWishCTA content={wishPage?.productWish} sourceId={wishPage?._id} />}
     </main>
   );

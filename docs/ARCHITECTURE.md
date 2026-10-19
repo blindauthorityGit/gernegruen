@@ -16,7 +16,7 @@
 - GROQ queries live in /sanity/queries
 - Sanity configuration lives in /sanity/lib
 - Weekly page data is loaded through `lib/weekly/data.ts`, with a typed local fallback and server-side import contracts.
-- The current produce list is loaded separately by `lib/weekly/produce-data.ts` from the published Sanity `weeklyProduceList` matching the current ISO week in `Europe/Vienna`; this keeps the legacy weekly overview and bakery fallback flow independent.
+- The current produce list is loaded separately by `lib/weekly/produce-data.ts` from the published Sanity `weeklyProduceList` matching the current ISO week in `Europe/Vienna`. The persistent `bakeryCatalog-main` is queried independently in `lib/weekly/data.ts`, so bakery prices remain visible without a weekly overview and do not rotate with produce imports.
 
 ## UI
 
@@ -40,7 +40,7 @@
 
 ## Backwaren-Vorbestellungen
 
-- Das globale Vorbestellungsmodal und die sichtbare Preisliste verwenden beide das aktuell referenzierte Sanity-`bakeryCatalog`; die API lädt dieselbe Quelle erneut und vertraut weder Produktnamen noch Preisen aus dem Browser.
+- Das globale Vorbestellungsmodal und die sichtbare Preisliste verwenden beide das feste Sanity-`bakeryCatalog-main`; die API lädt dieselbe Quelle erneut und vertraut weder Produktnamen noch Preisen aus dem Browser. Änderungen kommen gelegentlich über den Studio-Excel-Import und werden als Entwurf geprüft, bevor sie veröffentlicht werden.
 - `POST /api/bakery-preorders` validiert Kontaktdaten, Mengen sowie Abholtage in der Zeitzone `Europe/Berlin`. Sonntage und gesetzliche Feiertage in Hessen werden mit `date-holidays` ausgeschlossen.
 - Firestore wird ausschließlich über das Firebase Admin SDK angesprochen. `BAKERY_PREORDER_DEV=true` speichert Dokumente unter `bakeryPreorders_dev/{requestId}`, `false` unter `bakeryPreorders/{requestId}`. Ohne gesetzten Schalter wählen lokale Development-Runs automatisch die Dev-Collection; Produktions-Runs die Live-Collection. Die clientseitig erzeugte UUID verhindert doppelte Dokumente bei Wiederholungen.
 - Die Anfrage wird vor dem SMTP-Versand gespeichert. Der Versandstatus (`pending`, `sent` oder `failed`) verbleibt am Dokument, sodass ein E-Mail-Fehler die Anfrage nicht verliert.

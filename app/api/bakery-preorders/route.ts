@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
@@ -6,6 +6,7 @@ import { isValidPickupDate } from "@/lib/preorder/availability";
 import { sendPreorderMail } from "@/lib/preorder/mail";
 import { toOrderableBakeryCategories } from "@/lib/preorder/products";
 import { getCurrentBakeryCategories } from "@/lib/weekly/data";
+import { unconfirmedOrderExpiresAt } from "@/lib/preorder/retention";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,7 @@ const rateStore = globalRateStore.preorderRateStore ??= new Map<string, RateEntr
 
 function isRateLimited(ip: string) {
   const now = Date.now();
+  for (const [key, entry] of rateStore) if (entry.resetAt <= now) rateStore.delete(key);
   const entry = rateStore.get(ip);
   if (!entry || entry.resetAt <= now) {
     rateStore.set(ip, { count: 1, resetAt: now + 15 * 60_000 });
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
   const orderItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
   const totalCents = orderItems.reduce((sum, item) => sum + item.lineTotalCents, 0);
   const createdAt = new Date();
+  const expiresAt = unconfirmedOrderExpiresAt(pickupDate);
 
   try {
     const firestore = getPreorderFirestore();
@@ -120,6 +123,7 @@ export async function POST(request: NextRequest) {
         environment: isDev ? "dev" : "live",
         emailStatus: "pending",
         createdAt: Timestamp.fromDate(createdAt),
+        expiresAt: expiresAt ? Timestamp.fromDate(expiresAt) : null,
       });
       return null;
     });
@@ -135,22 +139,23 @@ export async function POST(request: NextRequest) {
       mailWasSent = true;
       await reference.update({ emailStatus: "sent", emailSentAt: Timestamp.now() });
       return NextResponse.json({ status: "success", requestId });
-    } catch (mailError) {
-      console.error(mailWasSent ? "E-Mail-Status konnte nicht aktualisiert werden:" : "Vorbestellungs-E-Mail konnte nicht versendet werden:", mailError);
+    } catch {
+      console.error(mailWasSent ? "Vorbestellungs-Mailstatus konnte nicht aktualisiert werden." : "Vorbestellungs-E-Mail konnte nicht versendet werden.");
       if (mailWasSent) return NextResponse.json({ status: "success", requestId });
       try {
         await reference.update({
           emailStatus: "failed",
-          emailError: mailError instanceof Error ? mailError.message.slice(0, 500) : "Unbekannter Versandfehler",
+          emailErrorCode: "delivery_failed",
+          emailError: FieldValue.delete(),
           emailLastAttemptAt: Timestamp.now(),
         });
-      } catch (statusError) {
-        console.error("Fehlgeschlagenen E-Mail-Versand konnte nicht dokumentiert werden:", statusError);
+      } catch {
+        console.error("Fehlgeschlagener Vorbestellungs-Mailstatus konnte nicht gespeichert werden.");
       }
       return NextResponse.json({ status: "stored_email_failed", requestId }, { status: 202 });
     }
-  } catch (storageError) {
-    console.error("Vorbestellung konnte nicht gespeichert werden:", storageError);
+  } catch {
+    console.error("Vorbestellung konnte nicht in Firestore gespeichert werden.");
     return error("Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuche es später erneut oder rufe uns an.", 503);
   }
 }

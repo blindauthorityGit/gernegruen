@@ -10,21 +10,22 @@
 - Allgemeine Bio-/Bioladen- und Regionalitätsaussagen aus globalen Metadaten, Startseiten-Fallbacks, Header-Claim und Open-Graph-Bild entfernt oder neutral formuliert.
 - Die Wochenkarte trägt keine pauschale Überschrift „Saisonal & regional“ mehr.
 - Produktdaten auf der Wochenliste bleiben einem konkreten Artikel zugeordnet: Herkunftsland und gegebenenfalls Herkunftsregion, Marke sowie Lieferantenangabe werden getrennt dargestellt.
-- Im Frontend wird das Legacy-Flag `bioladenCertified` nicht ausgegeben.
+- Das ehemalige Legacy-Feld `bioladenCertified` wird nicht mehr importiert oder abgefragt; gespeicherte Altwerte werden nicht öffentlich ausgegeben.
 - Veröffentlicht angepasst wurden die Sanity-Dokumente `startPage`, `aboutPage`, `contactPage`, `assortmentCategory.obst-gemuese` und `assortmentPage` (Bildunterschriften). Die Änderungen wurden per Sanity-API in `production` geschrieben.
 
 ### Marke und Import
 
 - Die Kürzel `b*` in Produktnamen werden als bioladen*-Produktmarke erkannt. Das Präfix bleibt in der gespeicherten Originalbezeichnung bestehen; es wird nicht als Zertifikat oder Zertifizierungsstelle interpretiert.
-- Der Excel-Import benötigt nur Produktname, Einheit und Preis. Die frühere Spalte „Bioladen Zertifikat Ja/Nein“ ist optional und wird – wenn vorhanden – ausschließlich aus Legacy-Kompatibilitätsgründen gespeichert.
-- Ein Bio-/Verbandsname aus Excel bleibt eine Lieferantenangabe. Neue Importe setzen `bioStatus` auf `unknown`; ein bestätigter Status erfordert eine gesonderte redaktionelle Prüfung und interne Nachweisreferenz.
-- Die bestehende Datenstruktur bleibt kompatibel; neue Felder sind `brand`, `originalBrandMarker`, `originRegion`, `bioStatus` und `bioEvidenceReference`.
+- Der Excel-Import benötigt nur Produktname, Einheit und Preis. Die frühere Spalte „Bioladen Zertifikat Ja/Nein“ wird ignoriert; die Marke wird separat aus dem eindeutigen `b*`-Präfix erkannt.
+- Bio-/Verbandsangaben werden direkt aus der entsprechenden Excel-Spalte übernommen. Das separate Statusfeld und die interne Nachweisreferenz gehören nicht mehr zum Produktimport.
+- Herkunft, Marke und Verbands-/Bio-Angabe bleiben getrennte Produktfelder.
+- Produktkarten zeigen die gespeicherte Verbands-/Bio-Angabe direkt und ohne zusätzlichen Prüfhinweis. Für diese Angabe gibt es keine Sondervalidierung im Import.
 
 ### Redaktion und Audit
 
 - Sanity-Feldhilfen für zentrale freie Text-, SEO-, Kategorien-, Vorschau- und Produktfelder verlangen konkreten Aussagebezug und Belegbarkeit, ohne automatische Wortfilter oder ein zusätzliches Compliance-Modul einzuführen.
 - Der vorherige Audit [empco-compliance-audit.md](empco-compliance-audit.md) wurde um den Umsetzungsstand ergänzt und auf die deutsche Rechtsgrundlage umgestellt.
-- Ein allgemeiner Abschnitt zu Siegeln/Kennzeichnungen wurde nicht ergänzt: Relevante Informationen und die Einschränkung „Lieferantenangabe, nicht unabhängig geprüft“ stehen unmittelbar am Produkt.
+- Ein allgemeiner Abschnitt zu Siegeln/Kennzeichnungen wurde nicht ergänzt. Produktkarten zeigen Herkunft, Marke und Verbands-/Bio-Angabe direkt am Produkt.
 
 ## Noch erforderliche Betreiberprüfung
 

@@ -20,9 +20,15 @@ const entry = target === "next"
               ? resolve("scripts/repair-business-settings-keys.mjs")
               : target === "seed-footer-settings"
                 ? resolve("scripts/seed-footer-settings.mjs")
+                : target === "update-imprint-settings"
+                  ? resolve("scripts/update-imprint-settings.mjs")
+                  : target === "audit-firestore-retention"
+                    ? resolve("scripts/audit-firestore-retention.mjs")
+                    : target === "enable-firestore-retention"
+                      ? resolve("scripts/enable-firestore-retention.mjs")
         : null;
 
-if (!entry) throw new Error("Choose `next`, `seed`, `seed-homepage`, `seed-assortment-gallery`, `seed-about-page`, `seed-contact-page`, `seed-weekly-editorial`, `repair-business-settings-keys`, or `seed-footer-settings`.");
+if (!entry) throw new Error("Choose `next`, `seed`, `seed-homepage`, `seed-assortment-gallery`, `seed-about-page`, `seed-contact-page`, `seed-weekly-editorial`, `repair-business-settings-keys`, `seed-footer-settings`, `update-imprint-settings`, `audit-firestore-retention`, or `enable-firestore-retention`.");
 
 const child = spawn(process.execPath, [entry, ...args], {
   stdio: "inherit",

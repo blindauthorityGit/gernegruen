@@ -47,3 +47,8 @@ export type WeeklyPageData = {
   promotionSheets: PromotionSheet[];
   promotionSheet: PromotionSheet | null;
 };
+
+export type BakeryCatalogData = {
+  _id: string;
+  categories: BakeryCategory[];
+};

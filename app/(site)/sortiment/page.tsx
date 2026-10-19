@@ -17,6 +17,8 @@ import { createPageMetadata } from "@/lib/seo";
 import {stegaClean} from "next-sanity";
 import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
+export const dynamic = "force-dynamic";
+
 type AssortmentPageContent = {
   _id?: string;
   seoTitle?: string;
