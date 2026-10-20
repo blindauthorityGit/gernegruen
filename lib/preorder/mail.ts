@@ -53,16 +53,20 @@ function formatCreatedAt(value: Date) {
   }).format(value);
 }
 
-export async function sendPreorderMail(order: MailOrder) {
-  const port = Number.parseInt(required("SMTP_PORT", order.isDev), 10);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Ungültige Server-Konfiguration: ${order.isDev ? "SMTP_DEV_PORT" : "SMTP_PORT"}`);
+function createTransporter(isDev: boolean) {
+  const port = Number.parseInt(required("SMTP_PORT", isDev), 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Ungültige Server-Konfiguration: ${isDev ? "SMTP_DEV_PORT" : "SMTP_PORT"}`);
 
-  const transporter = nodemailer.createTransport({
-    host: required("SMTP_HOST", order.isDev),
+  return nodemailer.createTransport({
+    host: required("SMTP_HOST", isDev),
     port,
     secure: port === 465,
-    auth: { user: required("SMTP_USER", order.isDev), pass: required("SMTP_PASSWORD", order.isDev) },
+    auth: { user: required("SMTP_USER", isDev), pass: required("SMTP_PASSWORD", isDev) },
   });
+}
+
+export async function sendPreorderMail(order: MailOrder) {
+  const transporter = createTransporter(order.isDev);
   const pickupDate = formatDate(order.pickupDate);
   const createdAt = formatCreatedAt(order.createdAt);
   const subject = `${order.isDev ? "[DEV] " : ""}Neue Backwaren-Vorbestellung – ${order.name} – ${pickupDate}`;
@@ -116,16 +120,53 @@ export async function sendPreorderMail(order: MailOrder) {
   });
 }
 
-export async function sendProductWishMail(wish: ProductWish) {
-  const port = Number.parseInt(required("SMTP_PORT", wish.isDev), 10);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`Ungültige Server-Konfiguration: ${wish.isDev ? "SMTP_DEV_PORT" : "SMTP_PORT"}`);
+export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
+  const transporter = createTransporter(order.isDev);
+  const pickupDate = formatDate(order.pickupDate);
+  const orderItems = order.items.map((item) => `
+    <tr>
+      <td style="padding:12px 8px;border-bottom:1px solid #dce3cd">${escapeHtml(item.name)}</td>
+      <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:center">${item.quantity}</td>
+      <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:right;white-space:nowrap;font-weight:700">${euro.format(item.lineTotalCents / 100)}</td>
+    </tr>`).join("");
+  const subject = `${order.isDev ? "[DEV] " : ""}Wir haben deine Vorbestellungsanfrage erhalten`;
+  const html = `<!doctype html><html lang="de"><body style="margin:0;background:#fbf5eb;color:#2e2e2e;font-family:Arial,sans-serif">
+    <div style="max-width:680px;margin:0 auto;padding:28px 16px">
+      <div style="overflow:hidden;border-radius:22px;background:#ffffff">
+        <div style="padding:28px 32px;background:#08522b;color:#ffffff">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#cfe29c">GerneGrün · Backwaren${order.isDev ? " · Entwicklungstest" : ""}</div>
+          <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2">Danke für deine Anfrage, ${escapeHtml(order.name)}!</h1>
+        </div>
+        <div style="padding:28px 32px">
+          <p style="margin:0 0 22px;line-height:1.65">Wir haben deine Vorbestellungsanfrage erhalten. Hier findest du die gewünschte Auswahl und den Abholtag.</p>
+          <div style="padding:16px 18px;border-radius:14px;background:#f3f1d7;color:#08522b;font-size:16px;line-height:1.55"><strong>Gewünschte Abholung</strong><br>${pickupDate}</div>
+          <h2 style="margin:26px 0 10px;color:#08522b;font-size:19px">Deine Auswahl</h2>
+          <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px">
+            <thead><tr style="background:#f3f1d7;color:#08522b"><th style="padding:10px 8px;text-align:left">Backware</th><th style="padding:10px 8px">Menge</th><th style="padding:10px 8px;text-align:right">Preis</th></tr></thead>
+            <tbody>${orderItems}</tbody>
+            <tfoot><tr><td colspan="2" style="padding:14px 8px;text-align:right;color:#08522b;font-weight:700">Voraussichtliche Gesamtsumme</td><td style="padding:14px 8px;text-align:right;color:#08522b;font-size:18px;font-weight:800;white-space:nowrap">${euro.format(order.totalCents / 100)}</td></tr></tfoot>
+          </table>
+          ${order.message ? `<div style="margin-top:22px;padding:15px 17px;border-left:4px solid #f28c00;background:#fff7eb;line-height:1.6"><strong>Deine Nachricht</strong><br>${escapeHtml(order.message).replace(/\r?\n/g, "<br>")}</div>` : ""}
+          <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Bei Rückfragen erreichst du uns unter <a href="tel:+4961033867347" style="color:#17663b;font-weight:700">06103-3867347</a>.</p>
+          <p style="margin:18px 0 0;color:#686868;font-size:12px;line-height:1.6">Anfrage-ID: ${escapeHtml(order.requestId)}</p>
+        </div>
+      </div>
+    </div></body></html>`;
+  const itemLines = order.items.map((item) => `- ${item.quantity} × ${item.name} · ${euro.format(item.lineTotalCents / 100)}`).join("\n");
+  const text = `Danke für deine Anfrage, ${order.name}!\n\nWir haben deine Vorbestellungsanfrage erhalten.\nGewünschte Abholung: ${pickupDate}\n\nDeine Auswahl\n${itemLines}\n\nVoraussichtliche Gesamtsumme: ${euro.format(order.totalCents / 100)}${order.message ? `\n\nDeine Nachricht\n${order.message}` : ""}\n\nRückfragen: 06103-3867347\nAnfrage-ID: ${order.requestId}`;
 
-  const transporter = nodemailer.createTransport({
-    host: required("SMTP_HOST", wish.isDev),
-    port,
-    secure: port === 465,
-    auth: { user: required("SMTP_USER", wish.isDev), pass: required("SMTP_PASSWORD", wish.isDev) },
+  await transporter.sendMail({
+    from: required("SMTP_FROM", order.isDev),
+    to: order.email,
+    replyTo: required("ORDER_RECIPIENT", order.isDev),
+    subject,
+    text,
+    html,
   });
+}
+
+export async function sendProductWishMail(wish: ProductWish) {
+  const transporter = createTransporter(wish.isDev);
   const createdAt = formatCreatedAt(wish.createdAt);
   const subject = `${wish.isDev ? "[DEV] " : ""}Neuer Produktwunsch – ${wish.product}`;
   const html = `<!doctype html><html lang="de"><body style="margin:0;background:#fbf5eb;color:#2e2e2e;font-family:Arial,sans-serif">

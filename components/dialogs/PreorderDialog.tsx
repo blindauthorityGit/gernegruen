@@ -112,7 +112,7 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
       if (!response.ok && response.status !== 202) throw new Error(result.message || "Die Anfrage konnte nicht übermittelt werden.");
       if (result.status === "stored_email_failed") {
         setStatus("stored_email_failed");
-        setStatusMessage("Deine Anfrage wurde sicher gespeichert, aber die E-Mail konnte nicht zugestellt werden. Bitte rufe uns kurz an, damit wir sie direkt bestätigen können.");
+        setStatusMessage("Deine Anfrage wurde sicher gespeichert, aber die Bestätigungs-E-Mail konnte nicht zugestellt werden. Bitte rufe uns kurz an, damit wir deine Anfrage direkt prüfen können.");
         return;
       }
       setStatus("success");

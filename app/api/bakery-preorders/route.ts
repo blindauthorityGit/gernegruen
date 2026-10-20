@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
 import { isValidPickupDate } from "@/lib/preorder/availability";
-import { sendPreorderMail } from "@/lib/preorder/mail";
+import { sendCustomerPreorderConfirmationMail, sendPreorderMail } from "@/lib/preorder/mail";
 import { toOrderableBakeryCategories } from "@/lib/preorder/products";
 import { getCurrentBakeryGroups } from "@/lib/weekly/data";
 import { unconfirmedOrderExpiresAt } from "@/lib/preorder/retention";
@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
         status: "pending",
         environment: isDev ? "dev" : "live",
         emailStatus: "pending",
+        customerEmailStatus: "pending",
         createdAt: Timestamp.fromDate(createdAt),
         expiresAt: expiresAt ? Timestamp.fromDate(expiresAt) : null,
       });
@@ -129,19 +130,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
-      const emailStatus = existing.emailStatus === "sent" ? "success" : "stored_email_failed";
-      return NextResponse.json({ status: emailStatus, requestId });
+      const customerEmailStatus = existing.customerEmailStatus === "sent" ? "success" : "stored_email_failed";
+      return NextResponse.json({ status: customerEmailStatus, requestId }, { status: customerEmailStatus === "success" ? 200 : 202 });
     }
 
-    let mailWasSent = false;
+    const mailOrder = { requestId, name, email, phone, pickupDate, message, items: orderItems, totalCents, createdAt, isDev };
+    let customerMailWasSent = false;
     try {
-      await sendPreorderMail({ requestId, name, email, phone, pickupDate, message, items: orderItems, totalCents, createdAt, isDev });
-      mailWasSent = true;
+      await sendPreorderMail(mailOrder);
       await reference.update({ emailStatus: "sent", emailSentAt: Timestamp.now() });
-      return NextResponse.json({ status: "success", requestId });
     } catch {
-      console.error(mailWasSent ? "Vorbestellungs-Mailstatus konnte nicht aktualisiert werden." : "Vorbestellungs-E-Mail konnte nicht versendet werden.");
-      if (mailWasSent) return NextResponse.json({ status: "success", requestId });
+      console.error("Betreiber-Benachrichtigung zur Vorbestellung konnte nicht vollständig versendet werden.");
       try {
         await reference.update({
           emailStatus: "failed",
@@ -150,10 +149,34 @@ export async function POST(request: NextRequest) {
           emailLastAttemptAt: Timestamp.now(),
         });
       } catch {
-        console.error("Fehlgeschlagener Vorbestellungs-Mailstatus konnte nicht gespeichert werden.");
+        console.error("Fehlgeschlagener Status der Betreiber-Benachrichtigung konnte nicht gespeichert werden.");
       }
-      return NextResponse.json({ status: "stored_email_failed", requestId }, { status: 202 });
     }
+
+    try {
+      await sendCustomerPreorderConfirmationMail(mailOrder);
+      customerMailWasSent = true;
+    } catch {
+      console.error("Eingangsbestätigung der Vorbestellung konnte nicht vollständig versendet werden.");
+      try {
+        await reference.update({ customerEmailStatus: "failed", customerEmailLastAttemptAt: Timestamp.now() });
+      } catch {
+        console.error("Status der Kundenbestätigung konnte nicht gespeichert werden.");
+      }
+    }
+
+    if (customerMailWasSent) {
+      try {
+        await reference.update({ customerEmailStatus: "sent", customerEmailSentAt: Timestamp.now() });
+      } catch {
+        console.error("Versendete Kundenbestätigung konnte nicht als versendet markiert werden.");
+      }
+    }
+
+    return NextResponse.json(
+      { status: customerMailWasSent ? "success" : "stored_email_failed", requestId },
+      { status: customerMailWasSent ? 200 : 202 },
+    );
   } catch {
     console.error("Vorbestellung konnte nicht in Firestore gespeichert werden.");
     return error("Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuche es später erneut oder rufe uns an.", 503);

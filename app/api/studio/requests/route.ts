@@ -21,6 +21,7 @@ function serialize(snapshot: FirebaseFirestore.QueryDocumentSnapshot, type: "ord
     product: typeof data.product === "string" ? data.product : "",
     description: typeof data.description === "string" ? data.description : "",
     status: typeof data.status === "string" ? data.status : "pending",
+    customerEmailStatus: typeof data.customerEmailStatus === "string" ? data.customerEmailStatus : "",
     createdAt: data.createdAt?.toDate?.().toISOString() ?? null,
     expiresAt: effectiveExpiry(type, data)?.toISOString() ?? null,
     lastSubstantiveActivityAt: data.lastSubstantiveActivityAt?.toDate?.().toISOString() ?? null,
