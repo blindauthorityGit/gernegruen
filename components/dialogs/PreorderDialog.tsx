@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { DayPicker } from "react-day-picker";
 import { de } from "react-day-picker/locale";
 
 import type { OrderableBakeryCategory } from "@/lib/preorder/products";
+import {matchesBakerySearch} from "@/lib/preorder/search";
+import {getMinimumPickupDateByCutoff} from "@/lib/preorder/deadlines";
 
 import { DialogShell, dialogStyles as styles } from "./DialogShell";
 
@@ -18,6 +20,7 @@ type PickupAvailability = {
 
 type SubmitStatus = "idle" | "loading" | "success" | "stored_email_failed" | "error";
 const euro = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+const sectionTitles = {bread: "Brot & Gebäck", sweet: "Süßgebäck"} as const;
 
 function parseDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
@@ -39,6 +42,9 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
 }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [pickupDate, setPickupDate] = useState(() => pickupAvailability.suggestedDate);
+  const [minimumPickupDate, setMinimumPickupDate] = useState(() => pickupAvailability.minimumDate);
+  const [activeSection, setActiveSection] = useState<"bread" | "sweet">("bread");
+  const [productSearch, setProductSearch] = useState("");
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [statusMessage, setStatusMessage] = useState("");
   const requestId = useRef<string | null>(null);
@@ -48,6 +54,24 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
     return quantity > 0 ? [{ ...product, quantity, lineTotalCents: product.priceCents * quantity }] : [];
   });
   const totalCents = selectedItems.reduce((sum, item) => sum + item.lineTotalCents, 0);
+  const searchQuery = productSearch.trim();
+  const filteredCategories = useMemo(() => categories.map((category) => ({
+    ...category,
+    products: category.products.filter((product) => matchesBakerySearch(searchQuery, product, category.title, sectionTitles[category.section])),
+  })).filter((category) => category.products.length > 0), [categories, searchQuery]);
+  const visibleSections = searchQuery ? (["bread", "sweet"] as const) : ([activeSection] as const);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const updateMinimumDate = () => {
+      const minimum = getMinimumPickupDateByCutoff(new Date(), pickupAvailability.holidayDates);
+      setMinimumPickupDate(minimum);
+      setPickupDate((current) => current < minimum ? minimum : current);
+    };
+    updateMinimumDate();
+    const interval = window.setInterval(updateMinimumDate, 30_000);
+    return () => window.clearInterval(interval);
+  }, [isOpen, pickupAvailability.holidayDates]);
 
   function changeQuantity(productId: string, change: number) {
     setQuantities((current) => ({ ...current, [productId]: Math.min(99, Math.max(0, (current[productId] ?? 0) + change)) }));
@@ -101,16 +125,18 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
   function closeDialog() {
     if (status === "success" || status === "stored_email_failed") {
       setQuantities({});
-      setPickupDate(pickupAvailability.suggestedDate);
+      setPickupDate(minimumPickupDate);
       requestId.current = null;
     }
+    setProductSearch("");
+    setActiveSection("bread");
     setStatus("idle");
     setStatusMessage("");
     onClose();
   }
 
   const selectedDate = parseDate(pickupDate);
-  const minimumDate = parseDate(pickupAvailability.minimumDate);
+  const minimumDate = parseDate(minimumPickupDate);
   const maximumDate = parseDate(pickupAvailability.maximumDate);
   const holidayDates = pickupAvailability.holidayDates.map(parseDate);
 
@@ -155,33 +181,56 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
                 startMonth={minimumDate}
               />
               <input name="pickupDate" type="hidden" value={pickupDate} />
-              <small>Frühestens morgen; Sonntage und gesetzliche Feiertage in Hessen sind nicht auswählbar.</small>
+              <small>Für den nächsten Abholtag bitte bis 16 Uhr vorbestellen. Mittwochs gilt 13 Uhr; samstags bis 12 Uhr für Abholung am Montag. Nach Ablauf der Frist zeigt der Kalender den nächsten möglichen Abholtag.</small>
             </fieldset>
 
             <fieldset className={`${styles.full} ${styles.productPicker}`}>
-              <legend>Gewünschte Backwaren</legend>
-              <div className={styles.productCategories}>
-                {categories.map((category, categoryIndex) => (
-                  <details key={category.id} open={categoryIndex === 0}>
-                    <summary><span>{category.title}</span><small>{category.products.reduce((sum, product) => sum + (quantities[product.id] ?? 0), 0) || ""}</small></summary>
-                    <ul>
-                      {category.products.map((product) => {
-                        const quantity = quantities[product.id] ?? 0;
-                        return (
-                          <li key={product.id}>
-                            <div><strong>{product.name}</strong>{product.note && <small>{product.note}</small>}<span>{euro.format(product.priceCents / 100)}</span></div>
-                            <div className={styles.quantity} aria-label={`Menge für ${product.name}`}>
-                              <button aria-label={`${product.name} reduzieren`} disabled={quantity === 0} onClick={() => changeQuantity(product.id, -1)} type="button">−</button>
-                              <output aria-live="polite">{quantity}</output>
-                              <button aria-label={`${product.name} hinzufügen`} disabled={quantity === 99} onClick={() => changeQuantity(product.id, 1)} type="button">+</button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </details>
-                ))}
-              </div>
+              <legend>Backwaren finden & auswählen</legend>
+              <label className={styles.productSearch}>Produkt suchen<input autoComplete="off" onChange={(event) => setProductSearch(event.target.value)} placeholder="z. B. Dinkelbrot oder Apfelkuchen" type="search" value={productSearch} /></label>
+              {searchQuery ? <p className={styles.searchCount} aria-live="polite">{filteredCategories.reduce((sum, category) => sum + category.products.length, 0)} passende Produkte</p> : (
+                <div className={styles.sectionChoices} role="group" aria-label="Backwarengruppe auswählen">
+                  {(["bread", "sweet"] as const).map((section) => <button aria-pressed={activeSection === section} className={activeSection === section ? styles.sectionChoiceActive : ""} key={section} onClick={() => setActiveSection(section)} type="button">{sectionTitles[section]}</button>)}
+                </div>
+              )}
+              {searchQuery && filteredCategories.length === 0 && <p className={styles.searchEmpty} role="status">Keine passenden Backwaren gefunden. Prüfe die Schreibweise oder versuche einen kürzeren Suchbegriff.</p>}
+              {visibleSections.map((section) => {
+                const sectionCategories = (searchQuery ? filteredCategories : categories.filter((category) => category.section === section))
+                  .filter((category) => category.section === section);
+                if (sectionCategories.length === 0) return null;
+                return <div className={styles.productSection} key={section}>
+                  {searchQuery && <h3>{sectionTitles[section]}</h3>}
+                  <div className={styles.productCategories} data-search-results={searchQuery ? "true" : undefined}>
+                    {sectionCategories.map((category) => (
+                      <details key={`${category.id}:${searchQuery}`} open={Boolean(searchQuery)}>
+                        <summary>
+                          <span>{category.title}</span>
+                          <span className={styles.categoryControls}>
+                            <small>{category.products.reduce((sum, product) => sum + (quantities[product.id] ?? 0), 0) || ""}</small>
+                            <svg aria-hidden="true" className={styles.categoryChevron} viewBox="0 0 20 20" fill="none">
+                              <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        </summary>
+                        <ul>
+                          {category.products.map((product) => {
+                            const quantity = quantities[product.id] ?? 0;
+                            return (
+                              <li key={product.id}>
+                                <div><strong>{product.name}</strong>{product.note && <small>{product.note}</small>}<span>{euro.format(product.priceCents / 100)}</span></div>
+                                <div className={styles.quantity} aria-label={`Menge für ${product.name}`}>
+                                  <button aria-label={`${product.name} reduzieren`} disabled={quantity === 0} onClick={() => changeQuantity(product.id, -1)} type="button">−</button>
+                                  <output aria-live="polite">{quantity}</output>
+                                  <button aria-label={`${product.name} hinzufügen`} disabled={quantity === 99} onClick={() => changeQuantity(product.id, 1)} type="button">+</button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </details>
+                    ))}
+                  </div>
+                </div>;
+              })}
             </fieldset>
 
             {selectedItems.length > 0 && (

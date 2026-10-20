@@ -5,7 +5,7 @@ import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
 import { isValidPickupDate } from "@/lib/preorder/availability";
 import { sendPreorderMail } from "@/lib/preorder/mail";
 import { toOrderableBakeryCategories } from "@/lib/preorder/products";
-import { getCurrentBakeryCategories } from "@/lib/weekly/data";
+import { getCurrentBakeryGroups } from "@/lib/weekly/data";
 import { unconfirmedOrderExpiresAt } from "@/lib/preorder/retention";
 
 export const runtime = "nodejs";
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return error("Bitte gib eine gültige E-Mail-Adresse an.");
   if (phone.length < 5 || phone.length > 50) return error("Bitte gib eine gültige Telefonnummer an.");
   if (message.length > 2000) return error("Die zusätzliche Nachricht ist zu lang.");
-  if (!isValidPickupDate(pickupDate)) return error("Bitte wähle einen gültigen Abholtag. Sonntage und Feiertage sind ausgeschlossen.");
+  if (!isValidPickupDate(pickupDate)) return error("Der gewählte Abholtag ist nicht verfügbar oder die Vorbestellfrist ist abgelaufen. Bitte wähle einen späteren Termin.");
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) return error("Bitte wähle mindestens ein Produkt aus.");
 
   const requestedItems = body.items as Array<{ productId?: unknown; quantity?: unknown }>;
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     uniqueIds.add(item.productId);
   }
 
-  const categories = toOrderableBakeryCategories(await getCurrentBakeryCategories());
+  const categories = toOrderableBakeryCategories(await getCurrentBakeryGroups());
   const currentProducts = new Map(categories.flatMap((category) => category.products.map((product) => [product.id, product])));
   const items = requestedItems.map((requested) => {
     const product = currentProducts.get(requested.productId as string);

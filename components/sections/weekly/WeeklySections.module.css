@@ -25,8 +25,14 @@
 .highlightSection { padding: var(--section-space) 0; background: white; }
 
 .priceSection { padding: var(--section-space) 0; background: var(--color-surface-cream); }
-.categoryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 16px; margin-bottom: 56px; }
-.category { overflow: hidden; border: 1px solid rgb(8 82 43 / 12%); border-radius: var(--radius-card); background: #fff; }
+.priceGroups { display: grid; gap: 24px; margin-bottom: 56px; }
+.priceGroup { padding: clamp(18px, 3vw, 28px); border: 1px solid rgb(8 82 43 / 12%); border-radius: var(--radius-panel); }
+.priceGroup h2 { margin: 0 0 18px; color: var(--color-green-deep); font-size: clamp(24px, 2.5vw, 32px); line-height: 1.15; }
+.breadGroup { background: var(--color-surface-botanical); }
+.sweetGroup { background: #f5eee3; border-color: rgb(159 102 33 / 18%); }
+.sweetGroup h2 { color: #79501f; }
+.categoryGrid { column-count: 2; column-gap: 16px; }
+.category { display: inline-block; width: 100%; overflow: hidden; margin: 0 0 16px; border: 1px solid rgb(8 82 43 / 12%); border-radius: var(--radius-card); background: #fff; break-inside: avoid; }
 .category summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 70px; padding: 18px 22px; color: var(--color-green-deep); font-size: 19px; font-weight: 900; cursor: pointer; list-style: none; }
 .category summary::-webkit-details-marker { display: none; }
 .toggle { display: grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: var(--color-surface-botanical); font-size: 24px; line-height: 1; transition: transform 180ms ease; }
@@ -68,11 +74,11 @@
   .sectionHeading { gap: 14px; }
   .sectionIcon { width: 68px; }
   .produceLayout { column-count: 1; }
-  .categoryGrid, .pdfLayout { grid-template-columns: 1fr; }
+  .pdfLayout { grid-template-columns: 1fr; }
   .produceProduct { min-height: 72px; gap: 12px; }
   .produceName { font-size: 16px; }
   .producePrice strong { font-size: 17px; }
-  .categoryGrid { gap: 12px; }
+  .categoryGrid { column-count: 1; column-gap: 12px; }
   .category summary { min-height: 64px; font-size: 17px; }
   .category li { gap: 14px; font-size: 15px; }
   .pdfFrame { display: none; }

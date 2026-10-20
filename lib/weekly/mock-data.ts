@@ -141,6 +141,8 @@ export const weeklyPageFallback: WeeklyPageData = {
       ],
     },
   ],
+  bakeryBreadCategories: [],
+  bakerySweetCategories: [],
   promotionSheets: [],
   promotionSheet: {
     title: "Aktionsblatt ansehen",

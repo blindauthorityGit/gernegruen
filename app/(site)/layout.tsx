@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { GlobalDialogProvider } from "@/components/dialogs/GlobalDialogProvider";
 import { getPickupAvailability } from "@/lib/preorder/availability";
 import { toOrderableBakeryCategories } from "@/lib/preorder/products";
-import { getCurrentBakeryCategories } from "@/lib/weekly/data";
+import { getCurrentBakeryGroups } from "@/lib/weekly/data";
 import {getBusinessSettings} from "@/sanity/lib/businessSettings";
 import {getFooterSettings} from "@/sanity/lib/footerSettings";
 import {SanityLive} from "@/sanity/lib/live";
@@ -16,7 +16,7 @@ import {CookieNotice} from "@/components/layout/CookieNotice";
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   const [categories, availability, business, footer, draft] = await Promise.all([
-    getCurrentBakeryCategories(),
+    getCurrentBakeryGroups(),
     Promise.resolve(getPickupAvailability()),
     getBusinessSettings(),
     getFooterSettings(),

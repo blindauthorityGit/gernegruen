@@ -30,6 +30,16 @@ export const CURRENT_WEEKLY_PAGE_QUERY = defineQuery(/* groq */ `
         title,
         products[] { _key, name, price, note }
       },
+      "bakeryBreadCategories": bakeryCatalog->breadCategories[] {
+        _key,
+        title,
+        products[] { _key, name, price, note }
+      },
+      "bakerySweetCategories": bakeryCatalog->sweetCategories[] {
+        _key,
+        title,
+        products[] { _key, name, price, note }
+      },
       "promotionSheets": select(
         count(promotionSheets[_ref]) > 0 => (promotionSheets[]->)[
           isEnabled != false &&
@@ -59,6 +69,16 @@ export const CURRENT_WEEKLY_PAGE_QUERY = defineQuery(/* groq */ `
 export const CURRENT_BAKERY_CATALOG_QUERY = defineQuery(/* groq */ `
   *[_type == "bakeryCatalog" && _id == "bakeryCatalog-main"][0] {
     _id,
+    breadCategories[] {
+      _key,
+      title,
+      products[] { _key, name, price, note }
+    },
+    sweetCategories[] {
+      _key,
+      title,
+      products[] { _key, name, price, note }
+    },
     categories[] {
       _key,
       title,

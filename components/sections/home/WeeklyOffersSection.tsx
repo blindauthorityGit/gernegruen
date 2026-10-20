@@ -36,19 +36,17 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
   const produce = data?.cards.find((card) => stegaClean(card.marker) === "leaf");
   const bakery = data?.cards.find((card) => stegaClean(card.marker) === "bread");
   const promotions = data?.cards.find((card) => stegaClean(card.marker) === "promotion");
-  const breadEntry = bakery?.entries?.find((entry) => /brot/i.test(stegaClean(entry.title)));
-  const cakeEntry = bakery?.entries?.find((entry) => /kuchen/i.test(stegaClean(entry.title)));
   const promotionalEntries = promotions?.entries?.slice(0, 2) ?? [];
   const teaserProducts = getProduceTeaserProducts(produceList, 4);
   const bakeryCards: WeeklyBakeryCardData[] = [
     {
-      title: "Brot der Woche",
-      name: breadEntry?.description || breadEntry?.title || "Brot der Woche",
+      title: "Wochenangebot",
+      name: "Brot der Woche",
       image: {src: "/graphics/weekly-bread-illustration.png", alt: "Flache Illustration eines Brots"},
     },
     {
-      title: "Kuchen der Woche",
-      name: cakeEntry?.description || cakeEntry?.title || "Kuchen der Woche",
+      title: "Wochenangebot",
+      name: "Kuchen der Woche",
       image: {src: "/graphics/weekly-cake-illustration.png", alt: "Flache Illustration eines Kuchens"},
     },
   ];

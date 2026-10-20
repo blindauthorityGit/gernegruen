@@ -1,19 +1,10 @@
 import "server-only";
 
 import Holidays from "date-holidays";
+import {getMinimumPickupDateByCutoff, getTodayInDreieich, isPickupDateBeforeCutoff} from "@/lib/preorder/deadlines";
 
 const TIME_ZONE = "Europe/Berlin";
 const holidays = new Holidays("DE", "HE", { languages: "de", timezone: TIME_ZONE, types: ["public"] });
-
-function berlinDateParts(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  return Object.fromEntries(parts.map((part) => [part.type, part.value])) as Record<string, string>;
-}
 
 function addDays(date: string, days: number) {
   const value = new Date(`${date}T12:00:00Z`);
@@ -21,13 +12,10 @@ function addDays(date: string, days: number) {
   return value.toISOString().slice(0, 10);
 }
 
-export function getTodayInDreieich(now = new Date()) {
-  const { year, month, day } = berlinDateParts(now);
-  return `${year}-${month}-${day}`;
-}
-
 export function getMinimumPickupDate(now = new Date()) {
-  return addDays(getTodayInDreieich(now), 1);
+  const today = getTodayInDreieich(now);
+  const excludedDates = getHolidayDates(new Date(`${today}T12:00:00Z`).getUTCFullYear(), new Date(`${today}T12:00:00Z`).getUTCFullYear() + 2);
+  return getMinimumPickupDateByCutoff(now, excludedDates);
 }
 
 export function getHolidayDates(startYear: number, endYear: number) {
@@ -44,9 +32,10 @@ export function isValidPickupDate(value: string, now = new Date()) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T12:00:00Z`);
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return false;
-  if (value < getMinimumPickupDate(now)) return false;
+  if (value <= getTodayInDreieich(now)) return false;
   if (parsed.getUTCDay() === 0) return false;
-  return !getHolidayDates(parsed.getUTCFullYear(), parsed.getUTCFullYear()).includes(value);
+  if (getHolidayDates(parsed.getUTCFullYear(), parsed.getUTCFullYear()).includes(value)) return false;
+  return isPickupDateBeforeCutoff(value, now);
 }
 
 export function getPickupAvailability(now = new Date(), monthsAhead = 18) {

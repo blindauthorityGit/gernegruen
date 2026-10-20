@@ -56,22 +56,20 @@ export default async function WeeklyPage() {
   ]);
   const assortmentEdition = assortment?.enabled === false ? null : assortment?.edition;
   const bakeryCard = assortmentEdition?.cards.find((card) => stegaClean(card.marker) === "bread");
-  const bakeryHighlights = bakeryCard ? (bakeryCard.entries ?? [])
-    .filter((entry) => /brot|kuchen/i.test(stegaClean(entry.title)))
-    .map((entry) => {
-      const isCake = /kuchen/i.test(stegaClean(entry.title));
-      return {
-        _key: entry._key,
-        sanityPath: `cards[_key=="${bakeryCard._key}"].entries[_key=="${entry._key}"]`,
-        title: stegaClean(entry.title),
-        name: stegaClean(entry.description || entry.title),
-        description: stegaClean(bakeryCard.intro ?? ""),
-        image: {
-          src: isCake ? "/graphics/weekly-cake-illustration.png" : "/graphics/weekly-bread-illustration.png",
-          alt: isCake ? "Illustration eines Kuchens" : "Illustration eines Brots",
-        },
-      };
-    }) : [];
+  const bakeryHighlights = bakeryCard ? ([
+    {
+      title: "Wochenangebot",
+      name: "Brot der Woche",
+      description: "",
+      image: {src: "/graphics/weekly-bread-illustration.png", alt: "Illustration eines Brots"},
+    },
+    {
+      title: "Wochenangebot",
+      name: "Kuchen der Woche",
+      description: "",
+      image: {src: "/graphics/weekly-cake-illustration.png", alt: "Illustration eines Kuchens"},
+    },
+  ]) : [];
 
   return (
     <main>
@@ -94,7 +92,7 @@ export default async function WeeklyPage() {
       <FreshProduceSection list={produceList} settings={settings} />
       {nextWeekPreview && <NextWeekPreviewSection preview={nextWeekPreview} />}
       <WeeklyBakeryHighlights highlights={bakeryHighlights} settings={settings} sourceId={assortmentEdition?.id} sourceType="assortmentEdition" />
-      {data.bakeryCategories.length > 0 && <BakeryPriceList categories={data.bakeryCategories} settings={settings} catalogId={data.bakeryCatalogId} />}
+      {(data.bakeryBreadCategories.length > 0 || data.bakerySweetCategories.length > 0) && <BakeryPriceList breadCategories={data.bakeryBreadCategories} sweetCategories={data.bakerySweetCategories} settings={settings} catalogId={data.bakeryCatalogId} />}
       <WeeklyPromotions sheets={settings?.promotionSheets ?? []} settings={settings} showInactive={draft.isEnabled} />
       {wishPage?.productWish?.isVisible !== false && <ProductWishCTA content={wishPage?.productWish} sourceId={wishPage?._id} />}
     </main>

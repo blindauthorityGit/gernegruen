@@ -43,6 +43,8 @@ export type WeeklyPageData = {
   produceGroups: ProduceGroup[];
   bakeryHighlights: WeeklyHighlight[];
   bakeryCategories: BakeryCategory[];
+  bakeryBreadCategories: BakeryCategory[];
+  bakerySweetCategories: BakeryCategory[];
   bakeryCatalogId?: string;
   promotionSheets: PromotionSheet[];
   promotionSheet: PromotionSheet | null;
@@ -50,5 +52,7 @@ export type WeeklyPageData = {
 
 export type BakeryCatalogData = {
   _id: string;
-  categories: BakeryCategory[];
+  breadCategories?: BakeryCategory[];
+  sweetCategories?: BakeryCategory[];
+  categories?: BakeryCategory[];
 };

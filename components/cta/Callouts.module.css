@@ -5,6 +5,7 @@
 .preorder h2, .wish h2 { max-width: 690px; }
 .preorder h2 { color: white; }
 .preorder p:not(.eyebrow), .wish p:not(.eyebrow):not(.disclaimer) { max-width: 750px; margin: 16px 0 0; font-size: 17px; line-height: 1.6; }
+.preorder .preorderDeadline { margin-top: 10px; font-size: 15px; font-weight: 700; }
 .eyebrow { margin: 0 0 9px; color: #c9dc88; font-size: 12px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .actions { display: grid; justify-items: stretch; gap: 13px; min-width: 260px; }
 .actions > button { background: var(--color-orange); color: white; }

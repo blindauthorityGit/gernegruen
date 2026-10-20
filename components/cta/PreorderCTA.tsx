@@ -23,6 +23,7 @@ export function PreorderCTA({eyebrow, heading, text, buttonLabel}: PreorderCTAPr
         <p className={styles.eyebrow} data-sanity={sanityDataAttribute("weeklyPageSettings", "weeklyPageSettings", "preorderEyebrow")}>{eyebrow || "Einfach für dich zurückgelegt"}</p>
         <Heading id="preorder-title" data-sanity={sanityDataAttribute("weeklyPageSettings", "weeklyPageSettings", "preorderHeading")}>{heading || "Deine Lieblingsbackwaren vorbestellen"}</Heading>
         <p data-sanity={sanityDataAttribute("weeklyPageSettings", "weeklyPageSettings", "preorderDescription")}>{text || "Du möchtest sichergehen, dass dein Lieblingsbrot oder Kuchen für dich bereitliegt? Bestelle deine Backwaren ganz einfach vor und hole sie bei uns im Laden ab."}</p>
+        <p className={styles.preorderDeadline}><strong>Vorbestellfristen:</strong> Für den Folgetag bitte bis 16 Uhr vorbestellen. Mittwochs gilt 13 Uhr, samstags 12 Uhr.</p>
       </div>
       <div className={styles.actions}>
         <Button onClick={() => openDialog("preorder")} data-sanity={sanityDataAttribute("weeklyPageSettings", "weeklyPageSettings", "preorderButtonLabel")}>{buttonLabel || "Backwaren vorbestellen"}</Button>
