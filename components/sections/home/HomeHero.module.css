@@ -153,6 +153,11 @@
   object-fit: contain;
 }
 
+.imageStage img.maskedImage {
+  object-fit: cover;
+  mask: url("/graphics/home-hero-mask.svg") center / 100% 100% no-repeat;
+}
+
 @keyframes hero-rise {
   from {
     opacity: 0;

@@ -70,7 +70,11 @@ The nested `startHero` object contains:
 - two headline lines
 - subline / description
 - primary and secondary actions, with editable labels and destinations
-- editable hero image and alternative text (required for uploaded images)
+- editable hero photo and alternative text (required for uploaded images). Editors
+  can upload an ordinary photo and use Sanity's hotspot/crop controls to position
+  it inside the fixed organic SVG mask. The former finished graphic field remains
+  hidden and read-only so existing published content continues to render until a
+  new photo is selected.
 
 `storeIntroSettings.content` is a `storeIntroSection` object with the store
 photo, intro copy, parking note, highlights, ordered assortment categories, and
@@ -209,6 +213,7 @@ token in `.env.local`.
 ## Weekly overview
 
 - The KW badges and fresh produce come only from the current `weeklyProduceList`. The manually exchanged bread and cake cards, plus the homepage action link box, come from the latest enabled `assortmentEdition`; its date range does not hide them when a week passes.
+- The bread card's `entries` in that edition provide the product names and optional euro prices for both the homepage and `/diese-woche` bakery highlights. `description` remains an optional extra line.
 - `weeklyOverview` supplies the legacy bakery price list fallback and older weekly content. It does not control the KW badge or bread and cake highlights.
 - The KW badges on the homepage/assortment teaser and `/diese-woche` are derived only from the published, non-archived `weeklyProduceList` for the current ISO week in `Europe/Vienna`. They are hidden when that list is unavailable; `weeklyOverview.week` and the assortment edition's optional callout do not supply or override the badge. The homepage, assortment and weekly page are request-rendered so the selected week rolls over without a new build.
 - `bakeryCatalog` stores the slower-changing bakery assortment independently of the weekly produce list. The fixed `bakeryCatalog-main` document has separate `breadCategories` (Brot & Gebäck) and `sweetCategories` (Süßgebäck) arrays. Both appear in distinct areas on `/diese-woche` and together supply the preorder dialog. Use **Backwaren importieren** in Studio to replace them from an Excel sheet with Bereich (Brot & Gebäck or Süßgebäck), category, product name, price, and optional note or article-number columns; each import creates a draft for review and publication. The former `categories` field stays read-only for compatibility with older content.

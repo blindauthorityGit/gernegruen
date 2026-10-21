@@ -22,6 +22,10 @@ type SubmitStatus = "idle" | "loading" | "success" | "stored_email_failed" | "er
 const euro = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
 const sectionTitles = {bread: "Brot & Gebäck", sweet: "Süßgebäck"} as const;
 
+function isActionCategory(category: Pick<OrderableBakeryCategory, "title">) {
+  return category.title.trim().toLocaleLowerCase("de-DE") === "aktion";
+}
+
 function parseDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day, 12);
@@ -58,7 +62,8 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
   const filteredCategories = useMemo(() => categories.map((category) => ({
     ...category,
     products: category.products.filter((product) => matchesBakerySearch(searchQuery, product, category.title, sectionTitles[category.section])),
-  })).filter((category) => category.products.length > 0), [categories, searchQuery]);
+  })).filter((category) => category.products.length > 0)
+    .sort((left, right) => Number(isActionCategory(right)) - Number(isActionCategory(left))), [categories, searchQuery]);
   const visibleSections = searchQuery ? (["bread", "sweet"] as const) : ([activeSection] as const);
 
   useEffect(() => {
@@ -194,14 +199,17 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
               )}
               {searchQuery && filteredCategories.length === 0 && <p className={styles.searchEmpty} role="status">Keine passenden Backwaren gefunden. Prüfe die Schreibweise oder versuche einen kürzeren Suchbegriff.</p>}
               {visibleSections.map((section) => {
-                const sectionCategories = (searchQuery ? filteredCategories : categories.filter((category) => category.section === section))
-                  .filter((category) => category.section === section);
+                const sectionCategories = filteredCategories.filter((category) => category.section === section);
                 if (sectionCategories.length === 0) return null;
                 return <div className={styles.productSection} key={section}>
                   {searchQuery && <h3>{sectionTitles[section]}</h3>}
                   <div className={styles.productCategories} data-search-results={searchQuery ? "true" : undefined}>
                     {sectionCategories.map((category) => (
-                      <details key={`${category.id}:${searchQuery}`} open={Boolean(searchQuery)}>
+                      <details
+                        data-action-category={isActionCategory(category) ? "true" : undefined}
+                        key={`${category.id}:${searchQuery}`}
+                        open={isActionCategory(category) || Boolean(searchQuery)}
+                      >
                         <summary>
                           <span>{category.title}</span>
                           <span className={styles.categoryControls}>

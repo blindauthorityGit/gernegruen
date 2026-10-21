@@ -75,10 +75,20 @@ export const startHero = defineType({
       fields: ctaFields,
     }),
     defineField({
-      name: "image",
-      title: "Hero-Grafik",
+      name: "photo",
+      title: "Hero-Foto",
       type: "image",
-      description: "Optional. Ohne Upload wird das Ladenfoto aus dem Hero verwendet. Das Bild wird vollständig und ohne Beschnitt dargestellt.",
+      description: "Lade ein normales Foto hoch. Es wird automatisch in der organischen Form angezeigt. Über „Ausschnitt bearbeiten“ kannst du den Bildfokus anpassen.",
+      options: {hotspot: true},
+    }),
+    defineField({
+      name: "image",
+      title: "Bisherige Hero-Grafik",
+      type: "image",
+      description: "Älteres Bildfeld. Für neue Bilder bitte „Hero-Foto“ oben verwenden.",
+      deprecated: {reason: "Für neue Fotos das Feld „Hero-Foto“ verwenden."},
+      readOnly: true,
+      hidden: true,
     }),
     defineField({
       name: "imageAlt",
@@ -86,8 +96,8 @@ export const startHero = defineType({
       type: "string",
       description: "Beschreibt den Bildinhalt für Menschen, die das Bild nicht sehen können.",
       validation: (rule) => rule.max(160).custom((value, context) => {
-        const parent = context.parent as {image?: {asset?: {_ref?: string}}} | undefined
-        return !parent?.image?.asset?._ref || Boolean(value?.trim()) || "Bitte einen Alternativtext für die hochgeladene Grafik eingeben."
+        const parent = context.parent as {image?: {asset?: {_ref?: string}}; photo?: {asset?: {_ref?: string}}} | undefined
+        return !(parent?.photo?.asset?._ref || parent?.image?.asset?._ref) || Boolean(value?.trim()) || "Bitte einen Alternativtext für das hochgeladene Foto eingeben."
       }),
     }),
   ],

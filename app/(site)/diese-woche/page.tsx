@@ -57,19 +57,20 @@ export default async function WeeklyPage() {
   const assortmentEdition = assortment?.enabled === false ? null : assortment?.edition;
   const bakeryCard = assortmentEdition?.cards.find((card) => stegaClean(card.marker) === "bread");
   const bakeryHighlights = bakeryCard ? ([
-    {
+    {key: "bread", label: "Brot der Woche", image: {src: "/graphics/weekly-bread-illustration.png", alt: "Illustration eines Brots"}},
+    {key: "cake", label: "Kuchen der Woche", image: {src: "/graphics/weekly-cake-illustration.png", alt: "Illustration eines Kuchens"}},
+  ].map(({key, label, image}) => {
+    const entry = bakeryCard.entries?.find((item) => item._key === key);
+    return {
+      _key: key,
+      sanityPath: `cards[_key=="bakery"].entries[_key=="${key}"]`,
       title: "Wochenangebot",
-      name: "Brot der Woche",
+      name: entry?.description || entry?.title || label,
       description: "",
-      image: {src: "/graphics/weekly-bread-illustration.png", alt: "Illustration eines Brots"},
-    },
-    {
-      title: "Wochenangebot",
-      name: "Kuchen der Woche",
-      description: "",
-      image: {src: "/graphics/weekly-cake-illustration.png", alt: "Illustration eines Kuchens"},
-    },
-  ]) : [];
+      price: entry?.price,
+      image,
+    };
+  })) : [];
 
   return (
     <main>

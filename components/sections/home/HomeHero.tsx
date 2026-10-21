@@ -10,7 +10,7 @@ export type HomeHeroData = {
   description: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
-  image: { src: string; alt: string };
+  image: { src: string; alt: string; masked?: boolean };
 };
 
 export function HomeHero({ data }: { data: HomeHeroData }) {
@@ -35,7 +35,7 @@ export function HomeHero({ data }: { data: HomeHeroData }) {
           </div>
         </div>
         <div className={styles.imageStage}>
-          <Image alt={data.image.alt} fill priority sizes="(max-width: 767px) 94vw, (max-width: 1100px) 90vw, 1128px" src={data.image.src} unoptimized={data.image.src.startsWith("https://cdn.sanity.io/")} data-sanity={sanityDataAttribute("startPage", "startPage", "hero.image")} />
+          <Image alt={data.image.alt} fill preload sizes="(max-width: 767px) 94vw, (max-width: 1100px) 90vw, 1128px" src={data.image.src} unoptimized={data.image.src.startsWith("https://cdn.sanity.io/")} className={data.image.masked ? styles.maskedImage : undefined} data-sanity={sanityDataAttribute("startPage", "startPage", "hero.photo")} />
         </div>
       </Container>
     </section>

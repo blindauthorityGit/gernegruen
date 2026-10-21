@@ -1,4 +1,4 @@
-import {buildLegacyTheme, defineConfig} from "sanity"
+import {buildLegacyTheme, defineConfig, defineLocaleResourceBundle} from "sanity"
 import {structureTool} from "sanity/structure"
 import {presentationTool} from "sanity/presentation"
 
@@ -13,12 +13,22 @@ import {resolve} from "./sanity/presentation/resolve"
 import {DocumentsIcon} from "@sanity/icons/Documents"
 import {EditIcon} from "@sanity/icons/Edit"
 import {StudioToolMenu} from "./components/studio/StudioToolMenu"
+import {deDELocale} from "@sanity/locale-de-de"
 
 const siteUrl = process.env.NEXT_PUBLIC_SANITY_PREVIEW_URL || (
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
     : process.env.NEXT_PUBLIC_SITE_URL || "https://gernegruen.de"
 )
+
+const germanImageToolCopy = defineLocaleResourceBundle({
+  locale: "de-DE",
+  namespace: "studio",
+  resources: {
+    "inputs.imagetool.title": "Bildfokus und Zuschnitt",
+    "inputs.imagetool.description": "Ziehe den Rahmen, um den sichtbaren Bildausschnitt festzulegen. Verschiebe den Kreis auf das Motiv, das möglichst immer zu sehen sein soll.",
+  },
+})
 
 export default defineConfig({
   name: "default",
@@ -49,6 +59,7 @@ export default defineConfig({
     "--state-danger-color": "#a94432",
   }),
   plugins: [
+    deDELocale(),
     structureTool({structure, title: "Inhalte", icon: DocumentsIcon}),
     presentationTool({
       title: "Live-Bearbeitung",
@@ -60,6 +71,7 @@ export default defineConfig({
       },
     }),
   ],
+  i18n: {bundles: [germanImageToolCopy]},
   tools: [
     {name: "produce-import", title: "Produktlisten importieren", icon: TagIcon, component: ProduceImportTool},
     {name: "bakery-catalog-import", title: "Backwaren importieren", icon: DocumentsIcon, component: BakeryCatalogImportTool},

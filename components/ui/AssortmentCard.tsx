@@ -13,13 +13,14 @@ export type AssortmentCardData = {
   intro?: string;
   badgeText?: string;
   marker: "leaf" | "bread" | "promotion";
-  entries?: {_key: string; title: string; description?: string}[];
+  entries?: {_key: string; title: string; description?: string; price?: number}[];
   note?: string;
   cta?: {label: string; href: string};
 };
 
 const markers = {leaf: "leaf", bread: "bakery", promotion: "promotion"};
 const imageBuilder = createImageUrlBuilder({projectId: "zqaggz4f", dataset: "production"});
+const priceFormatter = new Intl.NumberFormat("de-AT", {style: "currency", currency: "EUR"});
 
 export function AssortmentCard({data, variant = "default"}: {data: AssortmentCardData; variant?: "default" | "compact"}) {
   const marker = stegaClean(data.marker);
@@ -33,7 +34,7 @@ export function AssortmentCard({data, variant = "default"}: {data: AssortmentCar
     {variant === "default" && !!data.entries?.length && <ul className={styles.entries}>
       {data.entries.map(entry => <li key={entry._key}>
         <Image alt="" aria-hidden="true" width={20} height={20} src={`/graphics/assortment-${markers[marker as keyof typeof markers] ?? "leaf"}-marker.png`} />
-        <div>{entry.title}{entry.description && <span className={styles.detail}>{entry.description}</span>}</div>
+        <div>{entry.title}{entry.description && <span className={styles.detail}>{entry.description}</span>}{typeof entry.price === "number" && <span className={styles.detail}>{priceFormatter.format(entry.price)}</span>}</div>
       </li>)}
     </ul>}
     {variant === "compact" && <p className={styles.examples}>{[...new Set((data.entries ?? []).map((entry) => entry.title.trim()).filter((title) => title && !/und vieles mehr/i.test(title)))].join(" · ")}<em>und vieles mehr ...</em></p>}

@@ -39,17 +39,17 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
   const promotionalEntries = promotions?.entries?.slice(0, 2) ?? [];
   const teaserProducts = getProduceTeaserProducts(produceList, 4);
   const bakeryCards: WeeklyBakeryCardData[] = [
-    {
+    {key: "bread", label: "Brot der Woche", image: {src: "/graphics/weekly-bread-illustration.png", alt: "Flache Illustration eines Brots"}},
+    {key: "cake", label: "Kuchen der Woche", image: {src: "/graphics/weekly-cake-illustration.png", alt: "Flache Illustration eines Kuchens"}},
+  ].map(({key, label, image}) => {
+    const entry = bakery?.entries?.find((item) => item._key === key);
+    return {
       title: "Wochenangebot",
-      name: "Brot der Woche",
-      image: {src: "/graphics/weekly-bread-illustration.png", alt: "Flache Illustration eines Brots"},
-    },
-    {
-      title: "Wochenangebot",
-      name: "Kuchen der Woche",
-      image: {src: "/graphics/weekly-cake-illustration.png", alt: "Flache Illustration eines Kuchens"},
-    },
-  ];
+      name: entry?.description || entry?.title || label,
+      price: entry?.price,
+      image,
+    };
+  });
 
   return (
     <section className={styles.section} id="diese-woche" aria-labelledby="weekly-offers-heading">

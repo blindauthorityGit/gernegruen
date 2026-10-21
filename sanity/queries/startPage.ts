@@ -7,7 +7,8 @@ export const START_HERO_QUERY = defineQuery(/* groq */ `
     description,
     primaryCta {label, href},
     secondaryCta {label, href},
-    "imageUrl": image.asset->url,
+    "photo": photo {"url": asset->url, crop, hotspot},
+    "legacyImageUrl": image.asset->url,
     imageAlt
   }
 `)
@@ -23,7 +24,8 @@ export const START_PAGE_CONTENT_QUERY = defineQuery(/* groq */ `
       description,
       primaryCta {label, href},
       secondaryCta {label, href},
-      "imageUrl": image.asset->url,
+      "photo": photo {"url": asset->url, crop, hotspot},
+      "legacyImageUrl": image.asset->url,
       imageAlt
     },
   }

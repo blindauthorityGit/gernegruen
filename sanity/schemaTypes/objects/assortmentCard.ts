@@ -4,8 +4,9 @@ import {defineArrayMember, defineField, defineType} from "sanity"
 export const assortmentEntry = defineType({
   name: "assortmentEntry", title: "Listenpunkt", type: "object", icon: ImageIcon,
   fields: [
-    defineField({name: "title", title: "Text", type: "string", validation: r => r.required().max(100)}),
-    defineField({name: "description", title: "Zusatzzeile", type: "string", description: "Optional, z. B. der Name des Brots der Woche.", validation: r => r.max(160)}),
+    defineField({name: "title", title: "Produktname / Titel", type: "string", validation: r => r.required().max(100)}),
+    defineField({name: "description", title: "Zusatzzeile", type: "string", description: "Optionale Zusatzinfo zum Produkt oder Highlight.", validation: r => r.max(160)}),
+    defineField({name: "price", title: "Preis in Euro", type: "number", description: "Optionaler Produktpreis, z. B. 4,10.", validation: r => r.positive().precision(2)}),
   ],
   preview: {select: {title: "title", subtitle: "description"}},
 })

@@ -18,7 +18,7 @@ Segoe Script system-font stack. Other Figma components retain their extracted sp
 | Hero display | 56–76px primary line and 34–42px Segoe Script secondary line; mobile primary line 46–62px and secondary 30–39px. |
 | Hero lead | 16–17px with 1.6 line height and a 560px maximum measure. |
 | Hero controls | 50px minimum height on desktop; 54px on mobile. |
-| Hero image | Up to 1128px wide, retaining the supplied organic transparent crop. |
+| Hero image | Up to 1128px wide, clipped to the supplied organic vector mask; the photo and focal point are editor-managed. |
 | Section heading | Fluid 32–44px on desktop; 30px on mobile. |
 | Card heading | 24px, increasing to 28px from 1440px. |
 | Section/card body | 17px, increasing to 20px from 1440px; 1.55–1.6 line height. |

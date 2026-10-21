@@ -12,6 +12,9 @@ import {getCurrentWeeklyProduceList} from "@/lib/weekly/produce-data";
 import { createPageMetadata } from "@/lib/seo";
 import type {Metadata} from "next";
 import {stegaClean} from "next-sanity";
+import {createImageUrlBuilder} from "@sanity/image-url";
+
+const sanityImageBuilder = createImageUrlBuilder({projectId: "zqaggz4f", dataset: "production"});
 
 export const dynamic = "force-dynamic";
 
@@ -44,8 +47,8 @@ const homeHero: HomeHeroData = {
     href: "/sortiment",
   },
   image: {
-    src: "/images/home-hero-store.png",
-    alt: "Blick in den GerneGrün Markt mit frischem Obst und Gemüse",
+    src: "/images/home-hero-tomaten-kaese.png",
+    alt: "Auswahl mit Tomaten, Käse und Olivenöl in einem Weidenkorb",
   },
 };
 
@@ -53,7 +56,11 @@ const homeHero: HomeHeroData = {
 export default async function Home() {
   const [startPageContent, storeIntroContent, assortment, brands, produceList] = await Promise.all([
     fetchSanity<{
-      hero?: (Partial<HomeHeroData> & {imageUrl?: string; imageAlt?: string}) | null;
+      hero?: (Partial<HomeHeroData> & {
+        photo?: {url?: string; crop?: {top: number; bottom: number; left: number; right: number}; hotspot?: {x: number; y: number; width: number; height: number}};
+        legacyImageUrl?: string;
+        imageAlt?: string;
+      }) | null;
     } | null>(
       START_PAGE_CONTENT_QUERY,
     ).catch((error: unknown) => {
@@ -87,7 +94,15 @@ export default async function Home() {
     description: hero?.description?.trim() || homeHero.description,
     primaryCta: hero?.primaryCta ? {...hero.primaryCta, href: stegaClean(hero.primaryCta.href)} : homeHero.primaryCta,
     secondaryCta: hero?.secondaryCta ? {...hero.secondaryCta, href: stegaClean(hero.secondaryCta.href)} : homeHero.secondaryCta,
-    image: hero?.imageUrl ? {src: stegaClean(hero.imageUrl), alt: hero.imageAlt ?? ""} : homeHero.image,
+    image: hero?.photo?.url
+      ? {
+          src: sanityImageBuilder.image({asset: {url: stegaClean(hero.photo.url)}, crop: hero.photo.crop, hotspot: hero.photo.hotspot}).width(1800).height(928).fit("crop").auto("format").url(),
+          alt: hero.imageAlt ?? "",
+          masked: true,
+        }
+      : hero?.legacyImageUrl
+        ? {src: stegaClean(hero.legacyImageUrl), alt: hero.imageAlt ?? ""}
+        : homeHero.image,
   };
   const storeIntro = storeIntroContent
     ? {...storeIntroContent, imageUrl: storeIntroContent.imageUrl ? stegaClean(storeIntroContent.imageUrl) : undefined, cta: storeIntroContent.cta ? {...storeIntroContent.cta, href: stegaClean(storeIntroContent.cta.href)} : undefined}

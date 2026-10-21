@@ -25,6 +25,7 @@
     "@gsap/react": "^2.1.2",
     "@sanity/client": "^7.27.0",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/locale-de-de": "^1.1.37",
     "@sanity/ui": "^4.4.4",
     "@sanity/vision": "^6.18.0",
     "date-holidays": "^3.37.0",
