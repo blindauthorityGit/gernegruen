@@ -106,10 +106,8 @@ export const CURRENT_PROMOTION_SHEETS_QUERY = defineQuery(/* groq */ `
 export const CURRENT_WEEKLY_PRODUCE_LIST_QUERY = defineQuery(/* groq */ `
   *[
     _type == "weeklyProduceList" &&
-    week == $week &&
-    year == $year &&
     isArchived != true
-  ] | order(_updatedAt desc, _id asc)[0] {
+  ] | order(importedAt desc, _updatedAt desc, _id asc)[0] {
     _id,
     _type,
     week,

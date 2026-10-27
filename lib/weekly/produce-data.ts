@@ -99,12 +99,8 @@ export function getCurrentIsoWeek(timeZone = "Europe/Vienna") {
 }
 
 export async function getCurrentWeeklyProduceList(): Promise<WeeklyProduceList | null> {
-  const currentWeek = getCurrentIsoWeek()
   try {
-    const data = await fetchSanity<WeeklyProduceList | null>(
-      CURRENT_WEEKLY_PRODUCE_LIST_QUERY,
-      currentWeek,
-    )
+    const data = await fetchSanity<WeeklyProduceList | null>(CURRENT_WEEKLY_PRODUCE_LIST_QUERY)
     if (!data || !Array.isArray(data.products) || data.products.length === 0) return null
     return {...data, products: [...data.products].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}
   } catch (error) {
