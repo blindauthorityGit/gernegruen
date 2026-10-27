@@ -7,8 +7,19 @@ import styles from "./OrdersDashboardTool.module.css"
 type Entry = {id: string; name?: string; email?: string; phone?: string; product?: string; description?: string; pickupDate?: string; products?: {name?: string; quantity?: number; unitPriceCents?: number}[]; totalCents?: number; message?: string; status?: string; customerEmailStatus?: string; createdAt?: string; expiresAt?: string; lastSubstantiveActivityAt?: string; contractConcludedAt?: string; completedAt?: string; archiveVerifiedAt?: string}
 type Data = {orders: Entry[]; wishes: Entry[]}
 type AuthResult = {idToken?: string; error?: {message?: string}}
+type SessionResult = {authenticated?: boolean; message?: string}
 const statusLabels: Record<string,string> = {pending:"Neu",in_progress:"In Bearbeitung",confirmed:"Bestätigt",completed:"Erledigt",cancelled:"Storniert",read:"Gelesen"}
 const date = (value?: string) => value ? new Intl.DateTimeFormat("de-AT", {dateStyle:"medium",timeStyle:"short",timeZone:"Europe/Vienna"}).format(new Date(value)) : "–"
+
+async function readJson<T>(response: Response): Promise<T | null> {
+  const body = await response.text()
+  if (!body.trim()) return null
+  try {
+    return JSON.parse(body) as T
+  } catch {
+    return null
+  }
+}
 
 export function OrdersDashboardTool() {
   const [data, setData] = useState<Data>({orders:[],wishes:[]})
@@ -60,15 +71,17 @@ export function OrdersDashboardTool() {
     setAuthBusy(true);setError("")
     try {
       const response=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(apiKey)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.trim(),password,returnSecureToken:true})})
-      const result:AuthResult=await response.json()
-      if(!response.ok || !result.idToken) {
+      const result=await readJson<AuthResult>(response)
+      if(!response.ok || !result?.idToken) {
+        if (!result) throw new Error(`Firebase hat eine leere oder ungültige Antwort geliefert (HTTP ${response.status}). Bitte Firebase-Konfiguration und API-Schlüssel prüfen.`)
         const code=result.error?.message?.split(" ")[0]??""
         const messages:Record<string,string>={INVALID_LOGIN_CREDENTIALS:"E-Mail oder Passwort stimmt nicht.",EMAIL_NOT_FOUND:"Für diese E-Mail-Adresse gibt es kein Firebase-Konto.",INVALID_PASSWORD:"Das Passwort stimmt nicht.",USER_DISABLED:"Dieses Konto wurde in Firebase deaktiviert.",OPERATION_NOT_ALLOWED:"E-Mail/Passwort ist in Firebase Authentication nicht aktiviert.",API_KEY_INVALID:"Der Firebase-Web-API-Schlüssel ist ungültig.",PROJECT_NOT_FOUND:"Der Firebase-Web-API-Schlüssel gehört zu keinem verfügbaren Projekt.",TOO_MANY_ATTEMPTS_TRY_LATER:"Zu viele Anmeldeversuche. Bitte später erneut versuchen."}
         throw new Error(messages[code]??`Firebase-Anmeldung fehlgeschlagen (${code||response.status}). Prüfe Auth-Anbieter und API-Schlüssel.`)
       }
       const sessionResponse=await fetch("/api/studio/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({idToken:result.idToken})})
-      const sessionResult=await sessionResponse.json()
-      if(!sessionResponse.ok) throw new Error(sessionResult.message||"Sichere Sitzung konnte nicht erstellt werden.")
+      const sessionResult=await readJson<SessionResult>(sessionResponse)
+      if(!sessionResponse.ok) throw new Error(sessionResult?.message||`Die Dashboard-Anmeldung wurde abgelehnt (HTTP ${sessionResponse.status}). Prüfe, ob dein Firebase-Konto für das Dashboard freigeschaltet ist.`)
+      if(!sessionResult?.authenticated) throw new Error("Der Server hat keine gültige Dashboard-Sitzung bestätigt. Bitte erneut versuchen.")
       setLoading(true);setAuthenticated(true);setPassword("")
     } catch(reason) {setError(reason instanceof Error?reason.message:"Anmeldung fehlgeschlagen.")} finally {setAuthBusy(false)}
   }
@@ -92,7 +105,7 @@ export function OrdersDashboardTool() {
   const list = (type:"order"|"wish", items:Entry[]) => <Card className={styles.sectionCard} padding={4} border radius={2}><Stack gap={3}><Heading className={styles.sectionTitle} size={2}>{type==="order"?"Backwaren-Bestellungen":"Kundenwünsche"}</Heading>{items.length===0?<Text muted>Keine passenden Anfragen.</Text>:<div className={styles.tableWrap}><table className={styles.table}><thead><tr>{["Eingang","Kunde",...(type==="order"?["Abholung","Artikel","Gesamtpreis"]:["Kontakt","Wunsch"]),"Status",""].map(label=><th className={styles.tableHead} key={label}>{label}</th>)}</tr></thead><tbody>{items.map(entry=><tr className={`${styles.row} ${fresh(entry)?styles.newRow:""}`} key={entry.id}><td className={styles.cell} style={{whiteSpace:"nowrap"}}>{date(entry.createdAt)}</td><td className={styles.cell}>{entry.name||"Nicht angegeben"}</td>{type==="order"?<><td className={styles.cell}>{entry.pickupDate||"–"}</td><td className={styles.cell}>{entry.products?.map(item=>`${item.quantity??1}× ${item.name}`).join(", ")||"–"}</td><td className={styles.cell} style={{whiteSpace:"nowrap"}}>{typeof entry.totalCents==="number"?new Intl.NumberFormat("de-AT",{style:"currency",currency:"EUR"}).format(entry.totalCents/100):"–"}</td></>:<><td className={styles.cell}>{entry.email||"–"}</td><td className={styles.cell}>{entry.product||entry.description||"–"}</td></>}<td className={styles.cell}>{fresh(entry)?<span className={styles.newBadge}>Neu</span>:<span className={styles.statusBadge}>{statusLabels[entry.status??""]??entry.status}</span>}</td><td className={styles.cell}><Button mode="ghost" text="Details ansehen" onClick={()=>open(type,entry)}/></td></tr>)}</tbody></table></div>}</Stack></Card>
 
   if(checkingSession)return <div className={styles.login}><Flex align="center" justify="center" gap={3}><Spinner/><Text>Prüfe Anmeldung …</Text></Flex></div>
-  if(!authenticated)return <div className={styles.login}><div className={styles.loginInner}><div><Text className={styles.eyebrow}>GERNEGRÜN · STUDIO</Text><Heading className={styles.loginHeading} size={3}>Bestellungen & Wünsche</Heading><Text muted>Einmal anmelden. Die Sitzung bleibt auf diesem Gerät bis zu 14 Tage aktiv.</Text></div>{!apiKey&&<Card padding={4} tone="caution" border><Text>Für den Login fehlt <code>NEXT_PUBLIC_FIREBASE_API_KEY</code>. Trage den Web-API-Schlüssel aus den Firebase-Projekteinstellungen in `.env.local` ein und starte Next.js neu.</Text></Card>}{error&&<Card padding={3} tone="critical" border><Text>{error}</Text></Card>}<Card className={styles.loginCard} padding={4} border radius={2}><form onSubmit={event=>void signIn(event)}><Stack gap={3}><label>E-Mail<TextInput type="email" autoComplete="username" required value={email} onChange={event=>setEmail(event.currentTarget.value)}/></label><label>Passwort<TextInput type="password" autoComplete="current-password" required value={password} onChange={event=>setPassword(event.currentTarget.value)}/></label><Button type="submit" text={authBusy?"Melde an …":"Anmelden"} tone="primary" disabled={authBusy||!apiKey}/><Text muted>Nur freigeschaltete Konten können Anfragen ansehen. Eine Registrierung ist hier nicht möglich.</Text></Stack></form></Card></div></div>
+  if(!authenticated)return <div className={styles.login}><div className={styles.loginInner}><header className={styles.loginIntro}><Text className={styles.eyebrow}>GERNEGRÜN · STUDIO</Text><Heading className={styles.loginHeading} size={3}>Bestellungen & Wünsche</Heading><Text className={styles.loginDescription} muted>Melde dich mit deinem freigeschalteten Dashboard-Konto an. Der Zugang ist getrennt von deinem Sanity-Login.</Text></header>{!apiKey&&<Card padding={4} tone="caution" border><Text>Für den Login fehlt <code>NEXT_PUBLIC_FIREBASE_API_KEY</code>. Trage den Web-API-Schlüssel aus den Firebase-Projekteinstellungen in `.env.local` ein und starte Next.js neu.</Text></Card>}{error&&<Card padding={3} tone="critical" border><Text>{error}</Text></Card>}<Card className={styles.loginCard} padding={4} border radius={2}><form onSubmit={event=>void signIn(event)}><Stack gap={3}><label>E-Mail<TextInput type="email" autoComplete="username" required value={email} onChange={event=>setEmail(event.currentTarget.value)}/></label><label>Passwort<TextInput type="password" autoComplete="current-password" required value={password} onChange={event=>setPassword(event.currentTarget.value)}/></label><Button type="submit" text={authBusy?"Melde an …":"Anmelden"} tone="primary" disabled={authBusy||!apiKey}/><Text muted>Nur freigeschaltete Konten sehen die Anfragen. Kunden bestellen weiterhin ohne Anmeldung über das öffentliche Formular.</Text></Stack></form></Card></div></div>
   if(loading)return <div className={styles.dashboard}><Flex align="center" justify="center" padding={6} gap={3}><Spinner/><Text>Lade Anfragen …</Text></Flex></div>
   return <main className={styles.dashboard}><div className={styles.content}><Stack className={styles.stack} gap={5}><header className={styles.hero}><Text className={styles.eyebrow}>GERNEGRÜN · ANFRAGEN</Text><Heading className={styles.heroTitle} size={3}>Bestellungen & Wünsche</Heading><Text className={styles.heroDescription}>Anfragen bearbeiten und Aufbewahrungsfristen nachvollziehen.</Text></header>
     <Flex justify="flex-end"><Button text="Abmelden" mode="ghost" onClick={()=>{void fetch("/api/studio/session",{method:"DELETE"});setAuthenticated(false);setLoading(false);setData({orders:[],wishes:[]});setError("")}}/></Flex>

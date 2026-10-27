@@ -195,8 +195,27 @@
   gap: 20px;
 }
 
+.loginIntro {
+  display: grid;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.loginIntro :global([data-ui="Text"]) {
+  display: block;
+  margin: 0;
+  line-height: 1.5 !important;
+}
+
 .loginHeading {
+  margin: 0 !important;
   color: #08522b !important;
+  line-height: 1.2 !important;
+}
+
+.loginDescription {
+  max-width: 44ch;
+  color: #555 !important;
 }
 
 .detailCard {
