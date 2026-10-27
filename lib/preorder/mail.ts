@@ -1,6 +1,7 @@
 import "server-only";
 
 import nodemailer from "nodemailer";
+import type {SendMailOptions} from "nodemailer";
 
 type MailOrder = {
   requestId: string;
@@ -32,10 +33,14 @@ const escapeHtml = (value: string) => value.replace(/[&<>'"]/g, (character) => (
 
 type MailSetting = "SMTP_HOST" | "SMTP_PORT" | "SMTP_USER" | "SMTP_PASSWORD" | "SMTP_FROM" | "ORDER_RECIPIENT";
 
-function required(name: MailSetting, isDev: boolean) {
-  const variable = isDev
+function variableName(name: MailSetting, isDev: boolean) {
+  return isDev
     ? name === "ORDER_RECIPIENT" ? "ORDER_RECIPIENT_DEV" : `SMTP_DEV_${name.slice("SMTP_".length)}`
     : name;
+}
+
+function required(name: MailSetting, isDev: boolean) {
+  const variable = variableName(name, isDev);
   const value = process.env[variable];
   if (name === "SMTP_PORT" && !value && isDev) return "587";
   if (!value) throw new Error(`Fehlende Server-Konfiguration: ${variable}`);
@@ -65,8 +70,74 @@ function createTransporter(isDev: boolean) {
   });
 }
 
+type MailPurpose = "preorder_operator" | "preorder_customer_confirmation" | "product_wish";
+type MailError = Error & {
+  code?: unknown;
+  responseCode?: unknown;
+  command?: unknown;
+  syscall?: unknown;
+};
+
+function diagnosticMessage(error: unknown, isDev: boolean) {
+  let message = error instanceof Error ? error.message : String(error);
+  const sensitiveSettings: MailSetting[] = ["SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM", "ORDER_RECIPIENT"];
+  for (const setting of sensitiveSettings) {
+    const value = process.env[variableName(setting, isDev)];
+    if (value) message = message.replaceAll(value, "[redacted]");
+  }
+  return message.replace(/[\w.%+-]+@[\w.-]+\.[A-Z]{2,}/gi, "[email]").slice(0, 400);
+}
+
+async function deliverMail(
+  purpose: MailPurpose,
+  requestId: string,
+  isDev: boolean,
+  getOptions: () => SendMailOptions,
+) {
+  try {
+    const transporter = createTransporter(isDev);
+    await transporter.sendMail(getOptions());
+  } catch (error) {
+    const mailError = error instanceof Error ? error as MailError : null;
+    const code = typeof mailError?.code === "string" && /^[A-Z0-9_]+$/i.test(mailError.code)
+      ? mailError.code
+      : undefined;
+    const command = typeof mailError?.command === "string"
+      ? mailError.command.match(/^[A-Z]+/i)?.[0]?.toUpperCase()
+      : undefined;
+    const responseCode = typeof mailError?.responseCode === "number" ? mailError.responseCode : undefined;
+    const hostName = variableName("SMTP_HOST", isDev);
+    const portName = variableName("SMTP_PORT", isDev);
+    const userName = variableName("SMTP_USER", isDev);
+    const passwordName = variableName("SMTP_PASSWORD", isDev);
+    const configurationError = error instanceof Error && /Fehlende Server-Konfiguration|Ungültige Server-Konfiguration/.test(error.message);
+
+    console.error("E-Mail-Versand fehlgeschlagen", {
+      event: "email_delivery_failed",
+      purpose,
+      requestId,
+      environment: isDev ? "development" : "production",
+      failureStage: configurationError ? "configuration" : "smtp_delivery",
+      smtp: {
+        host: process.env[hostName] || null,
+        port: process.env[portName] || (isDev ? "587" : null),
+        accountConfigured: Boolean(process.env[userName]),
+        passwordConfigured: Boolean(process.env[passwordName]),
+      },
+      error: {
+        name: error instanceof Error ? error.name : "UnknownError",
+        message: diagnosticMessage(error, isDev),
+        ...(code ? {code} : {}),
+        ...(responseCode ? {responseCode} : {}),
+        ...(command ? {command} : {}),
+        ...(typeof mailError?.syscall === "string" ? {syscall: mailError.syscall} : {}),
+      },
+    });
+    throw error;
+  }
+}
+
 export async function sendPreorderMail(order: MailOrder) {
-  const transporter = createTransporter(order.isDev);
   const pickupDate = formatDate(order.pickupDate);
   const createdAt = formatCreatedAt(order.createdAt);
   const subject = `${order.isDev ? "[DEV] " : ""}Neue Backwaren-Vorbestellung – ${order.name} – ${pickupDate}`;
@@ -110,18 +181,17 @@ export async function sendPreorderMail(order: MailOrder) {
   ).join("\n");
   const text = `${order.isDev ? "[DEV] " : ""}Neue Backwaren-Vorbestellung\n\nKontaktdaten\n${order.name}\n${order.email}\n${order.phone}\n\nAbholung: ${pickupDate}\n\nProdukte\n${itemLines}\n\nGesamtsumme: ${euro.format(order.totalCents / 100)}\n\nZusätzliche Nachricht\n${order.message || "Keine zusätzliche Nachricht."}\n\nAnfrage-ID: ${order.requestId}\nAngefragt am: ${createdAt} Uhr`;
 
-  await transporter.sendMail({
+  await deliverMail("preorder_operator", order.requestId, order.isDev, () => ({
     from: required("SMTP_FROM", order.isDev),
     to: required("ORDER_RECIPIENT", order.isDev),
     replyTo: order.email,
     subject,
     text,
     html,
-  });
+  }));
 }
 
 export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
-  const transporter = createTransporter(order.isDev);
   const pickupDate = formatDate(order.pickupDate);
   const orderItems = order.items.map((item) => `
     <tr>
@@ -155,18 +225,17 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
   const itemLines = order.items.map((item) => `- ${item.quantity} × ${item.name} · ${euro.format(item.lineTotalCents / 100)}`).join("\n");
   const text = `Danke für deine Anfrage, ${order.name}!\n\nWir haben deine Vorbestellungsanfrage erhalten.\nGewünschte Abholung: ${pickupDate}\n\nDeine Auswahl\n${itemLines}\n\nVoraussichtliche Gesamtsumme: ${euro.format(order.totalCents / 100)}${order.message ? `\n\nDeine Nachricht\n${order.message}` : ""}\n\nRückfragen: 06103-3867347\nAnfrage-ID: ${order.requestId}`;
 
-  await transporter.sendMail({
+  await deliverMail("preorder_customer_confirmation", order.requestId, order.isDev, () => ({
     from: required("SMTP_FROM", order.isDev),
     to: order.email,
     replyTo: required("ORDER_RECIPIENT", order.isDev),
     subject,
     text,
     html,
-  });
+  }));
 }
 
 export async function sendProductWishMail(wish: ProductWish) {
-  const transporter = createTransporter(wish.isDev);
   const createdAt = formatCreatedAt(wish.createdAt);
   const subject = `${wish.isDev ? "[DEV] " : ""}Neuer Produktwunsch – ${wish.product}`;
   const html = `<!doctype html><html lang="de"><body style="margin:0;background:#fbf5eb;color:#2e2e2e;font-family:Arial,sans-serif">
@@ -179,12 +248,12 @@ export async function sendProductWishMail(wish: ProductWish) {
     </div></div></body></html>`;
   const text = `${wish.isDev ? "[DEV] " : ""}Neuer Produktwunsch\n\nGewünschtes Produkt: ${wish.product}\n\nBeschreibung\n${wish.description || "Keine Beschreibung angegeben."}\n\nName: ${wish.name || "Nicht angegeben"}\nE-Mail: ${wish.email || "Nicht angegeben"}\n\nAnfrage-ID: ${wish.requestId}\nEingegangen am: ${createdAt} Uhr`;
 
-  await transporter.sendMail({
+  await deliverMail("product_wish", wish.requestId, wish.isDev, () => ({
     from: required("SMTP_FROM", wish.isDev),
     to: required("ORDER_RECIPIENT", wish.isDev),
     ...(wish.email ? { replyTo: wish.email } : {}),
     subject,
     text,
     html,
-  });
+  }));
 }

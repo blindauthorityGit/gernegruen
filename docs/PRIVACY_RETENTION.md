@@ -44,7 +44,7 @@ Zur Wiederholung des lesenden Berichts: `npm run firestore:audit-retention`. Das
 
 ## E-Mail-Postfächer
 
-Formulare werden per Nodemailer über `smtp.world4you.com` an das konfigurierte Betreiberpostfach gemeldet. Die Anwendung kann keine Nachrichten, Papierkörbe, Archivkopien oder Provider-Backups löschen. Der Betreiber muss mindestens monatlich Postfachregeln/Erinnerungen kontrollieren, Anfragen nach den obigen Fristen löschen und dabei Fälle ausnehmen, die nachvollziehbar archivierungspflichtig sind. Die Vertragsgesellschaft, AVV, Verarbeitungsländer, Unterauftragnehmer und Backup-Fristen sind aus dem SMTP-Hostnamen allein nicht belegt und müssen im aktiven World4You-Konto geprüft werden.
+Formulare werden per Nodemailer über `smtp.strato.de` an das konfigurierte Betreiberpostfach gemeldet. Die Anwendung kann keine Nachrichten, Papierkörbe, Archivkopien oder Provider-Backups löschen. Der Betreiber muss mindestens monatlich Postfachregeln/Erinnerungen kontrollieren, Anfragen nach den obigen Fristen löschen und dabei Fälle ausnehmen, die nachvollziehbar archivierungspflichtig sind. Die Vertragsgesellschaft, AVV, Verarbeitungsländer, Unterauftragnehmer und Backup-Fristen sind aus dem SMTP-Hostnamen allein nicht belegt und müssen im aktiven STRATO-Konto geprüft werden.
 
 ## Eigene Logs und Vercel
 
@@ -61,7 +61,7 @@ Vor einer rechtlichen Datenschutzfreigabe durch die verantwortliche Gesellschaft
 - Vercel-Konto: tatsächliche Projekt-/Funktionsregion, Tarif, Runtime-Log-Aufbewahrung, Log Drains und zusätzliche Monitoringdienste verifizieren.
 - Google/Firebase: anwendbare Vertrags-/DPA-Einbeziehung, Unterauftragnehmer und Transfergarantien bestätigen. Firebase Authentication wird laut Google ausschließlich in den USA betrieben; den Betreiber-Login und seine Notwendigkeit separat bewerten.
 - Sanity: konkretes Projekt, anwendbare DPA/Vertragsbedingungen, CDN-Auslieferung, Unterauftragnehmer und Drittlandgarantien im Betreiberkonto prüfen.
-- World4You: Vertragsgesellschaft, AVV, Länder/Unterauftragnehmer und Postfach-/Backup-Löschfristen klären.
+- STRATO: Vertragsgesellschaft, AVV, Länder/Unterauftragnehmer und Postfach-/Backup-Löschfristen klären.
 - Postfachlöschroutine für normale und nicht bestätigte Anfragen einrichten und Verantwortlichkeit zuweisen.
 - Rechtsgrundlagen für freiwillige Kontaktdaten bei Produktwünschen und tatsächliche Verbindlichkeit des Vorbestellungsablaufs durch den Betreiber prüfen.
 - Prüfen, ob gesetzlich ein Datenschutzbeauftragter zu bestellen ist.

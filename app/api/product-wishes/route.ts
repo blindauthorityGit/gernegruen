@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       await reference.update({ emailStatus: "sent", emailSentAt: Timestamp.now() });
       return NextResponse.json({ status: "success", requestId });
     } catch {
-      console.error(mailWasSent ? "Produktwunsch-Mailstatus konnte nicht aktualisiert werden." : "Produktwunsch-E-Mail konnte nicht versendet werden.");
+      if (mailWasSent) console.error("Produktwunsch wurde versendet, aber der Versandstatus konnte nicht aktualisiert werden.", { requestId });
       if (mailWasSent) return NextResponse.json({ status: "success", requestId });
       try {
         await reference.update({

@@ -140,7 +140,6 @@ export async function POST(request: NextRequest) {
       await sendPreorderMail(mailOrder);
       await reference.update({ emailStatus: "sent", emailSentAt: Timestamp.now() });
     } catch {
-      console.error("Betreiber-Benachrichtigung zur Vorbestellung konnte nicht vollständig versendet werden.");
       try {
         await reference.update({
           emailStatus: "failed",
@@ -157,7 +156,6 @@ export async function POST(request: NextRequest) {
       await sendCustomerPreorderConfirmationMail(mailOrder);
       customerMailWasSent = true;
     } catch {
-      console.error("Eingangsbestätigung der Vorbestellung konnte nicht vollständig versendet werden.");
       try {
         await reference.update({ customerEmailStatus: "failed", customerEmailLastAttemptAt: Timestamp.now() });
       } catch {
