@@ -4,7 +4,8 @@ export const BUSINESS_SETTINGS_QUERY = defineQuery(/* groq */ `
   *[_id == "businessSettings" && _type == "businessSettings"][0] {
     businessName, street, postalCode, city, legalName,
     authorizedRepresentatives[] {_key, fullName, role}, representationNote,
-    registerCourt, registerNumber,
+    registerCourt, registerNumber, personallyLiablePartner,
+    partnerRegisterCourt, partnerRegisterNumber,
     vatId, organicCertification, organicControlBody,
     phone, email, instagramHandle, legalSeo,
     coordinates {latitude, longitude},

@@ -3,6 +3,47 @@
 **Geprüft am:** 13. Oktober 2026  
 **Prüfumfang:** Quellcode und Projektdokumentation des Next.js-App-Routers, Sanity-Konfiguration und Queries, Formular-API-Routen, Firebase-Admin-/Firestore-Anbindung, Nodemailer, Kartenkomponente, globale Styles und Layouts. Dies ist ein technisches Audit und keine Rechtsberatung, kein vollständiger Netzwerkmitschnitt und keine unabhängige WCAG-Konformitätsprüfung.
 
+## Nachtrag 29. Oktober 2026 – Aufbewahrung und Löschung
+
+Die DSGVO enthält keine pauschalen Löschfristen für Produktwünsche oder
+Vorbestellungsanfragen. Die Website legt daher zweckbezogene Betriebsfristen
+fest: Produktwünsche 180 Tage nach letzter inhaltlicher Bearbeitung, höchstens
+12 Monate ab Eingang; unbestätigte oder stornierte Vorbestellungen 90 Tage nach
+dem Abholtermin; abgeschlossene und separat archivierte Vorgänge 90 Tage nach
+Abschluss; gewöhnliche Kontaktanfragen sechs Monate nach Bearbeitungsende.
+Gesetzlich aufzubewahrende Geschäftsbriefe und Buchungs-/Rechnungsbelege werden
+getrennt und nur im erforderlichen Umfang aufbewahrt (in der Regel sechs bzw.
+acht Jahre ab Ende des Kalenderjahres).
+
+Die produktive Firestore-Datenbank liegt in `europe-west3`. Bei der Prüfung am
+29. Oktober 2026 lagen dort acht offene Vorbestellungen; drei Ablaufzeitpunkte
+fehlten. Diese drei Zeitpunkte wurden nach Status und Abholtermin ergänzt; alle
+elf produktiven und Entwicklungs-Vorbestellungen haben nun ein Ablaufdatum,
+keines davon ist bereits fällig. Es wurden keine Anfrage-Dokumente gelöscht.
+Die vier Firestore-TTL-Richtlinien sind weiterhin nicht aktiviert: Der
+konfigurierte Dienstaccount darf `datastore.indexes.update` nicht ausführen.
+Das Skript `npm run firestore:enable-retention -- --apply` erstellt zunächst
+eine Vorschau, ergänzt klassifizierbare fehlende Ablaufzeitpunkte und aktiviert
+danach die Richtlinien. Es stoppt vor Aktivierung, wenn Einträge bereits fällig
+sind oder sich nicht sicher klassifizieren lassen. Nach Vergabe der
+erforderlichen IAM-Berechtigung muss es erneut ausgeführt und der Status geprüft
+werden.
+
+Die Richtlinien aktivieren die automatische Löschung erst nach erfolgreicher
+Konfiguration; bis dahin werden abgelaufene Anfragen nur im Dashboard
+ausgeblendet. E-Mail-Postfächer und Anbieter-Backups werden von der Website nicht
+gelöscht und brauchen weiterhin einen manuellen Lösch- und Prüfprozess.
+
+Der Betreiber hat außerdem bestätigt, dass Vercel Pro verwendet wird; die
+Runtime-Logs werden laut der bereitgestellten Tarifübersicht einen Tag
+aufbewahrt. STRATO hostet die Domain und den Mailserver. Die Website selbst und
+ihre serverseitigen Funktionen laufen bei Vercel; Firebase/Firestore und Sanity
+bleiben separate Anbieter. Der Betreiber gibt zwei Personen und keinen
+Datenschutzbeauftragten an. Die Schwelle aus § 38 BDSG wird damit nicht
+erreicht; nach der hier bekannten Verarbeitung ist auch kein Tatbestand aus
+Art. 37 DSGVO ersichtlich. Bei einer Änderung der Beschäftigtenzahl oder der
+Verarbeitungsart ist das erneut zu beurteilen.
+
 ## 1. Erstellte und angepasste Seiten
 
 - `/impressum`: Anbieterkennzeichnung nach § 5 DDG als Entwurf mit ausdrücklich markierten fehlenden Betreiberangaben.
@@ -75,8 +116,8 @@ Eine Ausnahme kann für Kleinstunternehmen gelten, die Dienstleistungen erbringe
 - Vollständiger rechtlicher Name/Firma, Rechtsform, vertretungsberechtigte Person und ladungsfähige Anbieteranschrift.
 - Bestätigung, ob Ladenanschrift und Sitz/Niederlassungsanschrift des rechtlichen Betreibers identisch sind.
 - Registergericht/-art/-nummer, USt-IdNr. oder Wirtschafts-IdNr., Aufsichtsbehörde und Berufsangaben jeweils nur, sofern tatsächlich einschlägig/erteilt.
-- Datenschutzbeauftragte/r: prüfen, ob bestellt werden muss.
-- Vercel-Vertrag, tatsächliche Hosting-/Logeinstellungen, Datenregionen und konkrete Log-Löschfristen.
+- Datenschutzbeauftragte/r: Betreiberangabe zwei Personen, keine Bestellung; bei Änderung der Datenverarbeitung erneut prüfen.
+- Vercel-Pro-Tarif und ein Tag Runtime-Log-Aufbewahrung sind laut Betreiberangabe bestätigt; Funktionsregion, Log-Drains und kontobezogene Vertragsbedingungen noch prüfen.
 - Sanity-AVV, Unterauftragsverarbeiter, Regionen und Drittlandgarantien.
 - Firebase/Google-Cloud-Projektregion, AVV, Unterauftragsverarbeiter, Firestore-Regeln und Zugriffskreis.
 - Aktiver SMTP-Anbieter, AVV, Speicher-/Backupfristen und mögliche Drittlandübermittlungen.

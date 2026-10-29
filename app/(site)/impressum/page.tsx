@@ -29,6 +29,7 @@ export default async function ImprintPage() {
       <ul>
         <li><strong>Vertretungsberechtigt:</strong> {representatives?.length ? <>{representatives.map((person) => person.role ? `${person.fullName} (${person.role})` : person.fullName).join(", ")}{business?.representationNote && ` (${business.representationNote})`}</> : <span className="legal-placeholder">[Vollständige Namen der vertretungsberechtigten Personen ergänzen]</span>}</li>
         {business?.registerCourt && business?.registerNumber && <li><strong>Handelsregister:</strong> Amtsgericht {business.registerCourt}, {business.registerNumber}</li>}
+        {business?.personallyLiablePartner && <li><strong>Persönlich haftende Gesellschafterin:</strong> {business.personallyLiablePartner}{business.partnerRegisterCourt && business.partnerRegisterNumber && <> (Amtsgericht {business.partnerRegisterCourt}, {business.partnerRegisterNumber})</>}</li>}
         {business?.vatId && <li><strong>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:</strong> {business.vatId}</li>}
         {(business?.organicCertification || business?.organicControlBody) && <li><strong>Bio-Zertifizierung:</strong> {business.organicCertification}{business.organicCertification && business.organicControlBody && <br />}{business.organicControlBody && <>Kontrollstelle: {business.organicControlBody}</>}</li>}
       </ul>

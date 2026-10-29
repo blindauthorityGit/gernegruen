@@ -27,6 +27,9 @@ export type BusinessSettings = {
   representationNote?: string;
   registerCourt?: string;
   registerNumber?: string;
+  personallyLiablePartner?: string;
+  partnerRegisterCourt?: string;
+  partnerRegisterNumber?: string;
   vatId?: string;
   organicCertification?: string;
   organicControlBody?: string;

@@ -132,11 +132,14 @@ remain implementation details and are intentionally not editable in Sanity.
 legal company details, authorized representatives, register and tax identifiers,
 organic certification, contact details, coordinates, weekly opening hours and
 date-specific exceptions. Legal details also feed `/impressum`; the public
-imprint omits optional register, tax and certification entries when they are
-empty. `npm run sanity:update-imprint` writes the provided legal company name,
-register, VAT ID and organic certification to the production singleton while
-preserving all other business settings. Day exceptions override the matching
-regular weekday in the header and contact schedule.
+imprint omits optional register, tax, personally liable partner, and certification
+entries when they are empty. For a GmbH & Co. KG, it identifies the personally
+liable GmbH and its register entry alongside the KG's own register entry.
+`npm run sanity:update-imprint` writes the confirmed legal company name,
+representation, both register entries, VAT ID and organic certification to the
+production singleton while preserving all other business settings. Day
+exceptions override the matching regular weekday in the header and contact
+schedule.
 
 `contactPage` controls the `/kontakt` page. Its hero image references the same
 Sanity asset as the About page. Card headings and directions copy are editable

@@ -23,14 +23,17 @@ if (!document || document._type !== "businessSettings") {
 }
 
 await client.patch("businessSettings").set({
-  legalName: "Gernegrün GmbH & Co.KG",
+  legalName: "Gernegrün GmbH & Co. KG",
   authorizedRepresentatives: [
-    {fullName: "Andreas Fischer"},
-    {fullName: "Petra Messner"},
+    {fullName: "Andreas Fischer", role: "Geschäftsführer der persönlich haftenden Gesellschafterin"},
+    {fullName: "Petra Messner", role: "Geschäftsführerin der persönlich haftenden Gesellschafterin"},
   ],
-  representationNote: "zu gleichen Teilen",
+  representationNote: "jeweils einzelvertretungsberechtigt",
   registerCourt: "Offenbach am Main",
   registerNumber: "HRA 43047",
+  personallyLiablePartner: "Gernegrün Verwaltungsgesellschaft mbH",
+  partnerRegisterCourt: "Offenbach am Main",
+  partnerRegisterNumber: "HRB 53563",
   vatId: "DE345866185",
   organicCertification: "Zertifiziert gemäß Artikel 35 Absatz 1 der Verordnung (EU) 2018/848 über die ökologische/biologische Produktion und die Kennzeichnung von ökologischen/biologischen Erzeugnissen.",
   organicControlBody: "DE-ÖKO-007",
@@ -38,13 +41,16 @@ await client.patch("businessSettings").set({
 
 const updatedDocument = await client.getDocument("businessSettings");
 if (
-  updatedDocument?.legalName !== "Gernegrün GmbH & Co.KG" ||
+  updatedDocument?.legalName !== "Gernegrün GmbH & Co. KG" ||
   updatedDocument?.registerCourt !== "Offenbach am Main" ||
   updatedDocument?.registerNumber !== "HRA 43047" ||
   updatedDocument?.vatId !== "DE345866185" ||
   updatedDocument?.organicControlBody !== "DE-ÖKO-007" ||
-  updatedDocument?.representationNote !== "zu gleichen Teilen" ||
-  updatedDocument?.authorizedRepresentatives?.map(({fullName}) => fullName).join("|") !== "Andreas Fischer|Petra Messner"
+  updatedDocument?.representationNote !== "jeweils einzelvertretungsberechtigt" ||
+  updatedDocument?.personallyLiablePartner !== "Gernegrün Verwaltungsgesellschaft mbH" ||
+  updatedDocument?.partnerRegisterCourt !== "Offenbach am Main" ||
+  updatedDocument?.partnerRegisterNumber !== "HRB 53563" ||
+  updatedDocument?.authorizedRepresentatives?.map(({fullName, role}) => `${fullName}:${role}`).join("|") !== "Andreas Fischer:Geschäftsführer der persönlich haftenden Gesellschafterin|Petra Messner:Geschäftsführerin der persönlich haftenden Gesellschafterin"
 ) {
   throw new Error("The updated imprint data could not be verified in the production dataset.");
 }
