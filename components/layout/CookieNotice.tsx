@@ -14,8 +14,14 @@ export function CookieNotice() {
   const [details, setDetails] = useState(false);
 
   useEffect(() => {
+    let dismissed = false;
+    try {
+      dismissed = window.sessionStorage.getItem("gg_cookie_notice_dismissed") === "1";
+    } catch {
+      // If browser storage is unavailable, keep the informational notice usable for this page view.
+    }
     const frame = window.requestAnimationFrame(() => {
-      setVisible(true);
+      setVisible(!dismissed);
       setReady(true);
     });
     const open = () => {
@@ -30,6 +36,11 @@ export function CookieNotice() {
   }, []);
 
   const close = () => {
+    try {
+      window.sessionStorage.setItem("gg_cookie_notice_dismissed", "1");
+    } catch {
+      // Closing the notice still works for this page view if browser storage is unavailable.
+    }
     setVisible(false);
     setDetails(false);
   };
@@ -41,12 +52,12 @@ export function CookieNotice() {
       <div className={styles.content}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>Deine Privatsphäre</p>
-          <h2>{details ? "Welche Cookies verwendet diese Website?" : "Ein kurzer Hinweis zu Cookies"}</h2>
+          <h2>{details ? "Cookies und externe Inhalte" : "Ein kurzer Hinweis zu Cookies"}</h2>
           {details ? (
             <div className={styles.details}>
               <div className={styles.item}>
-                <strong>Notwendige Speicherung</strong>
-                <p>Dieser Hinweis informiert über eingesetzte Technologien und holt keine Einwilligung ein. Die öffentliche Website setzt selbst keine Cookies. Nur das angemeldete Betreiber-Studio verwendet für die Anmeldung das notwendige Sitzungscookie <code>gg_studio_session</code> für höchstens 14 Tage.</p>
+                <strong>Anmelde-Cookie im Betreiber-Dashboard</strong>
+                <p>Dieser Hinweis informiert über eingesetzte Technologien und holt keine Einwilligung ein. Im öffentlichen Website-Bereich setzen wir keine Cookies. Nur das geschützte Betreiber-Dashboard verwendet bei der Anmeldung das notwendige Sitzungscookie <code>gg_studio_session</code> für höchstens 14 Tage. Wenn du diesen Hinweis schließt, merken wir uns das bis zum Ende des aktuellen Browser-Tabs in dessen Sitzungsspeicher.</p>
               </div>
               <div className={styles.item}>
                 <strong>Statistik und Marketing</strong>
@@ -59,7 +70,7 @@ export function CookieNotice() {
               <p className={styles.privacyLink}><Link href="/datenschutz">Alle Informationen in der Datenschutzerklärung</Link></p>
             </div>
           ) : (
-            <p>Diese Website verwendet derzeit keine Analyse- oder Werbe-Cookies. Details zur notwendigen Speicherung und zu externen Inhalten findest du im Cookie-Hinweis und in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
+            <p>Im öffentlichen Website-Bereich verwenden wir derzeit keine Cookies, Analyse- oder Werbedienste. Das geschützte Betreiber-Dashboard nutzt bei der Anmeldung ein notwendiges Sitzungscookie. Details und Informationen zu externen Inhalten findest du in diesem Hinweis und in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
           )}
         </div>
         <div className={styles.actions}>
