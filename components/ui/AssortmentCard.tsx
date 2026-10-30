@@ -13,7 +13,7 @@ export type AssortmentCardData = {
   intro?: string;
   badgeText?: string;
   marker: "leaf" | "bread" | "promotion";
-  entries?: {_key: string; title: string; description?: string; price?: number}[];
+  entries?: {_key: string; title: string; description?: string; ingredients?: string; price?: number}[];
   note?: string;
   cta?: {label: string; href: string};
 };

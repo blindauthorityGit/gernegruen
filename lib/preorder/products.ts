@@ -4,6 +4,7 @@ export type OrderableBakeryProduct = {
   id: string;
   name: string;
   note?: string;
+  ingredients?: string;
   priceCents: number;
 };
 
@@ -42,6 +43,7 @@ export function toOrderableBakeryCategories(groups: {bread: BakeryCategory[]; sw
         id: `${category._key}:${product._key}`,
         name: product.name,
         note: product.note,
+        ingredients: product.ingredients,
         priceCents,
       }];
     }),

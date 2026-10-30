@@ -39,14 +39,14 @@ export function WeeklyOffersSection({ data, produceList, showDataHint = false }:
   const promotionalEntries = promotions?.entries?.slice(0, 2) ?? [];
   const teaserProducts = getProduceTeaserProducts(produceList, 4);
   const bakeryCards: WeeklyBakeryCardData[] = [
-    {key: "bread", label: "Brot der Woche", image: {src: "/graphics/weekly-bread-illustration.png", alt: "Flache Illustration eines Brots"}},
-    {key: "cake", label: "Kuchen der Woche", image: {src: "/graphics/weekly-cake-illustration.png", alt: "Flache Illustration eines Kuchens"}},
-  ].map(({key, label, image}) => {
+    {key: "bread", title: "Brot der Woche", image: {src: "/graphics/weekly-bread-illustration.png", alt: "Flache Illustration eines Brots"}},
+    {key: "cake", title: "Kuchen der Woche", image: {src: "/graphics/weekly-cake-illustration.png", alt: "Flache Illustration eines Kuchens"}},
+  ].map(({key, title, image}) => {
     const entry = bakery?.entries?.find((item) => item._key === key);
     return {
-      title: "Wochenangebot",
-      name: entry?.description || entry?.title || label,
-      price: entry?.price,
+      title,
+      name: entry?.title || title,
+      description: entry?.ingredients,
       image,
     };
   });

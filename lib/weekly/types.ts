@@ -8,7 +8,7 @@ export type WeeklyHighlight = {
   _key?: string;
   title: string;
   name: string;
-  description: string;
+  description?: string;
   price?: string | number;
   image: { src: string; alt: string };
 };
@@ -18,6 +18,7 @@ export type BakeryProduct = {
   name: string;
   price: string | number;
   note?: string;
+  ingredients?: string;
 };
 
 export type BakeryCategory = {

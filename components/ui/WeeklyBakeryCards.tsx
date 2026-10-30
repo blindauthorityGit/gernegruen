@@ -5,7 +5,6 @@ import {Reveal} from "@/components/motion/Reveal"
 import styles from "./WeeklyBakeryCards.module.css"
 import {sanityDataAttribute} from "@/sanity/lib/dataAttribute"
 import {stegaClean} from "next-sanity"
-import {formatEuroPrice} from "@/lib/weekly/format"
 
 export type WeeklyBakeryCardData = {
   _key?: string
@@ -13,7 +12,6 @@ export type WeeklyBakeryCardData = {
   title: string
   name: string
   description?: string
-  price?: string | number
   image: {src: string; alt: string}
 }
 
@@ -39,7 +37,6 @@ export function WeeklyBakeryCards({
               <p className={styles.label}>{item.title}</p>
               <h3>{item.name}</h3>
               {item.description && <p className={styles.description}>{item.description}</p>}
-              {item.price !== undefined && <p className={styles.price}>{formatEuroPrice(item.price)}</p>}
             </div>
             <div className={styles.image}>
               <Image

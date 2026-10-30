@@ -58,7 +58,7 @@ export function matchesBakerySearch(query: string, product: OrderableBakeryProdu
   const queryTokens = normalize(query).split(/\s+/).filter(Boolean);
   if (queryTokens.length === 0) return true;
 
-  const candidates = normalize(`${product.name} ${product.note ?? ""} ${categoryTitle} ${sectionTitle}`)
+  const candidates = normalize(`${product.name} ${product.note ?? ""} ${product.ingredients ?? ""} ${categoryTitle} ${sectionTitle}`)
     .split(/\s+/)
     .filter(Boolean);
   const compoundCandidates = candidates.join("");

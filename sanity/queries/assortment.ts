@@ -17,7 +17,7 @@ export const CURRENT_ASSORTMENT_QUERY = defineQuery(/* groq */ `
           "crop": image.crop,
           "hotspot": image.hotspot
         },
-        entries[] {_key, title, description, price}
+        entries[] {_key, title, description, ingredients, price}
       }
     }
   }

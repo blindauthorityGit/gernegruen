@@ -224,7 +224,7 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
                             const quantity = quantities[product.id] ?? 0;
                             return (
                               <li key={product.id}>
-                                <div><strong>{product.name}</strong>{product.note && <small>{product.note}</small>}<span>{euro.format(product.priceCents / 100)}</span></div>
+                                <div><strong>{product.name}</strong>{product.note && <small>{product.note}</small>}{product.ingredients && <small>{product.ingredients}</small>}<span>{euro.format(product.priceCents / 100)}</span></div>
                                 <div className={styles.quantity} aria-label={`Menge für ${product.name}`}>
                                   <button aria-label={`${product.name} reduzieren`} disabled={quantity === 0} onClick={() => changeQuantity(product.id, -1)} type="button">−</button>
                                   <output aria-live="polite">{quantity}</output>
