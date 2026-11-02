@@ -27,7 +27,6 @@ function serialize(snapshot: FirebaseFirestore.QueryDocumentSnapshot, type: "ord
     lastSubstantiveActivityAt: data.lastSubstantiveActivityAt?.toDate?.().toISOString() ?? null,
     contractConcludedAt: data.contractConcludedAt?.toDate?.().toISOString() ?? null,
     completedAt: data.completedAt?.toDate?.().toISOString() ?? null,
-    archiveVerifiedAt: data.archiveVerifiedAt?.toDate?.().toISOString() ?? null,
   };
 }
 
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
 }
 
 type UpdatePayload = {type?: unknown; id?: unknown; action?: unknown};
-type UpdateAction = "record-activity" | "complete-wish" | "confirm-order" | "complete-order" | "archive-order" | "cancel-order";
+type UpdateAction = "record-activity" | "complete-wish" | "confirm-order" | "complete-order" | "cancel-order";
 
 export async function PATCH(request: NextRequest) {
   if (!hasSameOrigin(request)) return NextResponse.json({message: "Ungültige Anfragequelle."}, {status: 403});
@@ -81,7 +80,7 @@ export async function PATCH(request: NextRequest) {
   if ((body.type !== "order" && body.type !== "wish") || typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id)) {
     return NextResponse.json({message: "Die Anfrage ist ungültig."}, {status: 400});
   }
-  const actions: UpdateAction[] = ["record-activity", "complete-wish", "confirm-order", "complete-order", "archive-order", "cancel-order"];
+  const actions: UpdateAction[] = ["record-activity", "complete-wish", "confirm-order", "complete-order", "cancel-order"];
   if (typeof body.action !== "string" || !actions.includes(body.action as UpdateAction)) {
     return NextResponse.json({message: "Die gewünschte Statusänderung ist ungültig."}, {status: 400});
   }
@@ -126,13 +125,10 @@ export async function PATCH(request: NextRequest) {
         transaction.update(reference, {status: "confirmed", contractConcludedAt: now, expiresAt: null});
       } else if (action === "complete-order") {
         if (status !== "confirmed") throw new Error("INVALID_TRANSITION");
-        transaction.update(reference, {status: "completed", completedAt: now, archiveVerifiedAt: null, expiresAt: null});
-      } else if (action === "archive-order") {
-        if (status !== "completed" || !data.completedAt?.toDate?.()) throw new Error("INVALID_TRANSITION");
-        const archiveVerifiedAt = now;
-        const expiresAt = orderExpiresAt({...data, status, archiveVerifiedAt, completedAt: data.completedAt});
+        const completedAt = now.toDate();
+        const expiresAt = orderExpiresAt({status: "completed", completedAt});
         if (!expiresAt) throw new Error("INVALID_RETENTION_DATE");
-        transaction.update(reference, {archiveVerifiedAt, expiresAt: Timestamp.fromDate(expiresAt)});
+        transaction.update(reference, {status: "completed", completedAt: now, expiresAt: Timestamp.fromDate(expiresAt)});
       } else if (action === "cancel-order") {
         if (!["pending", "in_progress"].includes(status)) throw new Error("INVALID_TRANSITION");
         const expiresAt = typeof data.pickupDate === "string" ? unconfirmedOrderExpiresAt(data.pickupDate) : null;

@@ -148,8 +148,8 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
   return (
     <DialogShell
       description={status === "success"
-        ? "Deine Vorbestellungsanfrage ist per E-Mail bei uns eingegangen. Wir melden uns bald bei dir, um deine Bestellung zu bestätigen."
-        : "Fülle das Formular aus. Deine Anfrage wird erst nach unserer Bestätigung verbindlich."}
+        ? "Deine unverbindliche Vorbestellung ist bei uns eingegangen. Die Angaben und deine Auswahl findest du in der Eingangsbestätigung per E-Mail."
+        : "Deine Vorbestellung ist unverbindlich. Fülle das Formular aus, um sie zu übermitteln."}
       idPrefix="preorder-dialog"
       isOpen={isOpen}
       onClose={closeDialog}
@@ -258,10 +258,10 @@ export function PreorderDialog({ isOpen, onClose, categories, pickupAvailability
           </div>
           {statusMessage && <p className={styles.status} data-kind={status} role="status">{statusMessage}</p>}
           <div className={styles.actions}>
-            <button className={styles.submit} disabled={status === "loading" || status === "stored_email_failed"} type="submit">{status === "loading" ? "Anfrage wird gesendet …" : "Vorbestellung anfragen"}</button>
+            <button className={styles.submit} disabled={status === "loading" || status === "stored_email_failed"} type="submit">{status === "loading" ? "Wird gesendet …" : "Unverbindlich vorbestellen"}</button>
             <a className={styles.phone} href="tel:+4961033867347">Oder anrufen: 06103-3867347</a>
           </div>
-          <p className={styles.notice}>Mit deiner Anfrage verarbeiten wir deine Angaben zur Bearbeitung und Bestätigung der Vorbestellung. Einzelheiten stehen in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
+          <p className={styles.notice}>Mit deiner Vorbestellung verarbeiten wir deine Angaben. Einzelheiten stehen in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
         </>
       )}
     </DialogShell>

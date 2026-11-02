@@ -4,7 +4,7 @@ import {useEffect, useMemo, useState} from "react"
 import {Button, Card, Flex, Heading, Spinner, Stack, Text, TextInput} from "@sanity/ui"
 import styles from "./OrdersDashboardTool.module.css"
 
-type Entry = {id: string; name?: string; email?: string; phone?: string; product?: string; description?: string; pickupDate?: string; products?: {name?: string; quantity?: number; unitPriceCents?: number}[]; totalCents?: number; message?: string; status?: string; customerEmailStatus?: string; createdAt?: string; expiresAt?: string; lastSubstantiveActivityAt?: string; contractConcludedAt?: string; completedAt?: string; archiveVerifiedAt?: string}
+type Entry = {id: string; name?: string; email?: string; phone?: string; product?: string; description?: string; pickupDate?: string; products?: {name?: string; quantity?: number; unitPriceCents?: number}[]; totalCents?: number; message?: string; status?: string; customerEmailStatus?: string; createdAt?: string; expiresAt?: string; lastSubstantiveActivityAt?: string; contractConcludedAt?: string; completedAt?: string}
 type Data = {orders: Entry[]; wishes: Entry[]}
 type AuthResult = {idToken?: string; error?: {message?: string}}
 type SessionResult = {authenticated?: boolean; message?: string}
@@ -87,9 +87,8 @@ export function OrdersDashboardTool() {
   }
 
   function open(type:"order"|"wish", entry:Entry) {setSelected({type,entry})}
-  async function updateRequest(action:"record-activity"|"complete-wish"|"confirm-order"|"complete-order"|"archive-order"|"cancel-order") {
+  async function updateRequest(action:"record-activity"|"complete-wish"|"confirm-order"|"complete-order"|"cancel-order") {
     if (!selected || updating) return
-    if (action === "archive-order" && !window.confirm("Wurde ein aufbewahrungspflichtiger Nachweis separat und ordnungsgemäß archiviert? Nur dann darf diese Vorbestellung nach 90 Tagen automatisch gelöscht werden.")) return
     setUpdating(true);setError("")
     try {
       const response = await fetch("/api/studio/requests", {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:selected.type,id:selected.entry.id,action})})
@@ -121,11 +120,11 @@ export function OrdersDashboardTool() {
           {selected.entry.status !== "completed" && <Button text="Als erledigt markieren" tone="positive" disabled={updating} onClick={() => void updateRequest("complete-wish")}/>}
         </Flex>
       </> : <>
-        <Text>{selected.entry.expiresAt ? `Geplantes Löschdatum: ${date(selected.entry.expiresAt)}` : selected.entry.status === "completed" ? "Automatische Löschung bleibt gesperrt, bis der erforderliche Nachweis separat archiviert wurde." : "Für bestätigte Vorbestellungen ist bis zum Abschluss und zur Archivierung keine automatische Löschung geplant."}</Text>
+        <Text>{selected.entry.expiresAt ? `Geplantes Löschdatum: ${date(selected.entry.expiresAt)}` : selected.entry.status === "completed" ? "Für diese abgeschlossene Vorbestellung fehlt ein Löschdatum. Bitte prüfe den Abschlusszeitpunkt." : "Für bestätigte Vorbestellungen wird das Löschdatum nach Abschluss berechnet: 90 Tage nach der Abholung."}</Text>
         {selected.entry.status === "pending" || selected.entry.status === "in_progress" ? <Flex gap={2} wrap="wrap">
           <Button text="Vorbestellung bestätigen" tone="positive" disabled={updating} onClick={() => void updateRequest("confirm-order")}/>
           <Button text="Stornieren" mode="ghost" disabled={updating} onClick={() => void updateRequest("cancel-order")}/>
-        </Flex> : selected.entry.status === "confirmed" ? <Button text="Abholung abgeschlossen" tone="positive" disabled={updating} onClick={() => void updateRequest("complete-order")}/> : selected.entry.status === "completed" && !selected.entry.archiveVerifiedAt ? <Button text="Nachweis separat archiviert" tone="positive" disabled={updating} onClick={() => void updateRequest("archive-order")}/> : null}
+        </Flex> : selected.entry.status === "confirmed" ? <Button text="Abholung abgeschlossen" tone="positive" disabled={updating} onClick={() => void updateRequest("complete-order")}/> : null}
       </>}
     </Stack></Card>}</Stack></div></main>
 }

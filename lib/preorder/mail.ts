@@ -199,16 +199,16 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
       <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:center">${item.quantity}</td>
       <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:right;white-space:nowrap;font-weight:700">${euro.format(item.lineTotalCents / 100)}</td>
     </tr>`).join("");
-  const subject = `${order.isDev ? "[DEV] " : ""}Wir haben deine Vorbestellungsanfrage erhalten`;
+  const subject = `${order.isDev ? "[DEV] " : ""}Unverbindliche Vorbestellung erhalten`;
   const html = `<!doctype html><html lang="de"><body style="margin:0;background:#fbf5eb;color:#2e2e2e;font-family:Arial,sans-serif">
     <div style="max-width:680px;margin:0 auto;padding:28px 16px">
       <div style="overflow:hidden;border-radius:22px;background:#ffffff">
         <div style="padding:28px 32px;background:#08522b;color:#ffffff">
           <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#cfe29c">GerneGrün · Backwaren${order.isDev ? " · Entwicklungstest" : ""}</div>
-          <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2">Danke für deine Anfrage, ${escapeHtml(order.name)}!</h1>
+          <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2">Danke für deine Vorbestellung, ${escapeHtml(order.name)}!</h1>
         </div>
         <div style="padding:28px 32px">
-          <p style="margin:0 0 22px;line-height:1.65">Wir haben deine Vorbestellungsanfrage erhalten. Hier findest du die gewünschte Auswahl und den Abholtag.</p>
+          <p style="margin:0 0 22px;line-height:1.65">Wir haben deine unverbindliche Vorbestellung erhalten. Sie verpflichtet dich nicht zum Kauf. Hier findest du deine Auswahl und den gewünschten Abholtag.</p>
           <div style="padding:16px 18px;border-radius:14px;background:#f3f1d7;color:#08522b;font-size:16px;line-height:1.55"><strong>Gewünschte Abholung</strong><br>${pickupDate}</div>
           <h2 style="margin:26px 0 10px;color:#08522b;font-size:19px">Deine Auswahl</h2>
           <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px">
@@ -223,7 +223,7 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
       </div>
     </div></body></html>`;
   const itemLines = order.items.map((item) => `- ${item.quantity} × ${item.name} · ${euro.format(item.lineTotalCents / 100)}`).join("\n");
-  const text = `Danke für deine Anfrage, ${order.name}!\n\nWir haben deine Vorbestellungsanfrage erhalten.\nGewünschte Abholung: ${pickupDate}\n\nDeine Auswahl\n${itemLines}\n\nVoraussichtliche Gesamtsumme: ${euro.format(order.totalCents / 100)}${order.message ? `\n\nDeine Nachricht\n${order.message}` : ""}\n\nRückfragen: 06103-3867347\nAnfrage-ID: ${order.requestId}`;
+  const text = `Danke für deine Vorbestellung, ${order.name}!\n\nWir haben deine unverbindliche Vorbestellung erhalten. Sie verpflichtet dich nicht zum Kauf.\nGewünschte Abholung: ${pickupDate}\n\nDeine Auswahl\n${itemLines}\n\nVoraussichtliche Gesamtsumme: ${euro.format(order.totalCents / 100)}${order.message ? `\n\nDeine Nachricht\n${order.message}` : ""}\n\nRückfragen: 06103-3867347\nAnfrage-ID: ${order.requestId}`;
 
   await deliverMail("preorder_customer_confirmation", order.requestId, order.isDev, () => ({
     from: required("SMTP_FROM", order.isDev),

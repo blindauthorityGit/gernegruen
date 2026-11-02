@@ -38,7 +38,7 @@ export function orderExpiresAt(data: Record<string, unknown>) {
     return typeof data.pickupDate === "string" ? unconfirmedOrderExpiresAt(data.pickupDate) : null;
   }
 
-  if (status === "completed" && data.archiveVerifiedAt) {
+  if (status === "completed") {
     const completedAt = timestampDate(data.completedAt);
     return completedAt ? new Date(completedAt.getTime() + 90 * DAY_MS) : null;
   }
@@ -49,7 +49,7 @@ export function orderExpiresAt(data: Record<string, unknown>) {
 export function effectiveExpiry(collectionType: "order" | "wish", data: Record<string, unknown>) {
   const explicit = timestampDate(data.expiresAt);
   if (explicit) return explicit;
-  if (data.expiresAt === null) return null;
+  if (data.expiresAt === null && collectionType === "wish") return null;
 
   if (collectionType === "wish") {
     const createdAt = timestampDate(data.createdAt);

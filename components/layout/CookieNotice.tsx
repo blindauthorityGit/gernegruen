@@ -14,14 +14,8 @@ export function CookieNotice() {
   const [details, setDetails] = useState(false);
 
   useEffect(() => {
-    let dismissed = false;
-    try {
-      dismissed = window.sessionStorage.getItem("gg_cookie_notice_dismissed") === "1";
-    } catch {
-      // If browser storage is unavailable, keep the informational notice usable for this page view.
-    }
     const frame = window.requestAnimationFrame(() => {
-      setVisible(!dismissed);
+      setVisible(true);
       setReady(true);
     });
     const open = () => {
@@ -36,11 +30,6 @@ export function CookieNotice() {
   }, []);
 
   const close = () => {
-    try {
-      window.sessionStorage.setItem("gg_cookie_notice_dismissed", "1");
-    } catch {
-      // Closing the notice still works for this page view if browser storage is unavailable.
-    }
     setVisible(false);
     setDetails(false);
   };
@@ -56,8 +45,8 @@ export function CookieNotice() {
           {details ? (
             <div className={styles.details}>
               <div className={styles.item}>
-                <strong>Anmelde-Cookie im Betreiber-Dashboard</strong>
-                <p>Dieser Hinweis informiert über eingesetzte Technologien und holt keine Einwilligung ein. Im öffentlichen Website-Bereich setzen wir keine Cookies. Nur das geschützte Betreiber-Dashboard verwendet bei der Anmeldung das notwendige Sitzungscookie <code>gg_studio_session</code> für höchstens 14 Tage. Wenn du diesen Hinweis schließt, merken wir uns das bis zum Ende des aktuellen Browser-Tabs in dessen Sitzungsspeicher.</p>
+                <strong>Anmeldung im Betreiberbereich</strong>
+                <p>Öffentlich verwenden wir keine Cookies. Nur für die Anmeldung im Betreiber-Dashboard ist ein notwendiges Cookie im Einsatz. Es läuft nach spätestens 14 Tagen ab.</p>
               </div>
               <div className={styles.item}>
                 <strong>Statistik und Marketing</strong>
@@ -70,7 +59,7 @@ export function CookieNotice() {
               <p className={styles.privacyLink}><Link href="/datenschutz">Alle Informationen in der Datenschutzerklärung</Link></p>
             </div>
           ) : (
-            <p>Im öffentlichen Website-Bereich verwenden wir derzeit keine Cookies, Analyse- oder Werbedienste. Das geschützte Betreiber-Dashboard nutzt bei der Anmeldung ein notwendiges Sitzungscookie. Details und Informationen zu externen Inhalten findest du in diesem Hinweis und in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
+                <p>Öffentlich nutzen wir keine Cookies, Analyse- oder Werbedienste. Nur das Betreiber-Dashboard nutzt zur Anmeldung ein notwendiges Cookie. Details stehen in diesem Hinweis und in der <Link href="/datenschutz">Datenschutzerklärung</Link>.</p>
           )}
         </div>
         <div className={styles.actions}>

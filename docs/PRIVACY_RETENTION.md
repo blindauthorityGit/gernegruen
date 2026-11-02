@@ -1,7 +1,7 @@
 # Datenschutz und Löschkonzept
 
-**Stand:** 19. Oktober 2026  
-**Status:** Anwendung vorbereitet; automatische Firestore-TTL-Löschung noch nicht aktiviert. Kontobezogene Datenschutzfreigaben bleiben offen.
+**Stand:** 2. November 2026
+**Status:** Firestore-TTL ist nicht aktiviert. Anfragen in Firestore und im GerneGrün-Postfach werden manuell nach den festgelegten Fristen gelöscht. Anbieterangaben zu Google, Vercel, Sanity und STRATO wurden am 2.11.2026 mit dem Betreiber abgeglichen. Die produktive Website konnte an diesem Tag wegen eines fehlgeschlagenen TLS-Verbindungsaufbaus nicht im Browser geprüft werden.
 
 Dieses Dokument beschreibt die im Projekt umgesetzten Fristen und die notwendigen Betreiberarbeiten. Es ist eine technische Arbeitsanweisung, keine Rechtsberatung. Historische Datensätze dürfen nicht allein aufgrund dieses Dokuments pauschal geändert oder gelöscht werden.
 
@@ -9,62 +9,53 @@ Dieses Dokument beschreibt die im Projekt umgesetzten Fristen und die notwendige
 
 | Daten | Frist / Regel | Technische Umsetzung |
 |---|---|---|
-| Allgemeine E-Mail-/Telefonanfragen | Spätestens 6 Monate nach Abschluss; gesetzlich aufbewahrungspflichtige Unterlagen und konkrete Ansprüche ausgenommen | Manuelle Prüfung und Löschung aus Postfach/Archiv, sofern keine Aufbewahrungspflicht besteht |
-| Produktwünsche | 180 Tage nach letzter inhaltlicher Bearbeitung, maximal 12 Monate nach Eingang | `expiresAt` wird beim Eingang und nach dokumentierter Bearbeitung serverseitig berechnet; Firestore-TTL nach Aktivierung |
-| Unbestätigte Backwaren-Vorbestellungen | 90 Tage nach Abholtermin | `expiresAt` bei Eingang; Statusänderung „Storniert“ erhält dieselbe Frist |
-| Bestätigte / abgeschlossene Backwaren-Vorbestellungen | Erst nach Abschluss und separat bestätigter Archivierung notwendiger Belege; operative Anfrage 90 Tage nach Abschluss | Bestätigung setzt `expiresAt: null`; Abschluss bleibt gesperrt; Betreiber bestätigt die separate Archivierung und setzt dann 90 Tage ab Abschluss |
-| Geschäftsbriefe und Rechnungs-/Buchungsbelege | Nur die jeweils gesetzlich erfassten Unterlagen: grundsätzlich 6 bzw. 8 Jahre ab Jahresende; andere Fristen/Ansprüche bleiben vorbehalten | Aus operativen Anfragen selektiv in ein geeignetes, zugriffsbeschränktes Archiv übernehmen; Firestore-Datensatz nicht jahrelang als operative Anfrage behalten |
+| Allgemeine E-Mail-/Telefonanfragen | Spätestens 6 Monate nach Abschluss; gesetzliche Pflichten oder konkrete Ansprüche können im Einzelfall entgegenstehen | Manuelle Prüfung und Löschung aus dem Postfach |
+| Produktwünsche | 180 Tage nach letzter inhaltlicher Bearbeitung, maximal 12 Monate nach Eingang | `expiresAt` wird serverseitig berechnet; Betreiber löscht die Anfrage nach Erreichen des Ablaufdatums manuell |
+| Unbestätigte Backwaren-Vorbestellungen | 90 Tage nach Abholtermin | `expiresAt` bei Eingang; Statusänderung „Storniert“ erhält dieselbe Frist; manuelle Löschung nach Ablauf |
+| Bestätigte / abgeschlossene Backwaren-Vorbestellungen | 90 Tage nach Abschluss der Abholung; einzelne gesetzlich aufbewahrungspflichtige Unterlagen ausgenommen | Bei Abschluss wird `expiresAt` auf 90 Tage danach gesetzt; Betreiber löscht den operativen Firestore-Datensatz und die E-Mail manuell nach Ablauf |
+| Gesetzlich aufbewahrungspflichtige Unterlagen | Nur soweit eine konkrete gesetzliche Pflicht für das jeweilige Dokument besteht; Frist richtet sich nach Dokumentart und Gesetz | Derzeit ist kein separates Archiv für diese Formulare vorgesehen. Falls ein konkretes Dokument gesetzlich aufbewahrt werden muss, ist dies für diesen Einzelfall gesondert zu beurteilen; der operative Firestore-Datensatz wird dadurch nicht pauschal zum Langzeitarchiv |
 | Eigene Sicherheits-/Fehlerlogs | Höchstens 14 Tage, außer konkreter Vorfall erfordert befristete längere Aufbewahrung | Anwendung gibt nur generische Meldungen aus, ohne Anfrageinhalte oder Fehlerobjekte; Vercel-Logs sind Plattformlogs und kontoabhängig |
 | Betreiber-Sitzung `gg_studio_session` | Höchstens 14 Tage | HttpOnly, Secure in Produktion, auf `/api/studio` begrenzt |
 | Öffentliches Cookie `gg_cookie_notice` | Entfernt | Schließen des Informationshinweises wird nur im aktuellen Seitenzustand gehalten; keine Einwilligung wird eingeholt |
 
-## Firestore: Status und Audit
+## Firestore: Status, Audit und manuelle Löschung
 
-Die Firestore-Datenbank ist eine native Datenbank in `europe-west3` (Frankfurt). Am 19.10.2026 waren alle vier TTL-Richtlinien `not-enabled`:
+Die Firestore-Datenbank ist eine native Datenbank in `europe-west3` (Frankfurt). Der aktuelle lesende Audit vom 2.11.2026 ergab:
 
-- `productWishes`
-- `productWishes_dev`
-- `bakeryPreorders`
-- `bakeryPreorders_dev`
+- `bakeryPreorders`: 8 Dokumente; alle mit `expiresAt`
+- `bakeryPreorders_dev`: 3 Dokumente; alle mit `expiresAt`
+- `productWishes` und `productWishes_dev`: keine Dokumente
+- Alle elf Ablaufdaten lagen beim Audit in der Zukunft (11.–26.1.2027); zwei produktive Vorbestellungen enthalten noch ein altes Feld `emailError`.
+- Keine Dokumente wurden durch den Audit geändert oder gelöscht. Alle vier TTL-Richtlinien sind `not-enabled`.
 
-Der einmalige lesende Audit zählte 3 Datensätze in `bakeryPreorders` und 0 in den drei übrigen Collections. Keiner der drei historischen Datensätze hat `expiresAt`; alle drei waren im Audit als `pending` markiert. Zwei enthalten noch ein altes Freitextfeld `emailError`. Der Bericht mit IDs und Zeitwerten, aber ohne Namen, E-Mail, Telefonnummer oder Nachricht, liegt lokal unter `.local/firestore-retention-audit-2026-10-19.json` und ist von Git ausgeschlossen. Es wurde kein historischer Datensatz verändert oder gelöscht.
+Entscheidung vom 2.11.2026: Es wird vorerst keine Firestore-TTL aktiviert, weil dafür die Abrechnung eingeschaltet werden müsste. Die bereits gespeicherten `expiresAt`-Werte bleiben die maßgeblichen Fristen; sie lösen ohne TTL jedoch keine automatische Löschung aus. Das Dashboard kann abgelaufene Anfragen ausblenden, löscht die Firestore-Dokumente aber nicht. Der Betreiber löscht abgelaufene Dokumente manuell aus Firestore. Das Feld `emailError` wird zusammen mit dem jeweiligen Dokument entfernt.
 
-Die alten Datensätze erhalten im Dashboard nur ein berechnetes voraussichtliches Ablaufdatum. Sie werden beim Ablauf dort ausgeblendet. **Vor einer Migration müssen die drei Bestellungen anhand des tatsächlichen Geschäftsvorgangs geprüft werden.** Insbesondere darf eine bestehende bestätigte Bestellung keine TTL bekommen, solange ein Vertrags-/Aufbewahrungsbedarf nicht geklärt und ein erforderlicher Beleg nicht separat archiviert ist. Die zwei alten `emailError`-Werte ebenfalls erst nach fachlicher Prüfung löschen oder bereinigen.
+Zur Kontrolle der fälligen Dokumente kann der lesende Audit mit `npm run firestore:audit-retention` erneut ausgeführt werden. Vor dem Löschen ist sicherzustellen, dass `expiresAt` erreicht ist und keine Aufbewahrungspflicht für den Vorgang entgegensteht. Keine Zugangsdaten in Ausgaben oder Dokumentation kopieren.
 
-### TTL nach Prüfung aktivieren
-
-1. Zunächst den lokalen Audit-Bericht und den Status der drei alten Bestellungen durch eine berechtigte Person prüfen lassen. Keine historischen `expiresAt`-Werte allein aus dem geschätzten Report in Firestore zurückschreiben.
-2. In der Google Cloud Console das richtige Projekt `gernegruen-33101` und die Firestore-Datenbank `(default)` öffnen.
-3. **Firestore → Time-to-live (TTL) → Create policy** wählen.
-4. Für jede der vier obigen Collection Groups eine Richtlinie mit Feld `expiresAt` anlegen. Das Feld ist ein Zeitstempel; kein Offset ist erforderlich.
-5. Auf den Abschlussstatus der Richtlinien warten und alle vier als aktiv kontrollieren. Der ausführbare Versuch mit dem konfigurierten Firebase-Servicekonto scheiterte am fehlenden IAM-Recht `datastore.indexes.update`; er hat keine Richtlinie aktiviert. Alternativ muss ein Admin genau diese notwendige Berechtigung erteilen oder die Richtlinien in der Konsole einrichten.
-6. Nach Aktivierung die TTL-Metrik/Anzahl gelöschter Dokumente kontrollieren. Firestore löscht nicht sekundengenau; abgelaufene Dokumente werden typischerweise innerhalb von 24 Stunden gelöscht. Das Setzen einer TTL auf eine Collection Group kann auch bereits abgelaufene Dokumente löschen. Daher erst aktivieren, nachdem Altdaten geprüft wurden.
-
-Zur Wiederholung des lesenden Berichts: `npm run firestore:audit-retention`. Das Aktivierungsskript `npm run firestore:enable-retention` prüft vor einer Änderung, ob `expiresAt` bereits in Dokumenten gesetzt ist; es kann nur mit ausreichenden Google-Cloud-IAM-Rechten Richtlinien erstellen. Keine Zugangsdaten in Ausgaben oder Dokumentation kopieren.
+Eine spätere Automatisierung ist optional. Firestore-TTL kann jederzeit mit `expiresAt` für die vier Collection Groups eingerichtet werden, setzt aber aktivierte Abrechnung voraus; TTL-Löschungen werden nach Dokumentlöschungen abgerechnet.
 
 ## E-Mail-Postfächer
 
-Formulare werden per Nodemailer über `smtp.strato.de` an das konfigurierte Betreiberpostfach gemeldet. Die Anwendung kann keine Nachrichten, Papierkörbe, Archivkopien oder Provider-Backups löschen. Der Betreiber muss mindestens monatlich Postfachregeln/Erinnerungen kontrollieren, Anfragen nach den obigen Fristen löschen und dabei Fälle ausnehmen, die nachvollziehbar archivierungspflichtig sind. Die Vertragsgesellschaft, AVV, Verarbeitungsländer, Unterauftragnehmer und Backup-Fristen sind aus dem SMTP-Hostnamen allein nicht belegt und müssen im aktiven STRATO-Konto geprüft werden.
+Formulare werden per Nodemailer über `smtp.strato.de` an das konfigurierte Betreiberpostfach gemeldet. Es sind keine automatischen Löschregeln eingerichtet. Der Betreiber löscht die Nachrichten manuell nach den oben genannten Fristen. Einzelne Nachrichten, die im konkreten Fall gesetzlich aufbewahrungspflichtig sind, müssen entsprechend aufbewahrt werden. Die Anwendung kann Nachrichten, Papierkörbe, Archivkopien oder Provider-Backups nicht selbst löschen. Der Betreiber bestätigt, dass der STRATO-Vertrag für die Nutzung geeignet ist.
 
 ## Eigene Logs und Vercel
 
 Formularrouten verwenden IP-Adressen nur flüchtig in einem pro Prozess geführten Rate-Limit (15 Minuten); abgelaufene Rate-Limit-Einträge werden bei Folgeanfragen entfernt. Der Anwendungscode protokolliert keine IP-Adressen, Formulareingaben, Mail-Fehlerobjekte oder Firestore-Fehlerobjekte. Fehlerausgaben sind auf allgemeine Meldungen begrenzt.
 
-Vercel-Runtime-Logs erfassen Plattform-/Request-Metadaten und Anwendungsausgaben. Der tatsächlich aktive Tarif, Projekt-Region, konkrete Aufbewahrung, Log Drains und weitere Monitoring-Integration konnten aus diesem Repository nicht verifiziert werden. Diese Werte müssen im aktiven Vercel-Team-/Projektkonto nachgesehen werden. Die Dokumentation des Anbieters weist je nach Tarif unterschiedliche Runtime-Log-Fristen aus; keine dieser Fristen darf ohne Kontoprüfung als die Frist dieses Projekts veröffentlicht werden. Build-Logs können separat aufbewahrt werden und dürfen keine Secrets oder unnötigen personenbezogenen Daten enthalten.
+Vercel-Runtime-Logs erfassen Plattform-/Request-Metadaten und Anwendungsausgaben. Am 2.11.2026 im Konto bestätigt: Pro-Tarif, Funktionsregion Frankfurt (`fra1`), Runtime-Logs ein Tag und keine Log Drains für das Projekt.
 
 ## Betreiber-Freigabepunkte
 
 Vor einer rechtlichen Datenschutzfreigabe durch die verantwortliche Gesellschaft:
 
-- Drei historische Bestellungen und beide alten `emailError`-Freitextwerte prüfen; erforderliche Archivunterlagen separat sichern; nur danach entscheiden, ob und welche historischen Ablaufzeiten gesetzt werden.
-- TTL-Richtlinien erst nach dieser Prüfung in allen vier Collection Groups aktivieren und Aktivierung dokumentieren.
-- Vercel-Konto: tatsächliche Projekt-/Funktionsregion, Tarif, Runtime-Log-Aufbewahrung, Log Drains und zusätzliche Monitoringdienste verifizieren.
-- Google/Firebase: anwendbare Vertrags-/DPA-Einbeziehung, Unterauftragnehmer und Transfergarantien bestätigen. Firebase Authentication wird laut Google ausschließlich in den USA betrieben; den Betreiber-Login und seine Notwendigkeit separat bewerten.
-- Sanity: konkretes Projekt, anwendbare DPA/Vertragsbedingungen, CDN-Auslieferung, Unterauftragnehmer und Drittlandgarantien im Betreiberkonto prüfen.
-- STRATO: Vertragsgesellschaft, AVV, Länder/Unterauftragnehmer und Postfach-/Backup-Löschfristen klären.
-- Postfachlöschroutine für normale und nicht bestätigte Anfragen einrichten und Verantwortlichkeit zuweisen.
-- Rechtsgrundlagen für freiwillige Kontaktdaten bei Produktwünschen und tatsächliche Verbindlichkeit des Vorbestellungsablaufs durch den Betreiber prüfen.
-- Prüfen, ob gesetzlich ein Datenschutzbeauftragter zu bestellen ist.
+- Firestore-Dokumente nach Erreichen von `expiresAt` manuell löschen. Gesetzlich aufbewahrungspflichtige einzelne Unterlagen sind separat zu beurteilen; keine Archivbestätigung ist Voraussetzung für das Ablaufdatum eines operativen Bestelldatensatzes.
+- Vercel-Konto: Pro-Tarif, Funktionsregion Frankfurt (`fra1`), Runtime-Log-Aufbewahrung von einem Tag und keine Log Drains für das Projekt am 2.11.2026 bestätigt.
+- Google/Firebase: Firebase-Terms-Prüfung am 2.11.2026 ohne Annahmeaufforderung abgeschlossen; nach Googles Hinweis sind die Firebase-Terms für dieses Google-Konto bereits angenommen. Firestore und Firebase Authentication unterliegen den Google-Cloud-Bedingungen; das Google Cloud Data Processing Addendum ist in die anwendbaren Google-Cloud-Verträge einbezogen. Für US-Übermittlungen sieht Google das EU-US Data Privacy Framework vor; Google LLC ist dort aktiv zertifiziert. Für sonstige relevante Drittlandübermittlungen gelten nach den Google-Bedingungen die Standardvertragsklauseln, soweit anwendbar. Firebase Authentication wird ausschließlich in den USA betrieben. Aktuelle Google-Cloud-Unterauftragsverarbeiterliste bei Bedarf im Vertragsnachweis ablegen.
+- Sanity: Projekt `zqaggz4f`, Dataset `production` öffentlich; primärer Speicherort laut Sanity Belgien, API-CDN weltweit. Sanitys veröffentlichtes DPA ist in die Bedingungen einbezogen und sieht SCCs für relevante Transfers vor.
+- STRATO: Betreiber bestätigt, dass der Vertrag für Domain und E-Mail datenschutzseitig passt; konkrete Backup-Aufbewahrungsdauer ist hier nicht dokumentiert.
+- Anfragen im Postfach manuell nach den festgelegten Fristen löschen; diese Löschungen sind von der Firestore-Bereinigung getrennt. Es gibt keine automatischen Löschregeln.
+- Der Betreiber bestätigt, dass eine über das Formular gesendete Vorbestellung unverbindlich bleibt und nicht zum Kauf verpflichtet. Produktwünsche beruhen auf berechtigtem Interesse und können ohne Kontaktdaten abgegeben werden.
+- Betreiber bestätigt, dass weniger als 20 Personen regelmäßig mit der automatisierten Verarbeitung personenbezogener Daten befasst sind. Unabhängige Benennungspflichten nach Art. 37 DSGVO und § 38 BDSG bleiben unternehmensweit zu prüfen, falls andere Verarbeitungen relevant sind.
 
 ## Verwendete Anbieter- und Rechtsinformationen
 

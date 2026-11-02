@@ -3,7 +3,18 @@
 **Geprüft am:** 13. Oktober 2026  
 **Prüfumfang:** Quellcode und Projektdokumentation des Next.js-App-Routers, Sanity-Konfiguration und Queries, Formular-API-Routen, Firebase-Admin-/Firestore-Anbindung, Nodemailer, Kartenkomponente, globale Styles und Layouts. Dies ist ein technisches Audit und keine Rechtsberatung, kein vollständiger Netzwerkmitschnitt und keine unabhängige WCAG-Konformitätsprüfung.
 
-## Nachtrag 29. Oktober 2026 – Aufbewahrung und Löschung
+## Nachtrag 2. November 2026 – Datenschutzabgleich
+
+- Der Betreiber bestätigt, dass regelmäßig weniger als 20 Personen mit der automatisierten Verarbeitung personenbezogener Daten beschäftigt sind. Für die hier geprüfte Website ist kein offensichtlicher zusätzlicher Benennungstatbestand erkennbar. Andere unternehmensweite Verarbeitungsvorgänge und die Tatbestände aus Art. 37 DSGVO bleiben einzubeziehen, falls einschlägig.
+- Der Betreiber will Firestore-Anfragen und E-Mail-Kopien manuell nach den festgelegten Fristen löschen. Für abgeschlossene Vorbestellungen gilt die Frist von 90 Tagen nach Abschluss; eine separate Archivbestätigung ist weder Teil der Praxis noch künftig Voraussetzung im Betreiberbereich. Gesetzlich aufbewahrungspflichtige einzelne Unterlagen sind davon unabhängig zu beurteilen.
+- Die Anbieterprüfung wurde aktualisiert: Google/Firebase-Transferangaben und Terms, Vercel Pro mit Funktionsregion `fra1`, ein Tag Runtime-Logs und keine Projekt-Log-Drains, sowie Sanity-Dataset `production` (öffentlich) sind abgeglichen. Sanity nennt Belgien als primären Speicherort und verwendet eine weltweit verteilte CDN-Auslieferung. Der Betreiber bestätigt, dass STRATO für Domain und E-Mail geeignet ist.
+- Ein produktiver Browser-/Netzwerkcheck konnte nicht abgeschlossen werden: `https://gernegruen.de/datenschutz` war beim TLS-Verbindungsaufbau nicht erreichbar. Die nachfolgenden Code-Angaben ersetzen keinen Live-Mitschnitt. Eine echte Formularbestellung wurde nicht abgesendet.
+- Der Cookie-Hinweis verwendet keinen Browser-Speicher. Im öffentlichen Website-Code wurden keine Analyse- oder Marketingdienste gefunden; externe Karten öffnen sich erst nach Klick auf einen OpenStreetMap-Link.
+- Der Betreiber bestätigt, dass eine über das Formular gesendete Vorbestellung unverbindlich bleibt und nicht zum Kauf verpflichtet. Ein Vertragsschluss im Geschäft ist davon getrennt.
+
+## Historischer Nachtrag 29. Oktober 2026 – damaliger Stand zu Aufbewahrung und Löschung
+
+Der nachfolgende Abschnitt dokumentiert den damaligen Prüfstand. Seine Aussagen zur geplanten TTL-Aktivierung, zu einer separaten Archivierung und zu offenen Dienstleisterprüfungen wurden durch den Nachtrag vom 2. November 2026 überholt. Für den aktuellen Stand gelten der Nachtrag vom 2. November und `docs/PRIVACY_RETENTION.md`.
 
 Die DSGVO enthält keine pauschalen Löschfristen für Produktwünsche oder
 Vorbestellungsanfragen. Die Website legt daher zweckbezogene Betriebsfristen
@@ -57,12 +68,12 @@ Verarbeitungsart ist das erneut zu beurteilen.
 
 | Bereich | Im Code gefunden | Personenbezogene Daten / Hinweise |
 | --- | --- | --- |
-| Hosting und Auslieferung | Projekt dokumentiert Vercel als Hosting-/Deployment-Plattform | Verbindungsdaten können für Auslieferung und Sicherheit verarbeitet werden. Konkrete Logfelder, Standorte und Aufbewahrungsdauer der aktiven Konfiguration wurden im Repository nicht belegt. |
-| Next.js / App Router | öffentliche Seiten und Server Components; keine eigene Analytics- oder Tracking-Integration gefunden | Keine vom Anwendungscode gesetzten Cookies oder browserseitigen Speicherzugriffe gefunden. Produktiv-Netzwerkverkehr und Hosting-Cookies wurden nicht per Browser-Mitschnitt verifiziert. |
-| Sanity | serverseitiger Read-Client für redaktionelle Inhalte, Geschäftsdaten und Produkt-/Bildinformationen; Sanity Studio unter `/studio` | Öffentliche Seiten laden redaktionelle Inhalte serverseitig. Sanity-Mediendateien können über die Next.js-Bildpipeline vom Sanity-CDN bezogen werden. Konkrete Region, AVV und Transferbedingungen sind zu prüfen. |
+| Hosting und Auslieferung | Vercel Pro; im Konto Funktionsregion Frankfurt (`fra1`), Runtime-Log-Aufbewahrung ein Tag und keine Projekt-Log-Drains bestätigt | Vercel-DPA gilt für Pro. Die Vertragsbedingungen sehen für erforderliche EWR-Transfers Standardvertragsklauseln vor; Vercel kann Daten auch in den USA und weiteren Ländern verarbeiten. |
+| Next.js / App Router | öffentliche Seiten und Server Components; keine eigene Analytics- oder Tracking-Integration gefunden | Im öffentlichen Frontend merkt `sessionStorage` nur das Schließen des Cookie-Hinweises bis zum Ende des Tabs. Keine Analyse- oder Marketing-Cookies im Anwendungscode. Produktiv-Netzwerkverkehr und plattformseitige Speichermechanismen wurden nicht per Browser-Mitschnitt verifiziert. |
+| Sanity | serverseitiger Read-Client; öffentlich lesbares `production`-Dataset; Studio unter `/studio` | Sanity nennt Belgien als primären Content-Lake-Speicherort; API- und Medienauslieferung kann über globale CDNs erfolgen. Sanitys DPA ist in die Bedingungen einbezogen und sieht SCCs für relevante Transfers vor. |
 | Produktwunsch | `POST /api/product-wishes`; serverseitige Eingabeprüfung, Honeypot und IP-basiertes In-Memory-Rate-Limit | Produkt, Beschreibung, optionaler Name und E-Mail; Firestore-Speicherung vor SMTP-Benachrichtigung. Keine persistente IP-Speicherung im Anwendungscode gefunden. |
-| Backwaren-Vorbestellung | `POST /api/bakery-preorders`; serverseitige Produkt-, Mengen- und Datumsvalidierung; IP-basiertes In-Memory-Rate-Limit | Name, E-Mail, Telefon, Abholtag, Waren/Mengen und optionale Nachricht. Die Website bezeichnet die Übermittlung als unverbindliche Anfrage, die erst nach Bestätigung verbindlich wird. |
-| Firebase / Firestore | Firebase Admin SDK ausschließlich serverseitig; Dev-/Live-Collections für beide Formulare | Formularangaben, Zeitstempel und Mailstatus werden geschrieben. Im Code ist keine automatische Löschung oder Ablaufzeit konfiguriert. Betreiber muss Löschfristen und Firestore-Regeln bestätigen. |
+| Backwaren-Vorbestellung | `POST /api/bakery-preorders`; serverseitige Produkt-, Mengen- und Datumsvalidierung; IP-basiertes In-Memory-Rate-Limit | Name, E-Mail, Telefon, Abholtag, Waren/Mengen und optionale Nachricht. Die Formularübermittlung ist laut Betreiber unverbindlich und verpflichtet nicht zum Kauf. |
+| Firebase / Firestore | Firebase Admin SDK ausschließlich serverseitig; Dev-/Live-Collections für beide Formulare | Formularangaben, Zeitstempel und Mailstatus werden geschrieben. Ablaufzeiten werden berechnet, aber TTL ist nicht aktiviert; der Betreiber löscht manuell. |
 | Nodemailer / SMTP | serverseitiger Mailversand über STRATO mit Umgebungsvariablen für Host, Konto, Absender und Empfänger | Der konfigurierte SMTP-Host ist `smtp.strato.de`. Kontakt- und Vorbestellungsinhalte gehen an diesen Anbieter und an das Betreiberpostfach. |
 | Karten | Leaflet lud bisher OpenStreetMap-Kacheln direkt beim Seitenaufruf | Diese automatische Einbindung ist entfernt. Die Kontaktseite enthält nun eine textbasierte Adresse und einen externen OpenStreetMap-Link; erst der Klick ruft den Kartendienst auf und übermittelt dann insbesondere Verbindungsdaten. |
 | Fonts | Nunito liegt als `public/fonts/Nunito-Variable.ttf` vor und wird mit `next/font/local` geladen | Kein Abruf von Google Fonts im geprüften Code gefunden. |
@@ -70,7 +81,7 @@ Verarbeitungsart ist das erneut zu beurteilen.
 
 ### Cookies und vergleichbare Speichertechnologien
 
-Eine repositoryweite Suche fand keine Verwendung von `document.cookie`, `localStorage`, `sessionStorage`, IndexedDB oder vergleichbarer eigener Browserpersistenz. Vorbestellungs-/Produktwunsch-UI-Zustand bleibt im laufenden React-Speicher; die Anfrage-ID wird mit `crypto.randomUUID()` erzeugt und für die aktuelle Übermittlung gehalten, nicht in Browserpersistenz geschrieben. Der Anwendungscode bietet deshalb derzeit keine einwilligungspflichtige optionale Speichertechnologie an. Es gibt folglich bewusst kein künstliches Cookie-Banner und kein Consent-Management. Das ist vor dem Livegang gegen den tatsächlichen Netzwerkverkehr und plattformseitige Speichermechanismen zu verifizieren.
+Im öffentlichen Website-Code wird `sessionStorage` ausschließlich zum Merken des geschlossenen Cookie-Hinweises bis zum Ende der Tab-Sitzung verwendet. `document.cookie`, `localStorage` und IndexedDB werden dort nicht verwendet. Vorbestellungs-/Produktwunsch-UI-Zustand bleibt im laufenden React-Speicher; die Anfrage-ID wird mit `crypto.randomUUID()` erzeugt und nur für die aktuelle Übermittlung gehalten. Der Anwendungscode bietet derzeit keine Analyse-, Marketing- oder sonstige optionale Speichertechnologie an. Der tatsächliche Live-Netzwerkverkehr und plattformseitige Speichermechanismen wurden noch nicht im Browser geprüft.
 
 **Einwilligungspflichtige Dienste im geprüften Anwendungscode:** keine optionalen Analytics-, Marketing- oder eingebetteten Kartendienste gefunden. Das aktive Nachladen der OpenStreetMap-Karte wurde durch einen bewussten externen Link ersetzt. Keine neue Consent-Bibliothek erforderlich.
 
@@ -116,13 +127,12 @@ Eine Ausnahme kann für Kleinstunternehmen gelten, die Dienstleistungen erbringe
 - Vollständiger rechtlicher Name/Firma, Rechtsform, vertretungsberechtigte Person und ladungsfähige Anbieteranschrift.
 - Bestätigung, ob Ladenanschrift und Sitz/Niederlassungsanschrift des rechtlichen Betreibers identisch sind.
 - Registergericht/-art/-nummer, USt-IdNr. oder Wirtschafts-IdNr., Aufsichtsbehörde und Berufsangaben jeweils nur, sofern tatsächlich einschlägig/erteilt.
-- Datenschutzbeauftragte/r: Betreiberangabe zwei Personen, keine Bestellung; bei Änderung der Datenverarbeitung erneut prüfen.
-- Vercel-Pro-Tarif und ein Tag Runtime-Log-Aufbewahrung sind laut Betreiberangabe bestätigt; Funktionsregion, Log-Drains und kontobezogene Vertragsbedingungen noch prüfen.
-- Sanity-AVV, Unterauftragsverarbeiter, Regionen und Drittlandgarantien.
-- Firebase/Google-Cloud-Projektregion, AVV, Unterauftragsverarbeiter, Firestore-Regeln und Zugriffskreis.
-- Aktiver SMTP-Anbieter, AVV, Speicher-/Backupfristen und mögliche Drittlandübermittlungen.
-- Verbindliche Löschfristen und Löschprozess für Firestore-Anfragen, Mailpostfächer und Backups.
-- tatsächliche rechtliche Einordnung der Vorbestellungsanfrage und Rechtsgrundlage/Verwendung optionaler Kontaktdaten beim Produktwunsch.
+- Datenschutzbeauftragte/r: weniger als 20 Personen regelmäßig mit automatisierter Verarbeitung laut Betreiber; weitere unternehmensweite Tatbestände aus Art. 37 DSGVO prüfen, falls andere relevante Verarbeitungsvorgänge bestehen.
+- Vercel-Pro-Tarif, Funktionsregion Frankfurt, Runtime-Log-Aufbewahrung von einem Tag und keine Projekt-Log-Drains am 2.11.2026 bestätigt.
+- Sanity-Standortangabe laut Anbieter, öffentliches Produktions-Dataset und CDN-Auslieferung abgeglichen; DPA und SCC-Regelungen veröffentlicht.
+- Google/Firebase-Angaben zu Firestore-Region, Firebase-Authentication-USA, DPA/Transfermechanismen und Terms abgeglichen; Firestore-Sicherheitsregeln und direkter Zugriffskreis bleiben separat zu prüfen.
+- Betreiber bestätigt, dass STRATO für Domain und E-Mail geeignet ist; konkrete Backup-Aufbewahrungsfristen sind hier nicht dokumentiert.
+- Die Online-Vorbestellung bleibt laut Betreiber unverbindlich und verpflichtet nicht zum Kauf; die Website-Texte und Eingangs-E-Mail sind daran angepasst. Der Vertragsschluss eines späteren Kaufs im Geschäft ist davon getrennt.
 - BFSG-Anwendbarkeit, Unternehmenskennzahlen und tatsächlicher Vertragsfluss der Vorbestellung.
 - Tatsächlichen Live-Netzwerkverkehr, Cookie-/Headerverhalten und eingebundene Funktionen außerhalb des Repositorys kontrollieren.
 
@@ -132,11 +142,11 @@ Eine Ausnahme kann für Kleinstunternehmen gelten, die Dienstleistungen erbringe
 
 1. Alle Platzhalter in Impressum und Datenschutzhinweisen anhand verifizierter Betreiberangaben ersetzen; nicht zutreffende optionale Angaben entfernen.
 2. Zuständige Datenschutzaufsicht und ladungsfähige Anschrift bestätigen.
-3. AV-Verträge, Regionen, Übermittlungsmechanismen und Aufbewahrungsfristen für Vercel, Sanity, Firebase/Google und den SMTP-Anbieter prüfen und Texte vervollständigen.
-4. Löschfristen für Firestore, E-Mail-Postfächer und Backups festlegen und durchsetzen.
-5. Tatsächliche Formular-/Bestellpraxis datenschutzrechtlich prüfen; insbesondere ob Vorbestellungen einen Online-Vertragsabschluss anbahnen und wie freiwillige Angaben genutzt werden.
+3. Anbieterangaben für Vercel, Sanity, Firebase/Google und STRATO sind am 2.11.2026 abgeglichen; bei Änderungen sind Konto- und Vertragsangaben erneut zu prüfen.
+4. Manuelle Löschung in Firestore und E-Mail-Postfach nach den festgelegten Fristen durchführen; keine automatische Firestore-TTL behaupten.
+5. Sicherstellen, dass Website, Eingangs-E-Mail und tatsächliche Praxis weiterhin übereinstimmen: Online-Vorbestellungen sind unverbindlich; Produktwunsch-Kontaktdaten werden nur zur Sortimentsplanung und Beantwortung des Wunsches genutzt.
 6. BFSG-Anwendbarkeit einschließlich Kleinstunternehmensstatus beurteilen. Bei Anwendbarkeit erforderliche Verbraucherinformationen nach Anlage 3 erstellen und zugänglich machen.
-7. Produktiv-Netzwerkverkehr und tatsächliche Cookies/Speicherzugriffe im Browser kontrollieren; bei späteren optionalen Technologien vor deren Aktivierung ein Consent-System einsetzen.
+7. Produktiv-Netzwerkverkehr und tatsächliche Cookies/Speicherzugriffe im Browser kontrollieren; am 2.11.2026 war die öffentliche Website für diesen Check nicht erreichbar. Bei späteren optionalen Technologien vor deren Aktivierung ein Consent-System einsetzen.
 
 ### Vor Freigabe – Barrierefreiheit
 
