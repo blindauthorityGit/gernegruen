@@ -8,10 +8,10 @@ import { WeeklyBakeryHighlights } from "@/components/sections/weekly/WeeklyBaker
 import { WeekSummary, WeeklyJumpLinks } from "@/components/sections/weekly/WeeklyIntro";
 import { WeeklyPromotions } from "@/components/sections/weekly/WeeklyPromotions";
 import { NextWeekPreviewSection } from "@/components/sections/weekly/NextWeekPreviewSection";
-import { getWeeklyPageData } from "@/lib/weekly/data";
+import { getBakeryCatalogData } from "@/lib/weekly/data";
 import { getNextWeekPreview } from "@/lib/weekly/preview-data";
 import { getCurrentWeeklyProduceList } from "@/lib/weekly/produce-data";
-import {type AssortmentSectionData} from "@/components/sections/AssortmentSection";
+import type {CurrentAssortmentData} from "@/sanity/types/assortment";
 import {CURRENT_ASSORTMENT_QUERY} from "@/sanity/queries/assortment";
 import {fetchSanity} from "@/sanity/lib/live";
 import {WEEKLY_PAGE_SETTINGS_QUERY, type WeeklyPageSettings} from "@/sanity/queries/weeklyPageSettings";
@@ -22,8 +22,6 @@ import {stegaClean} from "next-sanity";
 import {draftMode} from "next/headers";
 
 export const dynamic = "force-dynamic";
-
-type CurrentAssortment = {enabled?: boolean; edition: (AssortmentSectionData & {_type: "assortmentEdition"}) | null} | null;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSanity<WeeklyPageSettings>(WEEKLY_PAGE_SETTINGS_QUERY, {}, {stega: false}).catch(() => null);
@@ -38,10 +36,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function WeeklyPage() {
   const [draft, data, nextWeekPreview, produceList, assortment, settings, wishPage] = await Promise.all([
     draftMode(),
-    getWeeklyPageData(),
+    getBakeryCatalogData(),
     getNextWeekPreview(),
     getCurrentWeeklyProduceList(),
-    fetchSanity<CurrentAssortment>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
+    fetchSanity<CurrentAssortmentData>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
       console.error("Brot- und Kuchen-Highlights konnten nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
       return null;
     }),
@@ -55,15 +53,15 @@ export default async function WeeklyPage() {
     }),
   ]);
   const assortmentEdition = assortment?.enabled === false ? null : assortment?.edition;
-  const bakeryCard = assortmentEdition?.cards.find((card) => stegaClean(card.marker) === "bread");
-  const bakeryHighlights = bakeryCard ? ([
+  const bakery = assortmentEdition?.bakeryHighlights;
+  const bakeryHighlights = bakery ? ([
     {key: "bread", title: "Brot der Woche", image: {src: "/graphics/weekly-bread-illustration.png", alt: "Illustration eines Brots"}},
     {key: "cake", title: "Kuchen der Woche", image: {src: "/graphics/weekly-cake-illustration.png", alt: "Illustration eines Kuchens"}},
   ].map(({key, title, image}) => {
-    const entry = bakeryCard.entries?.find((item) => item._key === key);
+    const entry = bakery[key as "bread" | "cake"];
     return {
       _key: key,
-      sanityPath: `cards[_key=="bakery"].entries[_key=="${key}"]`,
+      sanityPath: `bakeryHighlights.${key}`,
       title,
       name: entry?.title || title,
       description: entry?.ingredients,

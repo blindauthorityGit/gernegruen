@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Container } from "@/components/layout/Container";
 import { Reveal } from "@/components/motion/Reveal";
 import { Heading } from "@/components/ui/Heading";
-import { categorizeProduce, getProductBrand, produceCategoryOrder, type WeeklyProduceList } from "@/lib/weekly/produce-data";
+import { categorizeProduce, getProductBrand, type ProduceCategory, type WeeklyProduceList } from "@/lib/weekly/produce-data";
 
 import styles from "./WeeklySections.module.css";
 import type {WeeklyPageSettings} from "@/sanity/queries/weeklyPageSettings";
@@ -12,10 +12,16 @@ import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 const priceFormatter = new Intl.NumberFormat("de-AT", {style: "currency", currency: "EUR"});
 
 export function FreshProduceSection({list, settings}: {list: WeeklyProduceList | null; settings?: WeeklyPageSettings}) {
-  const groups = list ? produceCategoryOrder.map((category) => ({
-    ...category,
-    products: list.products.filter((product) => categorizeProduce(product) === category.id),
-  })).filter((category) => category.products.length > 0) : [];
+  const groupedProducts = new Map<string, {category: ProduceCategory; products: WeeklyProduceList["products"]}>();
+  for (const product of list?.products ?? []) {
+    const category = categorizeProduce(product);
+    const group = groupedProducts.get(category.id) ?? {category, products: []};
+    group.products.push(product);
+    groupedProducts.set(category.id, group);
+  }
+  const groups = [...groupedProducts.values()].sort((left, right) =>
+    left.category.sortOrder - right.category.sortOrder || left.category.title.localeCompare(right.category.title, "de"),
+  );
 
   return (
     <section className={styles.produceSection} id="frisches" aria-labelledby="fresh-produce-title">
@@ -33,8 +39,8 @@ export function FreshProduceSection({list, settings}: {list: WeeklyProduceList |
           <p className={styles.produceWeek}>Unser Obst & Gemüse der Woche – KW {list.week}/{list.year}</p>
           <div className={styles.produceLayout}>
             {groups.map((group, index) => (
-              <Reveal className={styles.produceGroup} delay={index * 0.06} key={group.id}>
-                <h3>{group.title}</h3>
+              <Reveal className={styles.produceGroup} delay={index * 0.06} key={group.category.id}>
+                <h3 data-sanity={!['fruit', 'vegetables', 'saladsHerbs', 'mushrooms', 'other'].includes(group.category.id) ? sanityDataAttribute(group.category.id, "produceCategory", "title") : undefined}>{group.category.title}</h3>
                 <ul className={styles.produceProducts}>{group.products.map((product) => {
                   const unit = product.unitKind === "kg" || /^kg$/i.test(product.unit ?? "")
                     ? "pro kg"

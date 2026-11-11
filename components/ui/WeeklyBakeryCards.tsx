@@ -20,23 +20,23 @@ export function WeeklyBakeryCards({
   layout = "grid",
   className,
   sourceId,
-  sourceType = "weeklyOverview",
+  sourceType = "assortmentEdition",
 }: {
   items: WeeklyBakeryCardData[]
   layout?: "grid" | "stack"
   className?: string
   sourceId?: string
-  sourceType?: "weeklyOverview" | "weeklyPageSettings" | "assortmentEdition"
+  sourceType?: "weeklyPageSettings" | "assortmentEdition"
 }) {
   return (
     <div className={[styles.cards, className].filter(Boolean).join(" ")} data-layout={layout}>
       {items.map((item, index) => (
         <Reveal delay={index * 0.1} key={`${item.title}-${item.name}`}>
-          <article className={styles.card} data-tone={index === 1 ? "cake" : "bread"} data-sanity={sourceId && item._key ? sanityDataAttribute(sourceId, sourceType, item.sanityPath ?? `bakeryHighlights[_key=="${item._key}"]`) : undefined}>
+          <article className={styles.card} data-tone={index === 1 ? "cake" : "bread"}>
             <div className={styles.copy}>
               <p className={styles.label}>{item.title}</p>
-              <h3>{item.name}</h3>
-              {item.description && <p className={styles.description}>{item.description}</p>}
+              <h3 data-sanity={sourceId && item._key ? sanityDataAttribute(sourceId, sourceType, `${item.sanityPath ?? `bakeryHighlights.${item._key}`}.title`) : undefined}>{item.name}</h3>
+              {item.description && <p className={styles.description} data-sanity={sourceId && item._key ? sanityDataAttribute(sourceId, sourceType, `${item.sanityPath ?? `bakeryHighlights.${item._key}`}.ingredients`) : undefined}>{item.description}</p>}
             </div>
             <div className={styles.image}>
               <Image

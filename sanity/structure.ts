@@ -41,9 +41,21 @@ export const structure: StructureResolver = (S) =>
                 .icon(DocumentIcon)
                 .child(S.document().schemaType("aboutPage").documentId("aboutPage").title("Über uns")),
               S.listItem().title("Kontakt & Anfahrt").icon(PinIcon).child(S.document().schemaType("contactPage").documentId("contactPage").title("Kontakt & Anfahrt")),
-              S.documentTypeListItem("weeklyOverview").title("Diese Woche").icon(CalendarIcon),
-              S.listItem().title("Seitentexte: Diese Woche").icon(CalendarIcon).child(S.document().schemaType("weeklyPageSettings").documentId("weeklyPageSettings").title("Seitentexte: Diese Woche")),
-              S.documentTypeListItem("nextWeekPreview").title("Nächste Woche").icon(CalendarIcon),
+              S.listItem()
+                .title("Diese Woche")
+                .icon(CalendarIcon)
+                .child(
+                  S.list()
+                    .title("Diese Woche")
+                    .items([
+                      S.listItem()
+                        .title("Seitentexte & SEO")
+                        .icon(DocumentIcon)
+                        .child(S.document().schemaType("weeklyPageSettings").documentId("weeklyPageSettings").title("Seitentexte & SEO")),
+                      S.documentTypeListItem("weeklyProduceList").title("Obst- & Gemüselisten").icon(CalendarIcon),
+                      S.documentTypeListItem("nextWeekPreview").title("Vorschau nächste Woche").icon(CalendarIcon),
+                    ]),
+                ),
             ]),
         ),
       S.divider(),
@@ -61,14 +73,15 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("Inhalte")
             .items([
-              S.documentTypeListItem("assortmentEdition").title("Sortimentsausgaben / Wochenplanung").icon(SparklesIcon),
+              S.documentTypeListItem("assortmentEdition").title("Wochenangebote (Brot, Kuchen & Aktionen)").icon(SparklesIcon),
               S.documentTypeListItem("assortmentCategory").title("Sortimentskategorien").icon(TagIcon),
               S.documentTypeListItem("supplierBrand").title("Marken und Hersteller").icon(DocumentsIcon),
+              S.documentTypeListItem("produceCategory").title("Obst- & Gemüsekategorien").icon(TagIcon),
+              S.documentTypeListItem("weeklyProduceList").title("Obst- & Gemüselisten").icon(CalendarIcon),
               S.listItem().title("Brot & Süßgebäck").icon(DocumentsIcon).child(
                 S.document().schemaType("bakeryCatalog").documentId("bakeryCatalog-main").title("Brot & Süßgebäck"),
               ),
               S.documentTypeListItem("promotionSheet").title("Aktionsblätter").icon(DocumentIcon),
-              S.listItem().title("Obst- & Gemüselisten").icon(CalendarIcon).child(S.documentTypeList("weeklyProduceList").title("Obst- & Gemüselisten")),
             ]),
         ),
     ])

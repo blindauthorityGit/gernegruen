@@ -12,10 +12,10 @@ export const startPage = defineType({
     defineField({name: "seoKeywords", title: "SEO-Suchbegriffe", type: "array", of: [defineArrayMember({type: "string"})], validation: (rule) => rule.max(10)}),
     defineField({
       name: "assortmentSection", title: "Aktuelles Sortiment", type: "object",
-      description: "Die aktuelle Ausgabe wird automatisch anhand ihres Zeitraums ausgewählt. Ausgaben können im Voraus vorbereitet und veröffentlicht werden.",
+      description: "Die Wochenangebote werden aus der zuletzt bearbeiteten freigegebenen Sortimentsausgabe geladen. Sektion anzeigen blendet den gesamten Startseitenbereich aus.",
       fields: [
         defineField({name: "enabled", title: "Sektion anzeigen", type: "boolean", initialValue: true}),
-        defineField({name: "editions", title: "Sortimentsausgaben", type: "array", description: "Ausgaben hier erstellen oder auswählen. Vergangene Ausgaben bleiben als Archiv erhalten und erscheinen nicht mehr auf der Website. Ohne aktuell gültige Ausgabe wird die Sektion ausgeblendet.", of: [defineArrayMember({type: "reference", to: [{type: "assortmentEdition"}]})], validation: r => r.unique()}),
+        defineField({name: "editions", title: "Sortimentsausgaben", type: "array", description: "Hier werden Wochenangebote verknüpft. Die zuletzt bearbeitete freigegebene Ausgabe wird angezeigt.", of: [defineArrayMember({type: "reference", to: [{type: "assortmentEdition"}]})], validation: r => r.unique()}),
       ],
     }),
     defineField({

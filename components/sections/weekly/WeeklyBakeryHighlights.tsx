@@ -10,7 +10,7 @@ import styles from "./WeeklySections.module.css";
 import type {WeeklyPageSettings} from "@/sanity/queries/weeklyPageSettings";
 import {sanityDataAttribute} from "@/sanity/lib/dataAttribute";
 
-export function WeeklyBakeryHighlights({highlights, settings, sourceId, sourceType}: {highlights: WeeklyHighlight[]; settings?: WeeklyPageSettings; sourceId?: string; sourceType?: "weeklyOverview" | "weeklyPageSettings" | "assortmentEdition"}) {
+export function WeeklyBakeryHighlights({highlights, settings, sourceId, sourceType}: {highlights: WeeklyHighlight[]; settings?: WeeklyPageSettings; sourceId?: string; sourceType?: "weeklyPageSettings" | "assortmentEdition"}) {
   return (
     <section className={styles.highlightSection} id="wochenbackwaren" aria-labelledby="bakery-highlight-title">
       <Container>

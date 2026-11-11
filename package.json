@@ -9,6 +9,7 @@
     "sanity:seed-homepage": "node scripts/run-with-system-ca.mjs seed-homepage",
     "sanity:seed-homepage-content": "node scripts/seed-homepage-content.mjs",
     "sanity:seed-weekly-presentation": "node scripts/seed-weekly-presentation.mjs",
+    "sanity:seed-produce-categories": "node scripts/run-with-system-ca.mjs seed-produce-categories",
     "sanity:seed-weekly-editorial": "node scripts/run-with-system-ca.mjs seed-weekly-editorial",
     "sanity:seed-assortment-gallery": "node scripts/run-with-system-ca.mjs seed-assortment-gallery",
     "sanity:seed-about-page": "node scripts/run-with-system-ca.mjs seed-about-page",
