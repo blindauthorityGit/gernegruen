@@ -50,10 +50,16 @@ Die Hauptbereiche stehen oben im Studio:
 | **Produktlisten importieren** | Eine neue Obst- und Gemüseliste aus einer Excel-Datei vorbereiten und importieren. |
 | **Bestellungen & Wünsche** | Eingegangene Backwaren-Bestellungen und Produktwünsche ansehen. |
 
-Unter **Inhalte → Seiten** liegen Startseite, Diese Woche, Sortiment, Über uns
-und Kontakt & Anfahrt. Unter **Einstellungen** findest du die globalen
-**Geschäftsdaten** und den **Footer**. Unter **Inhalte** liegen außerdem
-Sortimentsausgaben, Kategorien, Marken und Aktionsblätter.
+Unter **Inhalte → Seiten** liegen Startseite, **Diese Woche**, Sortiment, Über
+uns und Kontakt & Anfahrt. Öffne **Seiten → Diese Woche**, um Seitentexte & SEO,
+Obst- & Gemüselisten und die optionale Vorschau für nächste Woche zu finden.
+Die Obst- und Gemüseliste wird über **Produktlisten importieren** vorbereitet;
+die veröffentlichten Wochenlisten sind außerdem weiterhin unter
+**Inhalte → Obst- & Gemüselisten** erreichbar.
+Unter **Einstellungen** findest du die globalen **Geschäftsdaten** und den
+**Footer**. Unter **Inhalte** liegen außerdem Sortimentsausgaben, Kategorien,
+Marken und Aktionsblätter. **Wochenübersichten (Altbestand)** bitte nicht neu
+befüllen; sie gehören zum älteren Wochenmodell.
 
 ![Studio-Navigation und Seitenstruktur](screenshots/sanity-guide/02-seitenstruktur.jpg)
 
