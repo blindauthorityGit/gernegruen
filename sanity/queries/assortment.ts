@@ -8,15 +8,13 @@ export const CURRENT_ASSORTMENT_QUERY = defineQuery(/* groq */ `
     ] | order(_updatedAt desc, _id asc))[0] {
       "id": _id,
       _type,
-      topline, heading, description, callout, cta,
-      cards[] {
-        _key, title, intro, note, marker, cta,
-        "image": {
-          "src": image.asset->url,
-          "alt": imageAlt,
-          "crop": image.crop,
-          "hotspot": image.hotspot
-        },
+      topline, heading, description, cta,
+      bakeryHighlights {
+        bread {_key, title, description, ingredients, price},
+        cake {_key, title, description, ingredients, price}
+      },
+      promotionPreview {
+        title, intro, cta,
         entries[] {_key, title, description, ingredients, price}
       }
     }

@@ -7,7 +7,7 @@ import { SupplierLogoBar } from "@/components/sections/home/SupplierLogoBar";
 import { WeeklyOffersSection } from "@/components/sections/home/WeeklyOffersSection";
 import { ProductWishCTA } from "@/components/cta/ProductWishCTA";
 import {AssortmentGallery, type AssortmentGalleryContent} from "@/components/sections/AssortmentGallery";
-import type { AssortmentSectionData } from "@/components/sections/AssortmentSection";
+import type {CurrentAssortmentData} from "@/sanity/types/assortment";
 import {fetchSanity} from "@/sanity/lib/live";
 import { CURRENT_ASSORTMENT_QUERY } from "@/sanity/queries/assortment";
 import { ASSORTMENT_CATEGORIES_QUERY } from "@/sanity/queries/assortmentCategories";
@@ -55,8 +55,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AssortmentPage() {
   const [page, assortment, brands, produceList] = await Promise.all([
     getPageContent(),
-    fetchSanity<{ enabled?: boolean; edition: (AssortmentSectionData & {_type: "assortmentEdition"}) | null } | null>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
-      console.error("Aktuelle Frischeprodukte konnten nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
+    fetchSanity<CurrentAssortmentData>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
+      console.error("Aktuelle Wochenangebote konnten nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
       return null;
     }),
     fetchSanity<{_id: string; name: string; description?: string; url?: string; logoUrl?: string}[]>(SUPPLIER_BRANDS_QUERY).catch((error: unknown) => {
@@ -65,7 +65,8 @@ export default async function AssortmentPage() {
     }),
     getCurrentWeeklyProduceList(),
   ]);
-  const data = assortment === null ? null : assortment.enabled === false ? null : assortment.edition;
+  const data = assortment?.enabled === false ? null : assortment?.edition ?? null;
+  const homepageProduceList = assortment?.enabled === false ? null : produceList;
   const supplierItems = brands.map((brand) => ({ _id: brand._id, name: brand.name, href: brand.url ? stegaClean(brand.url) : undefined, src: brand.logoUrl ? stegaClean(brand.logoUrl) : "", width: 360, height: 160 }));
   const badge = page?.badgeVisible !== false ? <ProductCountBadge title={page?.badgeTitle || "Über 4.000 Produkte"} text={page?.badgeText || "für deinen täglichen Einkauf"} textDataAttribute={sanityDataAttribute("assortmentPage", "assortmentPage", "badgeText")} /> : undefined;
 
@@ -73,7 +74,7 @@ export default async function AssortmentPage() {
     {page && <PageHero compact centerBadgeVertically description={page.heroDescription} badge={badge} showAccent mobileAccentPosition="closer" title={page.heroTitle} variant="botanical" dataAttributes={{title: sanityDataAttribute("assortmentPage", "assortmentPage", "heroTitle"), description: sanityDataAttribute("assortmentPage", "assortmentPage", "heroDescription"), badge: sanityDataAttribute("assortmentPage", "assortmentPage", "badgeTitle")}} />}
     {page && <AssortmentDirectory groups={page.groups ?? []} />}
     <SupplierLogoBar title={page?.brandsHeading ?? "Ausgewählte Marken und Hersteller"} suppliers={supplierItems} showTitle={false} showEmptyState={process.env.NODE_ENV === "development" && supplierItems.length === 0} />
-    {(data || produceList) && <WeeklyOffersSection data={data} produceList={produceList} showDataHint={process.env.NODE_ENV === "development" && !data} />}
+    {(data || homepageProduceList) && <WeeklyOffersSection data={data} produceList={homepageProduceList} showDataHint={process.env.NODE_ENV === "development" && !data} />}
     {page && page.productWish?.isVisible !== false && <ProductWishCTA content={page.productWish} sourceId={page._id} />}
     {page?.gallery && page.gallery.isVisible !== false && <AssortmentGallery content={{...page.gallery, _sourceId: page._id}} />}
   </main>;

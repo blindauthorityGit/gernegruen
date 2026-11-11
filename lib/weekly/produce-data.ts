@@ -1,12 +1,13 @@
 import {fetchSanity} from "@/sanity/lib/live"
 import {stegaClean} from "next-sanity"
 import {CURRENT_WEEKLY_PRODUCE_LIST_QUERY} from "@/sanity/queries/weekly"
+import type {ProduceProductCategory} from "./produce-categories"
 
-export type ProduceCategory = "fruit" | "vegetables" | "saladsHerbs" | "mushrooms" | "other"
+export {categorizeProduce, getProduceTeaserProducts} from "./produce-categories"
+export type {ProduceCategory} from "./produce-categories"
 
-export type WeeklyProduceProduct = {
+export type WeeklyProduceProduct = ProduceProductCategory & {
   _key: string
-  name: string
   unit?: string
   unitKind?: "kg" | "piece"
   price?: number
@@ -16,7 +17,6 @@ export type WeeklyProduceProduct = {
   originRegion?: string
   certification?: string
   order?: number
-  categoryOverride?: ProduceCategory
 }
 
 export type WeeklyProduceList = {
@@ -27,75 +27,25 @@ export type WeeklyProduceList = {
   products: WeeklyProduceProduct[]
 }
 
-export const produceCategoryOrder: {id: ProduceCategory; title: string}[] = [
-  {id: "fruit", title: "Obst"},
-  {id: "vegetables", title: "Gemüse"},
-  {id: "saladsHerbs", title: "Salate & Kräuter"},
-  {id: "mushrooms", title: "Pilze"},
-  {id: "other", title: "Weitere Produkte"},
-]
+export function formatIsoWeekDateRange(week: number, year: number) {
+  const dayMs = 24 * 60 * 60 * 1000
+  const januaryFourth = new Date(Date.UTC(year, 0, 4))
+  const mondayOffset = (januaryFourth.getUTCDay() + 6) % 7
+  const start = new Date(januaryFourth.getTime() - mondayOffset * dayMs + (week - 1) * 7 * dayMs)
+  const end = new Date(start.getTime() + 6 * dayMs)
+  const format = (date: Date) => Object.fromEntries(new Intl.DateTimeFormat("de-AT", {day: "numeric", month: "long", year: "numeric", timeZone: "UTC"}).formatToParts(date).map((part) => [part.type, part.value])) as Record<string, string>
+  const from = format(start)
+  const to = format(end)
+
+  if (from.month === to.month && from.year === to.year) return `${from.day}.–${to.day}. ${to.month}`
+  if (from.year === to.year) return `${from.day}. ${from.month}–${to.day}. ${to.month}`
+  return `${from.day}. ${from.month} ${from.year}–${to.day}. ${to.month} ${to.year}`
+}
 
 export function getProductBrand(product: Pick<WeeklyProduceProduct, "name" | "brand" | "originalBrandMarker">): string | undefined {
   if (product.brand && stegaClean(product.brand).trim()) return product.brand.trim()
   if ((product.originalBrandMarker && stegaClean(product.originalBrandMarker).trim() === "b*") || /^b\*/i.test(stegaClean(product.name).trim())) return "bioladen*"
   return undefined
-}
-
-const normalized = (name: string) => name.normalize("NFKC").toLocaleLowerCase("de")
-
-const categoryMatchers: {category: ProduceCategory; terms: string[]}[] = [
-  {category: "mushrooms", terms: ["champignon", "steinpilz", "pfifferling", "seitling", "shiitake", "morchel", "pilz"]},
-  {category: "saladsHerbs", terms: ["salat", "feldsalat", "chicorée", "chicoree", "radicchio", "rucola", "rauke", "spinat", "mangold", "koriander", "petersilie", "basilikum", "schnittlauch", "dill", "minze", "kräuter", "kraeuter"]},
-  {category: "fruit", terms: ["apfel", "birne", "quit", "zitrone", "limette", "orange", "mandarine", "clementine", "grapefruit", "pomelo", "guave", "kiwi", "avocado", "banane", "mango", "melone", "kaki", "pflaum", "zwetsch", "traube", "weinbeere", "himbeere", "heidelbeere", "blaubeere", "erdbeere", "brombeere", "johannisbeere", "stachelbeere", "kirsche", "dattel", "feige", "granatapfel", "papaya", "ananas", "kokos"]},
-  {category: "vegetables", terms: ["tomat", "zucchini", "brokkoli", "blumenkohl", "bananenblüte", "wirsing", "gurke", "kohl", "möhre", "moehre", "karotte", "paprika", "chili", "kohlrabi", "süßkartoffel", "suesskartoffel", "kartoffel", "ingwer", "bohne", "schalotte", "zwiebel", "knoblauch", "porree", "lauch", "pastinak", "kürbis", "kuerbis", "sellerie", "fenchel", "spargel", "aubergine", "rettich", "radieschen", "rote bete", "rübe", "ruebe", "mais", "erbs"]},
-]
-
-export function categorizeProduce(product: WeeklyProduceProduct): ProduceCategory {
-  const categoryOverride = product.categoryOverride ? stegaClean(product.categoryOverride) : undefined
-  if (categoryOverride && produceCategoryOrder.some(({id}) => id === categoryOverride)) return categoryOverride
-  const name = normalized(stegaClean(product.name))
-  return categoryMatchers.find(({terms}) => terms.some((term) => name.includes(term)))?.category ?? "other"
-}
-
-export function getProduceTeaserProducts(list: WeeklyProduceList | null, limit = 4): WeeklyProduceProduct[] {
-  if (!list?.products.length || limit <= 0) return []
-  const preferredCategories: ProduceCategory[] = ["fruit", "vegetables", "saladsHerbs", "mushrooms"]
-  const selected = preferredCategories
-    .map((category) => list.products.find((product) => categorizeProduce(product) === category))
-    .filter((product): product is WeeklyProduceProduct => Boolean(product))
-    .slice(0, limit)
-  const selectedKeys = new Set(selected.map((product) => product._key))
-  for (const product of list.products) {
-    if (selected.length >= limit) break
-    if (!selectedKeys.has(product._key)) {
-      selected.push(product)
-      selectedKeys.add(product._key)
-    }
-  }
-  return selected
-}
-
-function isoWeekAndYear(year: number, month: number, day: number) {
-  const date = new Date(Date.UTC(year, month - 1, day))
-  const weekday = (date.getUTCDay() + 6) % 7
-  date.setUTCDate(date.getUTCDate() - weekday + 3)
-  const isoYear = date.getUTCFullYear()
-  const firstThursday = new Date(Date.UTC(isoYear, 0, 4))
-  const firstWeekday = (firstThursday.getUTCDay() + 6) % 7
-  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstWeekday + 3)
-  const week = 1 + Math.round((date.getTime() - firstThursday.getTime()) / 604800000)
-  return {week, year: isoYear}
-}
-
-export function getCurrentIsoWeek(timeZone = "Europe/Vienna") {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date())
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value)
-  return isoWeekAndYear(value("year"), value("month"), value("day"))
 }
 
 export async function getCurrentWeeklyProduceList(): Promise<WeeklyProduceList | null> {

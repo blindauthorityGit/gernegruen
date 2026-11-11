@@ -30,8 +30,8 @@ export function HomeHero({ data }: { data: HomeHeroData }) {
           </h1>
           <p className={styles.teaser} data-sanity={sanityDataAttribute("startPage", "startPage", "hero.description")}>{data.description}</p>
           <div className={styles.actions}>
-            <Button className={styles.primaryCta} href={data.primaryCta.href}>{data.primaryCta.label}</Button>
-            <Button className={styles.secondaryCta} href={data.secondaryCta.href} variant="outline">{data.secondaryCta.label}</Button>
+            <Button className={styles.primaryCta} href={data.primaryCta.href} data-sanity={sanityDataAttribute("startPage", "startPage", "hero.primaryCta")}>{data.primaryCta.label}</Button>
+            <Button className={styles.secondaryCta} href={data.secondaryCta.href} variant="outline" data-sanity={sanityDataAttribute("startPage", "startPage", "hero.secondaryCta")}>{data.secondaryCta.label}</Button>
           </div>
         </div>
         <div className={styles.imageStage}>

@@ -47,19 +47,23 @@ Die Hauptbereiche stehen oben im Studio:
 | **Inhalte** | Seiten und redaktionelle Inhalte im Sanity-Editor öffnen. |
 | **Live-Bearbeitung** | Die Website ansehen und unterstützte Texte oder Bilder direkt anklicken. |
 | **Veröffentlichungen** | Geplante oder vorbereitete Veröffentlichungen ansehen. Für normale Änderungen meist nicht nötig. |
-| **Produktlisten importieren** | Eine neue Obst- und Gemüseliste aus einer Excel-Datei vorbereiten und importieren. |
 | **Bestellungen & Wünsche** | Eingegangene Backwaren-Bestellungen und Produktwünsche ansehen. |
 
 Unter **Inhalte → Seiten** liegen Startseite, **Diese Woche**, Sortiment, Über
 uns und Kontakt & Anfahrt. Öffne **Seiten → Diese Woche**, um Seitentexte & SEO,
 Obst- & Gemüselisten und die optionale Vorschau für nächste Woche zu finden.
-Die Obst- und Gemüseliste wird über **Produktlisten importieren** vorbereitet;
-die veröffentlichten Wochenlisten sind außerdem weiterhin unter
-**Inhalte → Obst- & Gemüselisten** erreichbar.
+Öffne eine Obst- & Gemüseliste, um Wochenangaben und einzelne Produkte direkt
+zu bearbeiten und ihnen im Feld **Kategorie** eine Kategorie zuzuweisen.
+Kategorien legst du unter **Inhalte → Obst- & Gemüsekategorien** an und ordnest
+  dort ihre Reihenfolge auf der Website. Die Wochenlisten gibt es nur unter
+  **Seiten → Diese Woche**, damit sie nicht doppelt in der Navigation auftauchen. Die Importwerkzeuge sind aktuell
+nicht im Studio-Menü verfügbar.
 Unter **Einstellungen** findest du die globalen **Geschäftsdaten** und den
 **Footer**. Unter **Inhalte** liegen außerdem Sortimentsausgaben, Kategorien,
-Marken und Aktionsblätter. **Wochenübersichten (Altbestand)** bitte nicht neu
-befüllen; sie gehören zum älteren Wochenmodell.
+  Marken, Backwarensortiment und Aktionsblätter. Die Wochenliste für Obst und
+  Gemüse und die Sortimentsausgabe für Brot, Kuchen und Aktionen werden separat
+  gepflegt. Auf der Website erscheint jeweils die zuletzt bearbeitete freigegebene
+  Ausgabe ihrer jeweiligen Datenquelle.
 
 ![Studio-Navigation und Seitenstruktur](screenshots/sanity-guide/02-seitenstruktur.jpg)
 

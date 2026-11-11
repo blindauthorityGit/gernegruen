@@ -15,8 +15,7 @@
 - Sanity provides editorial content
 - GROQ queries live in /sanity/queries
 - Sanity configuration lives in /sanity/lib
-- Weekly page data is loaded through `lib/weekly/data.ts`, with a typed local fallback and server-side import contracts.
-- The current produce list is loaded separately by `lib/weekly/produce-data.ts` from the published Sanity `weeklyProduceList` matching the current ISO week in `Europe/Vienna`. The persistent `bakeryCatalog-main` is queried independently in `lib/weekly/data.ts`, so bakery prices remain visible without a weekly overview and do not rotate with produce imports.
+- Weekly produce is loaded from the latest published, enabled, non-archived Sanity `weeklyProduceList`. Bread/cake offers and the optional homepage action preview come independently from the latest enabled `assortmentEdition` linked on the start page. Both latest records are shown, as selected by their own enable/update settings. The persistent `bakeryCatalog-main` is queried independently in `lib/weekly/data.ts`; its regular bakery prices do not rotate with produce lists.
 
 ## UI
 
@@ -40,7 +39,7 @@
 
 ## Backwaren-Vorbestellungen
 
-- Das globale Vorbestellungsmodal und die sichtbare Preisliste verwenden beide das feste Sanity-`bakeryCatalog-main`; dessen Katalog ist in Brot & Gebäck und Süßgebäck getrennt. Die API lädt dieselbe Quelle erneut und vertraut weder Produktnamen noch Preisen aus dem Browser. Änderungen kommen über den Studio-Excel-Import und werden als Entwurf geprüft, bevor sie veröffentlicht werden.
+- Das globale Vorbestellungsmodal und die sichtbare Preisliste verwenden beide das feste Sanity-`bakeryCatalog-main`; dessen Katalog ist in Brot & Gebäck und Süßgebäck getrennt. Die API lädt dieselbe Quelle erneut und vertraut weder Produktnamen noch Preisen aus dem Browser. Backwaren werden direkt in Sanity gepflegt und vor Veröffentlichung als Entwurf geprüft. Das Importwerkzeug ist derzeit im Studio ausgeblendet.
 - `POST /api/bakery-preorders` validiert Kontaktdaten, Mengen sowie Abholtage in der Zeitzone `Europe/Berlin`. Vorbestellfristen richten sich nach dem Abholtag: regulär 16 Uhr am Vortag, mittwochs 13 Uhr und samstags 12 Uhr für den nächsten Öffnungstag am Montag. Sonntage und gesetzliche Feiertage in Hessen werden mit `date-holidays` ausgeschlossen.
 - Firestore wird ausschließlich über das Firebase Admin SDK angesprochen. `BAKERY_PREORDER_DEV=true` speichert Dokumente unter `bakeryPreorders_dev/{requestId}`, `false` unter `bakeryPreorders/{requestId}`. Ohne gesetzten Schalter wählen lokale Development-Runs automatisch die Dev-Collection; Produktions-Runs die Live-Collection. Die clientseitig erzeugte UUID verhindert doppelte Dokumente bei Wiederholungen.
 - Die Vorbestellung wird vor dem SMTP-Versand gespeichert. Danach erhält das Betreiberpostfach eine Benachrichtigung und der Kunde eine gestaltete Eingangsbestätigung mit Auswahl, Abholtag und voraussichtlicher Summe. Der Betreiber hat bestätigt, dass eine über das Formular gesendete Vorbestellung unverbindlich bleibt. Dashboard-Status bilden den Bearbeitungsstand ab und erklären für sich genommen keine Annahme oder einen Vertragsschluss. Die Kundenbestätigung geht in jeder Umgebung an die im Formular angegebene Adresse; Antworten gehen an den jeweiligen Betreiberempfänger. `emailStatus` und `customerEmailStatus` dokumentieren beide Versandwege getrennt; ein E-Mail-Fehler verliert die gespeicherte Vorbestellung nicht.

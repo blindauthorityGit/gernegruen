@@ -1,40 +1,37 @@
 # Content model
 
-## Wöchentlicher Obst- und Gemüseimport
+## Wöchentliche Obst- und Gemüseliste
 
-Das Studio-Tool **Produktlisten importieren** liest `.xlsx`- und `.xls`-Dateien
-lokal im Browser ein. Die Vorschau verändert keine Sanity-Daten. Erforderliche
-Spalten werden anhand ihrer Kopfzeilen erkannt; Originalwerte bleiben erhalten,
-und Produktnamen werden zusätzlich normalisiert gespeichert. Preise werden als
-Zahlen gespeichert. Leere Herkunfts- und Zertifizierungsfelder bleiben leer.
-Fehler und doppelte Produktnamen müssen vor dem Import behoben werden.
+`weeklyProduceList` speichert eine Wochenliste mit einzelnen, redaktionell
+bearbeitbaren Produktfeldern. Die Listen sind unter **SEITEN → Diese Woche →
+Obst- & Gemüselisten** sowie als Verknüpfung unter **INHALTE → Obst- &
+Gemüselisten** erreichbar; beide Einträge öffnen dieselben Dokumente.
+Lege ein Dokument für die Woche an und pflege Kalenderwoche, Jahr sowie die
+Produkte. Pro Produkt sind Name, Einheit, Preis, Marke, Herkunft,
+Verbands-/Bio-Angabe, Reihenfolge und eine Kategorie-Referenz verfügbar.
 
-Das Feld `certification` wird unverändert und getrennt von Herkunft und Marke
-übernommen und öffentlich genauso ausgegeben. Es gibt dafür keine zusätzliche
-Bio-Status- oder Angabe-Validierung. Das Quellpräfix `b*` wird nur der
-Produktmarke `bioladen*` zugeordnet und leitet keine Zertifizierung ab.
-Die frühere Excel-Spalte „Bioladen Zertifikat Ja/Nein“ wird ignoriert; sie ist
-weder für die Markenerkennung noch für den Produktimport erforderlich.
+Die Kategorien werden als `produceCategory`-Dokumente unter **INHALTE →
+Obst- & Gemüsekategorien** gepflegt. Titel und `sortOrder` bestimmen Gruppierung,
+Überschrift und Reihenfolge auf `/diese-woche`. `showInHomepageTeaser` steuert,
+ob die Kategorie bei der Auswahl der vier Startseiten-Produkte berücksichtigt
+wird. Weise jedes Produkt im Feld **Kategorie** einem Kategoriedokument zu.
+Ältere Produkte ohne Referenz werden vorübergehend weiterhin anhand ihrer alten
+Kategorie oder ihres Namens eingeordnet.
 
-`weeklyProduceList` ist bewusst getrennt von `weeklyOverview`, das die bestehende
-Website-Wochenübersicht samt weiteren Pflichtfeldern steuert. Ein stabiler
-Dokumentname je Jahr/KW verhindert doppelte Wochenlisten. Die Produkte liegen
-geordnet und als zusammenhängendes Array in diesem Dokument, damit ein erneuter
-Import als einzelnes atomisches Dokument-Replace erfolgt. Die Vorschau zeigt
-Änderungen einer vorhandenen Liste; erst nach ausdrücklicher Bestätigung wird
-deren Sanity-Entwurf ersetzt. Eine veröffentlichte Fassung wird dabei nicht
-überschrieben. Importierte Listen bleiben Entwürfe und werden über die reguläre
-Sanity-Veröffentlichung freigegeben. Das Jahr wird nicht aus der aktuellen Zeit
-abgeleitet; wenn es im Dateinamen fehlt, muss es im Tool eingegeben werden.
+Die Produktlisten- und Backwaren-Importwerkzeuge sind vorübergehend aus dem
+Studio-Menü ausgeblendet. Die Importimplementierung und vorhandene Daten bleiben
+erhalten. Die aktuellen Inhalte werden direkt in den jeweiligen Sanity-Feldern
+bearbeitet und wie gewohnt als Entwurf geprüft und veröffentlicht.
 
-Die öffentliche Seite fragt separat nur die veröffentlichte, nicht archivierte
-Liste der aktuellen ISO-Kalenderwoche in `Europe/Vienna` ab. Eine fehlende oder
-nicht erreichbare Liste zeigt einen Vorbereitungs-Hinweis statt alter oder
-lokaler Produktdaten. Produktkategorien werden aus einer zentralen Namensliste
-zugeordnet; `categoryOverride` am Produkt überschreibt diese Zuordnung. Beim
-erneuten Excel-Import bleiben vorhandene manuelle Kategorien für passende
-Produktnamen erhalten. Sanity-Änderungen erscheinen nach Ablauf des 60-Sekunden-
-Daten-Caches.
+Die öffentliche Seite verwendet die zuletzt bearbeitete veröffentlichte Liste,
+die aktiviert und nicht archiviert ist. Für einen manuellen Wechsel wird die
+gewünschte Liste aktiviert und die bisherige deaktiviert; zum Abschalten werden
+alle Listen deaktiviert. Die Sortimentsausgabe für Brot, Kuchen und Aktionen
+wird unabhängig ausgewählt und ebenfalls über **Ausgabe freigeben** gesteuert.
+Deshalb sollten Redakteure vor der Veröffentlichung prüfen, dass die
+Kalenderwochen beider Inhalte zusammenpassen. Eine fehlende Liste zeigt einen
+Vorbereitungs-Hinweis statt lokaler Beispieldaten. Sanity-Änderungen erscheinen
+nach Ablauf des 60-Sekunden-Daten-Caches.
 
 ## Über uns
 
@@ -79,9 +76,9 @@ The nested `startHero` object contains:
 `storeIntroSettings.content` is a `storeIntroSection` object with the store
 photo, intro copy, parking note, highlights, ordered assortment categories, and
 Sortiment link. Its image uses Sanity hotspot and alt text. The homepage preview
-links its weekly offer cards to the active `assortmentEdition`, produce rows to
-the current `weeklyProduceList`, supplier marks to their `supplierBrand`
-documents, and the store introduction to `storeIntroSettings`. Keep those
+links its weekly offers to the active `assortmentEdition`, produce rows to the
+current `weeklyProduceList`, supplier marks to their `supplierBrand` documents,
+and the store introduction to `storeIntroSettings`. Keep those
 datasets fetched with Stega enabled in Presentation mode; URLs and values used
 for comparisons are cleaned before rendering or logic.
 
@@ -154,27 +151,28 @@ and `contentCategory`) were removed after confirming there were no matching
 documents in the production dataset and no active frontend usage. The old
 `currentContentSection` field is no longer part of the Startseite schema.
 
-In Studio, open **INHALTE → Sortimentsausgaben / Wochenplanung**. Each
-`assortmentEdition` contains its own topline, headline, description, optional
-callout, optional section link and ordered `assortmentCard` objects. Cards have
-an image with hotspot/crop and alt text, heading, optional introduction, list
-symbol, ordered entries (text plus optional secondary line), optional note and
-button. These are dedicated reusable schema objects, embedded in each edition
-so duplicating an edition produces an independent set of editable cards.
+In Studio, open **INHALTE → Wochenangebote (Brot, Kuchen & Aktionen)**. Each
+`assortmentEdition` contains its own topline, headline and description, a
+fixed fields for Brot and Kuchen, and an optional action preview. The produce card and its product
+rows are not stored here: its heading/artwork are part of the frontend design,
+and its product rows always come from the latest enabled weekly list. Bread and
+cake use separate fixed fields, so the editor does not have to
+preserve hidden array keys. The preview's vegetable, bread, and cake artwork
+remains fixed frontend design. Sanity stores only the editable offer copy,
+ingredients, optional price, and action preview text/link.
 
-1. Create or duplicate an edition and set its internal name and start/end times.
-2. Edit the **Texte & Störer** and **Karten** tabs; reorder cards and list entries
-   by dragging. Three cards form the desktop row; more cards form further rows.
+1. Create or duplicate an edition and set its internal name and display period.
+2. Edit **Brot & Kuchen der Woche** and, when needed, the **Aktionsvorschau**.
 3. Publish the edition and add its reference under **SEITEN → Startseite →
    Aktuelles Sortiment → Sortimentsausgaben**, then publish the homepage.
-4. Publish the edition whose manually maintained bakery highlights and action
-   link should be shown. The latest updated, enabled edition is used;
-   `startAt` and `endAt` remain planning information and do not hide the cards.
+4. Keep **Ausgabe freigeben** enabled for the edition you want shown. The latest
+   enabled edition and latest enabled produce list are selected independently.
+   Disable the start-page section to switch the whole preview off.
 
-The server fetches the latest enabled edition on each request. The start/end
-fields remain planning information. When the section is disabled, it is hidden.
-Before the section is configured, the original Figma copy/assets serve as a
-preview fallback. Background artwork, layout and motion stay in code. The
+The server fetches the latest enabled, published produce list and latest enabled
+edition independently. When the start-page section is disabled or neither source
+has content, the weekly preview is hidden. Background artwork, layout and motion
+stay in code. The
 section's organic background owns the visual transition below the hero. Motion
 uses once-only scroll reveals and subtle image hover, with reduced-motion
 support; all content renders as server HTML.
@@ -213,42 +211,30 @@ photos, set their editorial alternative text and captions, and publish the
 gallery on the `assortmentPage` singleton. This requires a Sanity dataset write
 token in `.env.local`.
 
-## Weekly overview
+## Diese Woche
 
 - **SEITEN → Diese Woche → Seitentexte & SEO** is the fixed `weeklyPageSettings` singleton. It stores page copy, the hero illustration, SEO fields, jump-link labels and empty-state messages. It does not store the changing weekly product list.
 - **SEITEN → Diese Woche → Vorschau nächste Woche** is an optional list of `nextWeekPreview` documents. Each document describes one upcoming offer week and appears on `/diese-woche` only during its preview window and when it has valid products. An empty list means no preview is scheduled; it is safe to leave empty when this feature is not being used.
-- **SEITEN → Diese Woche → Obst- & Gemüselisten** opens the imported `weeklyProduceList` documents; they remain available under **INHALTE → Obst- & Gemüselisten** too. The current published list supplies the week badge and fresh products.
-- **INHALTE → Wochenübersichten (Altbestand)** is the older `weeklyOverview` model. It bundled produce, bakery highlights, catalog references and promotions in one weekly document. It remains available for legacy bakery-data fallback and compatibility, but it is not the current produce source or source for bakery highlights. Do not create new documents here. The type and fallback can be removed after confirming old content is no longer needed.
-- Bread and cake highlights come from the latest enabled `assortmentEdition`; the bakery price list comes from `bakeryCatalog-main`. These are independent content sources.
-- The KW badges and fresh produce come only from the current `weeklyProduceList`. The manually exchanged bread and cake cards, plus the homepage action link box, come from the latest enabled `assortmentEdition`; its date range does not hide them when a week passes.
-- In **INHALTE → Sortimentsausgaben / Wochenplanung**, update the `Brot & Kuchen` card's fixed `bread` and `cake` entries in the enabled edition each week. `title` is the product name, `ingredients` supplies the small text on both offer pages and the preorder list, and `price` remains available for preorder totals. The offer cards show “Brot der Woche” / “Kuchen der Woche” as their larger heading and no longer show the price.
-- `weeklyOverview` is the older bundled weekly model. It is labelled **Wochenübersichten (Altbestand)** under **INHALTE** and should not receive new entries. Runtime compatibility still allows its bakery categories to act as a fallback if `bakeryCatalog-main` is unavailable; this fallback can be removed after confirming the old data is no longer needed.
-- The KW badges on the homepage/assortment teaser and `/diese-woche` are derived only from the published, non-archived `weeklyProduceList` for the current ISO week in `Europe/Vienna`. They are hidden when that list is unavailable; `weeklyOverview.week` and the assortment edition's optional callout do not supply or override the badge. The homepage, assortment and weekly page are request-rendered so the selected week rolls over without a new build.
-- `bakeryCatalog` stores the slower-changing bakery assortment independently of the weekly produce list. The fixed `bakeryCatalog-main` document has separate `breadCategories` (Brot & Gebäck) and `sweetCategories` (Süßgebäck) arrays. Both appear in distinct areas on `/diese-woche` and together supply the preorder dialog. Use **Backwaren importieren** in Studio to replace them from an Excel sheet with Bereich (Brot & Gebäck or Süßgebäck), category, product name, price, and optional note or article-number columns; each import creates a draft for review and publication. The former `categories` field stays read-only for compatibility with older content.
-- `/diese-woche` action PDFs are maintained inline in `weeklyPageSettings.promotionSheets`; active entries remain visible until removed or disabled. Their date range is an editorial label, not an automatic visibility rule. The homepage action link box comes from the latest enabled assortment edition.
-- Future Excel ingestion normalizes files server-side into the contracts in `lib/weekly/import-contract.ts`; spreadsheet parsing does not happen in React components.
+- **SEITEN → Diese Woche → Obst- & Gemüselisten** is the one place to manage weekly produce lists. The most recently updated published, enabled, non-archived list is shown, regardless of its week number. Set **Auf der Website anzeigen** to off to exclude a list; if no enabled list remains, the section is hidden.
+- The former **Wochenübersichten (Altbestand)** model was an unused, bundled weekly format. The production dataset contains no documents of this type, so the Sanity model, navigation entry, and runtime fallback have been removed.
+- Bread, cake, and the optional homepage action preview come from the latest enabled `assortmentEdition`; the bakery price list comes independently from `bakeryCatalog-main`.
+- The KW badge, date range, and fresh produce come from the most recently updated published, enabled, non-archived `weeklyProduceList`. The produce list and assortment edition are selected independently.
+- In **INHALTE → Wochenangebote (Brot, Kuchen & Aktionen)**, edit the separate **Brot der Woche** and **Kuchen der Woche** fields. `title` is the product name, `ingredients` supplies the small text on offer previews and the preorder list, and `price` remains available for preorder totals. The frontend supplies the headings “Brot der Woche” / “Kuchen der Woche” and the illustrations.
+- The KW badges on the homepage/assortment teaser and `/diese-woche` come from the latest enabled, non-archived published `weeklyProduceList`. Editors can switch the active list by changing **Auf der Website anzeigen** on the list documents; disabling all lists hides the weekly produce section.
+- `bakeryCatalog` stores the slower-changing bakery assortment independently of the weekly produce list. The fixed `bakeryCatalog-main` document has separate `breadCategories` (Brot & Gebäck) and `sweetCategories` (Süßgebäck) arrays. Both appear in distinct areas on `/diese-woche` and together supply the preorder dialog. Edit each category and its product name, price and optional note directly in Sanity.
+- `/diese-woche` action PDFs are maintained inline in `weeklyPageSettings.promotionSheets`; active entries remain visible until removed or disabled. Their date range is an editorial label, not an automatic visibility rule. The homepage action preview comes from the latest enabled edition.
 
 The fixed `weeklyPageSettings` document controls the editorial copy, the
 replaceable hero illustration, SEO fields and manually exchanged promotion PDFs
-for `/diese-woche`. Bakery highlights come from the latest enabled
-`assortmentEdition`; the current produce list and bakery price catalog remain
+for `/diese-woche`. Bakery highlights come from the edition active in its display
+period; the current produce list and bakery price catalog remain
 separate. In Presentation mode, hero, section copy and promotion PDFs map to
 this singleton, while bakery cards, product rows and catalog entries map to
 their source documents.
-Presentation uses the current `weeklyProduceList` as the route's primary document,
-because the page can be populated before a `weeklyOverview` is created. The page
-does not fall back to sample bakery prices, products or action sheets when weekly
-Sanity content is missing. Missing content stays empty until an editor publishes it.
-
-## Content coverage audit (2026-10-14)
-
-The production dataset was checked through the read-only API token. Published
-documents exist for the homepage, assortment page/categories, about page, contact
-page, business settings, supplier brands, one assortment edition and the KW 42
-produce list. No published `weeklyOverview`, `bakeryCatalog` or
-`nextWeekPreview` exists yet. One inactive example `promotionSheet` now contains
-the existing August 2026 PDF asset. Editors can create and schedule current sheets in Studio; the website will
-not show the old hard-coded sample offers as if they were current.
+Presentation uses the current `weeklyProduceList` as the route's primary document.
+The page does not fall back to sample bakery prices, products or action sheets
+when weekly Sanity content is missing. Missing content stays empty until an editor
+publishes it.
 
 The product-wish callout is shared by the assortment and weekly pages. Its copy,
 visibility, illustration and alt text are stored in `assortmentPage.productWish`

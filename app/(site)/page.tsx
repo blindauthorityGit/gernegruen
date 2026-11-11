@@ -1,4 +1,4 @@
-import { type AssortmentSectionData } from "@/components/sections/AssortmentSection";
+import type {CurrentAssortmentData} from "@/sanity/types/assortment";
 import { WeeklyOffersSection } from "@/components/sections/home/WeeklyOffersSection";
 import { SupplierLogoBar } from "@/components/sections/home/SupplierLogoBar";
 import { HomeHero, type HomeHeroData } from "@/components/sections/home/HomeHero";
@@ -7,7 +7,6 @@ import {fetchSanity} from "@/sanity/lib/live";
 import { START_PAGE_CONTENT_QUERY, STORE_INTRO_QUERY } from "@/sanity/queries/startPage";
 import {CURRENT_ASSORTMENT_QUERY} from "@/sanity/queries/assortment";
 import {SUPPLIER_BRANDS_QUERY} from "@/sanity/queries/supplierBrands";
-import {assortmentFallback} from "@/lib/content/assortmentFallback";
 import {getCurrentWeeklyProduceList} from "@/lib/weekly/produce-data";
 import { createPageMetadata } from "@/lib/seo";
 import type {Metadata} from "next";
@@ -71,10 +70,8 @@ export default async function Home() {
       console.error("Sanity-Ladeneinleitung konnte nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
       return null;
     }),
-    fetchSanity<{enabled?: boolean; edition: (AssortmentSectionData & {_type: "assortmentEdition"}) | null} | null>(
-      CURRENT_ASSORTMENT_QUERY,
-    ).catch((error: unknown) => {
-      console.error("Sanity-Sortiment konnte nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
+    fetchSanity<CurrentAssortmentData>(CURRENT_ASSORTMENT_QUERY).catch((error: unknown) => {
+      console.error("Sanity-Wochenangebote konnten nicht geladen werden:", error instanceof Error ? error.message : "Unbekannter Fehler");
       return null;
     }),
     fetchSanity<{_id: string; name: string; url?: string; logoUrl?: string}[]>(
@@ -86,7 +83,8 @@ export default async function Home() {
     getCurrentWeeklyProduceList(),
   ]);
   const hero = startPageContent?.hero;
-  const assortmentData = assortment === null ? assortmentFallback : assortment.enabled === false ? null : assortment.edition;
+  const assortmentData = assortment?.enabled === false ? null : assortment?.edition ?? null;
+  const homepageProduceList = assortment?.enabled === false ? null : produceList;
   const heroData: HomeHeroData = {
     ...homeHero,
     headlineLine1: hero?.headlineLine1?.trim() || homeHero.headlineLine1,
@@ -112,7 +110,7 @@ export default async function Home() {
     <>
       <main>
         <HomeHero data={heroData} />
-        {(assortmentData || produceList) && <WeeklyOffersSection data={assortmentData} produceList={produceList} />}
+        {(assortmentData || homepageProduceList) && <WeeklyOffersSection data={assortmentData} produceList={homepageProduceList} />}
         <SupplierLogoBar suppliers={supplierItems} showTitle={false} showEmptyState={process.env.NODE_ENV === "development" && supplierItems.length === 0} />
         <StoreIntroSection data={storeIntro} />
       </main>
