@@ -13,7 +13,7 @@ from reportlab.platypus import (
 from reportlab.lib.utils import ImageReader
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "output" / "pdf" / "GerneGruen-Anleitung-Wocheninhalte-Sanity.pdf"
+OUT = ROOT / "output" / "pdf" / "GerneGruen-Anleitung-Wocheninhalte-Sanity-aktualisiert.pdf"
 OUT.parent.mkdir(parents=True, exist_ok=True)
 LOGO = ROOT / "public" / "graphics" / "gernegruen-logo-subline-dark-green.png"
 FONT_FILE = ROOT / "public" / "fonts" / "Nunito-Variable.ttf"
@@ -59,6 +59,7 @@ styles.add(ParagraphStyle(name="Caption", fontName="Nunito", fontSize=8.2, leadi
 styles.add(ParagraphStyle(name="CalloutText", fontName="Nunito", fontSize=9.5, leading=13.2, textColor=INK))
 styles.add(ParagraphStyle(name="PlaceholderTitle", fontName="Nunito-Bold", fontSize=10, leading=14, textColor=GREEN, alignment=TA_CENTER))
 styles.add(ParagraphStyle(name="PlaceholderNote", fontName="Nunito", fontSize=8.7, leading=12, textColor=MUTED, alignment=TA_CENTER))
+styles.add(ParagraphStyle(name="ScreenshotCaption", fontName="Nunito", fontSize=8.1, leading=10.4, textColor=MUTED, alignment=TA_LEFT))
 
 def P(text, style="BodyGuide"):
     return Paragraph(text, styles[style])
@@ -115,6 +116,46 @@ class ScreenshotPlaceholder(Flowable):
         note.drawOn(c, 25, self.height / 2 - 38)
         c.restoreState()
 
+SCREEN_DIR = Path(r"C:\Users\Johannes\AppData\Local\Temp")
+SCREENS = {
+    "nav": SCREEN_DIR / "codex-clipboard-d7282333-05bf-40ae-9ce7-3fd2651d23cc.png",
+    "new_list": SCREEN_DIR / "codex-clipboard-a6a91f8a-a58b-4809-a2c7-108b23eb04a7.png",
+    "week": SCREEN_DIR / "codex-clipboard-d67d7734-c3c6-4fb9-afb1-ad49897bd119.png",
+    "add_product": SCREEN_DIR / "codex-clipboard-97e8327e-4e16-4bbf-9d05-82d91caf0509.png",
+    "product_form": SCREEN_DIR / "codex-clipboard-5ae4a0f8-9a04-4ef7-809d-34043a4aaa60.png",
+    "category_dropdown": SCREEN_DIR / "codex-clipboard-3bbd6749-f7f8-456a-ac65-7f4b65689e4a.png",
+    "category_list": SCREEN_DIR / "codex-clipboard-862bc8c5-35f1-49fa-a299-5069799f801e.png",
+    "new_category": SCREEN_DIR / "codex-clipboard-da8b3e01-c8d7-472d-bb26-29d81cdfd355.png",
+    "bread_cake": SCREEN_DIR / "codex-clipboard-88685764-5a60-4fd9-be3d-cbc2ba89214b.png",
+    "live_edit": SCREEN_DIR / "codex-clipboard-15579b18-a23c-4754-95c8-c3bfebb16a10.png",
+}
+
+def screenshot(key, caption, max_width=BODY_W, max_height=230):
+    path = SCREENS[key]
+    if not path.exists():
+        raise FileNotFoundError(f"Screenshot fehlt: {path}")
+    img = Image(str(path), width=max_width, height=max_height, kind="proportional", hAlign="CENTER")
+    frame = Table([[img], [P(caption, "ScreenshotCaption")]], colWidths=[max_width])
+    frame.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+        ("BOX", (0, 0), (-1, -1), 0.5, LINE),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7), ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (0, 0), 7), ("BOTTOMPADDING", (0, 0), (0, 0), 2),
+        ("TOPPADDING", (0, 1), (0, 1), 4), ("BOTTOMPADDING", (0, 1), (0, 1), 7),
+    ]))
+    return frame
+
+def screenshot_pair(left_key, left_caption, right_key, right_caption, width=BODY_W / 2 - 5, height=155):
+    left = screenshot(left_key, left_caption, width, height)
+    right = screenshot(right_key, right_caption, width, height)
+    pair = Table([[left, right]], colWidths=[width + 2, width + 2], hAlign="LEFT")
+    pair.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    return pair
+
 def table(headers, rows, widths):
     data = [[P(x, "TableHead") for x in headers]]
     data.extend([[P(str(x), "TableCell") for x in row] for row in rows])
@@ -162,67 +203,47 @@ story = []
 lw, lh = ImageReader(str(LOGO)).getSize()
 logo = Image(str(LOGO), width=94, height=94 * lh / lw)
 story += [Spacer(1, 29), logo, Spacer(1, 31), P("EINFACH ERKLÄRT", "CoverKicker")]
-cover = Table([[[P("Wocheninhalte<br/>in Sanity bearbeiten", "CoverTitle"), P("Eine Schritt-für-Schritt-Anleitung für GerneGrün. Hier lernst du, Obst und Gemüse, Brot, Kuchen und Aktionen einzutragen - entweder in <b>Inhalte</b> oder direkt in der <b>Live-Bearbeitung</b>.", "CoverBody")]]], colWidths=[BODY_W])
+cover = Table([[[P("Produktlisten &amp;<br/>Gebäck aktualisieren", "CoverTitle"), P("Eine Schritt-für-Schritt-Anleitung für GerneGrün. Hier lernst du, Obst und Gemüse, Brot, Kuchen und Aktionen einzutragen - über <b>Inhalte</b> oder direkt in der <b>Live-Bearbeitung</b>.", "CoverBody")]]], colWidths=[BODY_W])
 cover.setStyle(TableStyle([
     ("BACKGROUND", (0,0), (-1,-1), GREEN), ("LEFTPADDING",(0,0),(-1,-1),24), ("RIGHTPADDING",(0,0),(-1,-1),24),
     ("TOPPADDING",(0,0),(-1,-1),22), ("BOTTOMPADDING",(0,0),(-1,-1),24),
 ]))
-story += [cover, Spacer(1, 17), P("Für alle, die GerneGrüns Wochenangebote pflegen möchten - ohne technische Vorkenntnisse.", "CoverSub"), Spacer(1, 5), callout("<b>Der einfache Einstieg:</b> Vorhandene Inhalte kannst du in der Live-Bearbeitung direkt auf der Website anklicken. Neue Wochenlisten, Ausgaben und Aktionsblätter legst du am übersichtlichsten zuerst unter <b>Inhalte</b> an. Änderungen sind erst online, wenn du sie veröffentlichst."), PageBreak()]
+story += [cover, Spacer(1, 17), P("Für alle, die GerneGrüns Wochenangebote pflegen möchten - ohne technische Vorkenntnisse.", "CoverSub"), Spacer(1, 5), callout("<b>Empfohlene Methode:</b> Obst- und Gemüselisten pflegst du am übersichtlichsten unter <b>Inhalte</b>. Brot, Kuchen und Aktionsinhalte kannst du dort oder über die <b>Live-Bearbeitung</b> ändern. Änderungen sind erst online, wenn du sie veröffentlichst."), PageBreak()]
 
-# Page 2: map.
-story += heading("Wo finde ich was?", "In Sanity gibt es zwei Wege. Für neue Einträge ist der Bereich Inhalte am übersichtlichsten.")
-story += [table(["Bereich", "Dort pflegst du"], [
-    ("SEITEN > Diese Woche", "Obst- und Gemüselisten sowie Seitentexte für die Seite Diese Woche."),
-    ("INHALTE > Wochenangebote (Brot, Kuchen & Aktionen)", "Brot und Kuchen der Woche sowie die Aktionsvorschau auf der Startseite."),
-    ("INHALTE > Obst- & Gemüsekategorien", "Kategorien, zum Beispiel Obst, Gemüse oder Pilze. Produkte werden einer Kategorie zugeordnet."),
-    ("SEITEN > Startseite", "Die Sortimentsausgaben, die für die Startseiten-Vorschau freigegeben sind."),
-    ("Live-Bearbeitung", "Website-Vorschau mit anklickbaren Texten, Produktzeilen und Karten."),
-], [180, BODY_W - 180]), Spacer(1, 10), ScreenshotPlaceholder("Sanity-Navigation", "Zeige die Seitenleiste mit SEITEN, INHALTE, Obst- & Gemüselisten und Wochenangebote. Persönliche Kontodaten bitte ausblenden.", 165), Spacer(1, 9), callout("<b>Merke:</b> Die Obst- und Gemüselisten erscheinen an zwei Stellen in der Navigation. Beide öffnen dieselben Listen. Für diese Anleitung verwenden wir den Weg <b>SEITEN > Diese Woche</b>."), PageBreak()]
+# Page 2: navigation and start.
+story += heading("Empfohlener Weg: Inhalte", "Für eine neue Obst- und Gemüseliste gehst du direkt über den Bereich Inhalte.")
+story += [step(1, "Melde dich im Sanity Studio an."), step(2, "Wähle links <b>INHALTE</b> und danach <b>Obst- &amp; Gemüselisten</b>."), step(3, "Die vorhandenen Listen erscheinen rechts. Klicke oben in dieser Spalte auf <b>+</b>, um eine neue Liste anzulegen."), Spacer(1, 7), screenshot("nav", "INHALTE → Obst- &amp; Gemüselisten. Das Plus oben rechts legt eine neue Wochenliste an.", BODY_W, 235), Spacer(1, 8), callout("<b>Hinweis:</b> Die Obst- &amp; Gemüseliste ist ein eigenes Dokument mit Produkten. Sie wird getrennt von der Sortimentsausgabe für Brot, Kuchen und die Startseiten-Aktionsvorschau gepflegt."), PageBreak()]
 
 # Page 3: new list.
-story += heading("1. Eine neue Obst- und Gemüseliste anlegen", "Lege für jede Woche eine eigene Liste an. So bleibt die vorherige Liste als Archiv erhalten.")
-story += [step(1, "Öffne <b>SEITEN > Diese Woche > Obst- & Gemüselisten</b>."), step(2, "Klicke oben in der Listen-Spalte auf <b>+</b>, um eine neue Liste anzulegen."), step(3, "Trage eine gut erkennbare Bezeichnung ein, zum Beispiel <i>Obst & Gemüse - KW 46/2026</i>. Wähle außerdem die Kalenderwoche und das Jahr."), step(4, "Lasse <b>Auf der Website anzeigen</b> eingeschaltet. Eine archivierte Liste wird nicht angezeigt. Für eine neue Woche muss <b>Archiviert</b> ausgeschaltet sein."), step(5, "Speichere deine Änderungen als Entwurf. Prüfe erst die Vorschau, dann klicke auf <b>Veröffentlichen</b>."), Spacer(1, 5), ScreenshotPlaceholder("Listen und Wochenangaben", "Zeige die Sanity-Liste der Wochen mit der Plus-Schaltfläche sowie eine geöffnete Liste mit Kalenderwoche, Jahr und Aktiv-Schalter.", 210), Spacer(1, 8), callout("<b>Welche Woche erscheint online?</b> Angezeigt wird die zuletzt bearbeitete veröffentlichte Liste, wenn sie aktiviert und nicht archiviert ist. Beim Wechsel: gewünschte Liste aktivieren und die bisherige Liste deaktivieren. Die Sortimentsausgabe mit Brot und Kuchen wird getrennt ausgewählt."), PageBreak()]
+story += heading("1. Wochenliste benennen und freigeben", "Lege für jede Woche eine eigene Liste an. Die vorherigen Listen bleiben so als Archiv erhalten.")
+story += [step(1, "Trage bei <b>Bezeichnung</b> einen klaren Namen ein, zum Beispiel <i>Obst &amp; Gemüse – KW 46/2026</i>."), step(2, "Fülle <b>Kalenderwoche</b> und <b>Jahr</b> passend aus."), step(3, "Lasse <b>Auf der Website anzeigen</b> eingeschaltet. Für eine neue Woche muss <b>Archiviert</b> ausgeschaltet sein."), step(4, "Öffne danach den Bereich <b>Produkte</b>, um die Produkte einzutragen."), Spacer(1, 6), screenshot("new_list", "Neue Liste: Name, Kalenderwoche, Jahr und Schalter für die Website-Anzeige.", BODY_W, 205), Spacer(1, 6), callout("Die zuletzt bearbeitete, veröffentlichte und aktivierte Liste wird auf der Website angezeigt. Beim Wochenwechsel die neue Liste einschalten und die bisherige deaktivieren. Prüfe vor dem Veröffentlichen, dass KW und Jahr stimmen."), PageBreak()]
 
 # Page 4: products and categories.
-story += heading("2. Produkte einzeln hinzufügen", "Die Produkte stehen direkt in der Wochenliste. Eine Excel-Datei wird dafür nicht benötigt.")
-story += [step(1, "Öffne in der Wochenliste den Bereich <b>Produkte</b> und klicke bei der Produktliste auf <b>Element hinzufügen</b>."), step(2, "Fülle die Angaben zum Produkt aus. Name, Einheit, Preis und Sortierung sind wichtig."), step(3, "Wähle im Feld <b>Kategorie</b> eine passende Obst- und Gemüsekategorie. Sie wird später als Überschrift auf der Website verwendet."), step(4, "Füge weitere Produkte hinzu. Kleinere Sortiernummern erscheinen weiter oben. Speichere und veröffentliche die Liste, wenn sie geprüft ist."), Spacer(1, 5), table(["Feld", "Was trägst du ein?"], [
-    ("Produktname", "Der Name, wie er auf der Website erscheinen soll."),
-    ("Einheit und Preis", "Zum Beispiel kg und 2,49. Der Preis gilt pro angegebener Einheit."),
-    ("Kategorie", "Obst, Gemüse, Salate & Kräuter, Pilze oder eine weitere Kategorie."),
-    ("Marke / Herkunft", "Nur eintragen, wenn die Angabe für genau dieses Produkt stimmt."),
-    ("Verbands-/Bio-Angabe", "Separat von der Marke eintragen, zum Beispiel Bioland oder Demeter."),
-], [125, BODY_W - 125]), Spacer(1, 9), ScreenshotPlaceholder("Produktfelder und Kategorie", "Zeige ein geöffnetes Produktelement mit Name, Einheit, Preis und dem Auswahlfeld Kategorie.", 183), Spacer(1, 6), P("Wenn eine passende Kategorie fehlt, lege sie zuerst unter <b>INHALTE > Obst- & Gemüsekategorien</b> an. Sobald ein Produkt zugeordnet ist, wird die Kategorie auf der Seite Diese Woche als eigene Produktgruppe angezeigt. In der Kategorie kannst du außerdem die Reihenfolge und die Berücksichtigung im kleinen Startseiten-Teaser einstellen."), PageBreak()]
+story += heading("2. Produkte hinzufügen und ausfüllen", "Jedes Produkt wird als eigener Eintrag in der Wochenliste gespeichert.")
+story += [step(1, "Klicke im Abschnitt <b>Produkte</b> auf <b>Element hinzufügen</b>."), step(2, "Trage den Produktnamen ein. Ergänze Einheit, Einheitart und Preis, wenn vorhanden."), step(3, "Wähle bei <b>Kategorie</b> die passende Gruppe, zum Beispiel Obst oder Gemüse."), step(4, "Trage die Sortierposition ein: <b>1 steht ganz oben</b>; je höher die Zahl, desto weiter unten erscheint das Produkt."), step(5, "Marke, Herkunftsland, Herkunftsregion und Bio-/Verbandsangabe nur ergänzen, wenn sie für dieses Produkt stimmen."), Spacer(1, 5), screenshot("add_product", "In der Produkte-Ansicht über Element hinzufügen einen einzelnen Produkteintrag ergänzen.", BODY_W, 140), Spacer(1, 7), screenshot_pair("product_form", "Produktdaten: Name, Einheit und Preis.", "category_dropdown", "Kategorieauswahl für das Produkt.", BODY_W / 2 - 5, 205), Spacer(1, 7), callout("Bei Stückware wähle <b>Stk.</b> und die Einheitart <b>Stück</b>. Bei gewichtsabhängigen Produkten wähle <b>kg</b> und <b>Kilogramm</b>. Danach Liste prüfen und veröffentlichen."), PageBreak()]
 
 # Page 5: bread/cake.
-story += heading("3. Brot und Kuchen der Woche pflegen", "Brot und Kuchen gehören zu einer Sortimentsausgabe. Beide Angebote werden dort gemeinsam bearbeitet.")
-story += [step(1, "Öffne <b>INHALTE > Wochenangebote (Brot, Kuchen & Aktionen)</b>. Klicke auf <b>+</b>, um eine neue Sortimentsausgabe anzulegen, oder öffne eine vorhandene Ausgabe."), step(2, "Unter <b>Freigabe & Zeitraum</b> vergib einen internen Namen, zum Beispiel <i>Wochenangebote KW 46/2026</i>. Aktiviere <b>Ausgabe freigeben</b> und trage den Zeitraum ein."), step(3, "Öffne <b>Wochenangebote</b>. Unter <b>Brot der Woche</b> und <b>Kuchen der Woche</b> trägst du Produktname, Zutaten und bei Bedarf Preis ein."), step(4, "Prüfe die Angaben und veröffentliche die Ausgabe."), Spacer(1, 5), table(["Feld", "Verwendung"], [
-    ("Produktname", "Name des Brots oder Kuchens."),
-    ("Zutaten", "Kleiner Beschreibungstext auf den Angebotskarten und in der Vorbestellliste."),
-    ("Preis in Euro", "Optional. Wenn vorhanden, wird der Preis auch für die Vorbestellung verwendet."),
-    ("Datumsangabe beginnt / endet", "Redaktionelle Angabe. Sie schaltet die Ausgabe nicht automatisch um."),
-], [155, BODY_W - 155]), Spacer(1, 8), ScreenshotPlaceholder("Brot und Kuchen bearbeiten", "Zeige in der Sortimentsausgabe die Gruppe Wochenangebote mit den Feldern für Brot der Woche und Kuchen der Woche.", 174), Spacer(1, 6), callout("<b>Damit die neue Ausgabe erscheint:</b> Öffne zusätzlich <b>SEITEN > Startseite > Aktuelles Sortiment > Sortimentsausgaben</b> und füge die neue Ausgabe hinzu. Deaktiviere die alte Ausgabe, wenn sie nicht mehr angezeigt werden soll. Prüfe, dass KW und Zeitraum zur Obst- und Gemüseliste passen."), PageBreak()]
+story += heading("3. Kategorien verwalten", "Produkte erscheinen im Frontend unter der Kategorie, die du ihnen hier zuweist.")
+story += [step(1, "Öffne <b>INHALTE > Obst- &amp; Gemüsekategorien</b>."), step(2, "Klicke oben in der Kategorienliste auf <b>+</b>."), step(3, "Trage den Kategorienamen ein, zum Beispiel Pilze oder Salate &amp; Kräuter, und wähle die Reihenfolge auf der Website."), step(4, "Aktiviere <b>Im Startseiten-Teaser berücksichtigen</b>, wenn die Kategorie auch in der kleinen Startseiten-Vorschau mitgedacht werden soll."), step(5, "Veröffentliche die Kategorie. Gehe danach zurück zur Wochenliste und ordne die passenden Produkte dieser Kategorie zu."), Spacer(1, 7), screenshot_pair("category_list", "Bestehende Kategorien unter Inhalte.", "new_category", "Neue Kategorie: Name, Reihenfolge und Startseiten-Teaser.", BODY_W / 2 - 5, 205), Spacer(1, 8), callout("Neue Kategorien können dynamisch als Produktgruppen auf der Website erscheinen, sobald Produkte ihnen zugeordnet sind. Die Reihenfolge der Produktgruppen stellst du über die Reihenfolge der Kategorien ein."), PageBreak()]
+
+# Page 6: bread/cake.
+story += heading("4. Brot und Kuchen der Woche", "Die Wochenangebote werden in einer Sortimentsausgabe gepflegt.")
+story += [step(1, "Öffne <b>INHALTE > Wochenangebote (Brot, Kuchen &amp; Aktionen)</b>. Öffne die passende Ausgabe oder lege mit <b>+</b> eine neue an."), step(2, "Unter <b>Wochenangebote</b> findest du die Felder für Brot der Woche und Kuchen der Woche."), step(3, "Passe Produktname, Zutaten und optional den Preis an. Zutaten erscheinen klein auf den Angebotskarten und in der Vorbestellliste."), step(4, "Veröffentliche die Ausgabe. Bei einer neuen Ausgabe zusätzlich auf der <b>Startseite > Aktuelles Sortiment > Sortimentsausgaben</b> auswählen/freigeben."), Spacer(1, 8), screenshot("bread_cake", "In der Sortimentsausgabe unter Wochenangebote die Angaben für Brot und Kuchen ändern.", BODY_W, 285), Spacer(1, 8), callout("Die Datumsangaben der Ausgabe sind redaktionelle Angaben und wählen die angezeigte Ausgabe nicht automatisch aus. Prüfe daher zusätzlich, dass die gewünschte Ausgabe auf der Startseite verknüpft und freigegeben ist."), PageBreak()]
 
 # Page 6: homepage action preview.
-story += heading("4. Die Aktionsvorschau auf der Startseite ändern", "Die Aktionskarte auf der Startseite ist eine kurze Vorschau. Sie ist kein Aktions-PDF.")
-story += [step(1, "Öffne die passende Sortimentsausgabe unter <b>INHALTE > Wochenangebote (Brot, Kuchen & Aktionen)</b>."), step(2, "Öffne den Bereich <b>Wochenangebote > Aktionsvorschau</b>. Trage Überschrift und Einleitung ein."), step(3, "Füge bis zu zwei Highlights hinzu. Der Titel und die kurze Beschreibung erscheinen auf der Aktionskarte."), step(4, "Prüfe den Aktionslink. Er soll zur Aktionssektion führen. Das voreingestellte Ziel lautet <b>/diese-woche#aktionen</b>."), step(5, "Veröffentliche die Sortimentsausgabe. Stelle auch sicher, dass sie auf der Startseite unter <b>Aktuelles Sortiment > Sortimentsausgaben</b> verknüpft und freigegeben ist."), Spacer(1, 6), ScreenshotPlaceholder("Aktionsvorschau in der Sortimentsausgabe", "Zeige die Felder Überschrift, Einleitung, Highlights und Aktionslink in der Gruppe Aktionsvorschau.", 210), Spacer(1, 8), P("Die drei festen Bereiche für Obst und Gemüse, Brot, Kuchen und Aktionen gehören zur Website-Gestaltung. Du änderst hier die Inhalte und den Aktionslink, nicht die Illustrationen oder das Seitenlayout."), PageBreak()]
+# Page 7: homepage action preview and action PDF.
+story += heading("5. Aktionen aktuell halten", "Es gibt zwei verschiedene Aktionsbereiche: die Vorschau auf der Startseite und Aktionsblätter als PDF.")
+story += [P("<b>Aktionsvorschau auf der Startseite</b>", "BodyGuide"), step(1, "Öffne die Sortimentsausgabe unter <b>INHALTE > Wochenangebote (Brot, Kuchen &amp; Aktionen)</b>."), step(2, "Passe dort die Aktionsvorschau mit Überschrift, Einleitung und Highlights an."), step(3, "Prüfe den Link auf die Aktionssektion. Das Ziel lautet <b>/diese-woche#aktionen</b>. Veröffentliche die Ausgabe und kontrolliere, dass sie auf der Startseite ausgewählt ist."), Spacer(1, 12), P("<b>Ein Aktionsblatt als PDF</b>", "BodyGuide"), step(1, "Öffne <b>SEITEN > Diese Woche > Seitentexte &amp; SEO</b> und dort die Gruppe <b>Aktionen</b>."), step(2, "Füge unter <b>Aktionsblätter</b> einen Eintrag hinzu. Trage Titel und Beschreibung ein, lade das PDF hoch und ergänze den Gültigkeitszeitraum."), step(3, "Schalte <b>Aktionsblatt aktiv</b> ein und veröffentliche die Seitentexte."), Spacer(1, 9), callout("Der Aktionszeitraum schaltet ein PDF nicht automatisch aus. Deaktiviere das alte Aktionsblatt nach Ablauf manuell. Die Aktionsvorschau der Startseite und das PDF werden an unterschiedlichen Stellen gepflegt."), PageBreak()]
 
 # Page 7: promo PDF.
-story += heading("5. Ein Aktionsblatt als PDF hinzufügen", "PDF-Aktionsblätter erscheinen weiter unten auf der Seite Diese Woche.")
-story += [step(1, "Öffne <b>SEITEN > Diese Woche > Seitentexte & SEO</b> und dort die Gruppe <b>Aktionen</b>."), step(2, "Scrolle zu <b>Aktionsblätter (mehrere PDFs)</b> und klicke auf <b>Element hinzufügen</b>."), step(3, "Trage Titel und Beschreibung ein. Lade bei <b>PDF-Datei</b> das neue Aktionsblatt hoch."), step(4, "Fülle <b>Gültig ab</b>, <b>Gültig bis</b> und <b>Angezeigter Zeitraum</b> aus. Schalte <b>Aktionsblatt aktiv</b> ein."), step(5, "Veröffentliche die Seitentexte. Ein aktives Blatt wird angezeigt, bis du es deaktivierst. Die Gültigkeitsdaten und der angezeigte Zeitraum sind redaktionelle Angaben und schalten es nicht automatisch aus."), Spacer(1, 6), ScreenshotPlaceholder("Aktionsblatt und PDF-Felder", "Zeige im Dokument Seitentexte & SEO die Gruppe Aktionen und ein ausgeklapptes Aktionsblatt mit Titel, PDF, Gültigkeit und Aktiv-Schalter.", 221), Spacer(1, 8), callout("<b>Unterschied:</b> Die Aktionsvorschau auf der Startseite wird in der Sortimentsausgabe gepflegt. Das herunterladbare Aktionsblatt wird unter Seitentexte & SEO auf der Seite Diese Woche gepflegt."), PageBreak()]
 
 # Page 8: live editing.
-story += heading("6. Vorhandene Inhalte live bearbeiten", "In der Live-Bearbeitung siehst du die Website und klickst den Inhalt an, den du ändern möchtest.")
-story += [step(1, "Klicke oben im Studio auf <b>Live-Bearbeitung</b> und öffne in der Vorschau die passende Seite."), step(2, "Klicke in der Vorschau auf eine Produktzeile, die Brot- oder Kuchenkarte oder die Aktionskarte. Rechts öffnet sich das dazugehörige Sanity-Dokument."), step(3, "Ändere rechts die Felder. Bei Obst und Gemüse kannst du in der Produktliste über <b>Element hinzufügen</b> ein weiteres Produkt ergänzen."), step(4, "Prüfe die Vorschau. Mit <b>Veröffentlichen</b> wird die Änderung online gestellt; bis dahin bleibt sie ein Entwurf."), Spacer(1, 5), ScreenshotPlaceholder("Live-Bearbeitung mit geöffnetem Feld", "Zeige die Website-Vorschau links und rechts das geöffnete Sanity-Formular für ein Produkt oder eine Angebotskarte. Persönliche Kontodaten ausblenden.", 235), Spacer(1, 8), callout("<b>Wenn ein Inhalt noch gar nicht vorhanden ist:</b> Lege zuerst die neue Wochenliste, Sortimentsausgabe oder das Aktionsblatt unter <b>Inhalte</b> an. In der Live-Bearbeitung kann man nur etwas anklicken, das bereits in der Vorschau erscheint."), PageBreak()]
+story += heading("6. Alternative: Live-Bearbeitung", "In der Live-Bearbeitung siehst du die Website und kannst vorhandene Inhalte direkt anklicken.")
+story += [step(1, "Klicke oben im Studio auf <b>Live-Bearbeitung</b> und öffne die passende Seite in der Vorschau."), step(2, "Klicke auf den Text, die Produktzeile oder die Brot-, Kuchen- oder Aktionskarte, die du ändern möchtest. Das zugehörige Sanity-Dokument öffnet sich daneben."), step(3, "Bearbeite die Felder im Dokument und prüfe die Vorschau. Klicke auf <b>Veröffentlichen</b>, wenn die Änderungen stimmen."), Spacer(1, 8), screenshot("live_edit", "Beispiel: In der Vorschau einen Inhalt auswählen; rechts erscheinen die zugehörigen Felder zum Bearbeiten.", BODY_W, 248), Spacer(1, 8), callout("<b>Unsere Empfehlung:</b> Neue Obst- und Gemüselisten am besten über <b>Inhalte</b> anlegen und Produkte dort eintragen. Für vorhandene Inhalte sowie Brot, Kuchen und Aktionsvorschau ist Live-Bearbeitung eine praktische Alternative. Neue Dokumente zuerst unter Inhalte erstellen."), PageBreak()]
 
-# Page 9: live examples and final checks.
-story += heading("7. Was lässt sich live bearbeiten?", "Die Live-Bearbeitung eignet sich besonders, wenn du schon siehst, welchen Inhalt du ändern möchtest.")
-story += [table(["Du möchtest ändern", "In der Vorschau anklicken"], [
-    ("Obst oder Gemüse", "Produktzeile in der Frischeliste; rechts die Produktfelder öffnen."),
-    ("Produktgruppe", "Überschrift der Gruppe, zum Beispiel Gemüse oder Pilze."),
-    ("Brot oder Kuchen", "Die jeweilige Wochenkarte; rechts Produktname und Zutaten ändern."),
-    ("Aktionsvorschau", "Aktionskarte auf der Startseite; rechts Überschrift, Text oder Highlights ändern."),
-    ("Aktions-PDF", "Aktionsblatt auf der Seite Diese Woche; rechts Titel, Datei oder Zeitraum ändern."),
-], [125, BODY_W - 125]), Spacer(1, 13), P("<b>Bevor du auf Veröffentlichen klickst</b>", "BodyGuide"), step("✓", "Stimmen Kalenderwoche und Jahr? Prüfe Obst- und Gemüseliste sowie Sortimentsausgabe getrennt."), step("✓", "Sind Produktname, Einheit, Preis und Kategorie richtig? Herkunfts- und Bio-Angaben müssen zum Produkt passen."), step("✓", "Ist die gewünschte Liste oder Ausgabe aktiviert? Alte Inhalte bei einem Wechsel deaktivieren."), step("✓", "Ist das Aktions-PDF korrekt und der Zeitraum aktuell?"), step("✓", "Sieht die Vorschau am Desktop und auf dem Smartphone gut aus?"), Spacer(1, 13), callout("<b>Änderung erscheint nicht?</b> Prüfe zuerst, ob du das richtige Dokument veröffentlicht hast und ob die Liste oder Sortimentsausgabe aktiviert ist. Lade die Website danach neu. Für neue Dokumente nutze den normalen Weg unter Inhalte."), Spacer(1, 16), P("GerneGrün | Der Bioladen in Dreieich", "H1Guide"), P("Diese Anleitung zeigt die redaktionelle Pflege von Wocheninhalten im Sanity Studio. Für Fragen zum Zugang oder zu einer fehlenden Funktion wende dich an die zuständige Projektperson.", "SmallGuide")]
+# Page 9: final checklist.
+story += heading("Zum Schluss: kurz prüfen", "Mit dieser Checkliste kontrollierst du deine Einträge vor der Veröffentlichung.")
+story += [step("✓", "Stimmen Name, Kalenderwoche und Jahr der Obst- und Gemüseliste?"), step("✓", "Sind Produktname, Einheit, Preis und Kategorie korrekt? Sind Herkunfts- und Bio-Angaben belegt?"), step("✓", "Ist die Reihenfolge richtig? Kleinere Zahlen stehen weiter oben."), step("✓", "Sind Brot, Kuchen und Aktionsvorschau in der richtigen Sortimentsausgabe gepflegt?"), step("✓", "Ist die gewünschte Liste bzw. Ausgabe aktiviert und veröffentlicht? Alte Ausgabe bei einem Wechsel deaktivieren."), step("✓", "Sind PDF-Aktionsblätter noch gültig und aktiv? Abgelaufene Blätter manuell deaktivieren."), step("✓", "Sieht die Vorschau am Desktop und Smartphone gut aus?"), Spacer(1, 12), callout("<b>Änderung erscheint nicht?</b> Prüfe, ob das richtige Dokument veröffentlicht wurde und die Liste oder Sortimentsausgabe auf der Website aktiviert ist. Neue Inhalte legst du über <b>Inhalte</b> an; die Live-Bearbeitung eignet sich für vorhandene Einträge."), Spacer(1, 16), P("GerneGrün | Der Bioladen in Dreieich", "H1Guide"), P("Diese Anleitung beschreibt die redaktionelle Pflege von Wocheninhalten im Sanity Studio. Für Fragen zum Zugang oder zu einer fehlenden Funktion wende dich an die zuständige Projektperson.", "SmallGuide")]
 
 doc.build(story, onFirstPage=draw_page, onLaterPages=draw_page)
 print(OUT)
