@@ -4,6 +4,9 @@ import {presentationTool} from "sanity/presentation"
 
 import {schemaTypes} from "./sanity/schemaTypes"
 import {structure} from "./sanity/structure"
+import {ProduceImportTool} from "./components/studio/ProduceImportTool"
+import {BakeryCatalogImportTool} from "./components/studio/BakeryCatalogImportTool"
+import {TagIcon} from "@sanity/icons/Tag"
 import {ClipboardIcon} from "@sanity/icons/Clipboard"
 import {OrdersDashboardTool} from "./components/studio/OrdersDashboardTool"
 import {resolve} from "./sanity/presentation/resolve"
@@ -70,6 +73,8 @@ export default defineConfig({
   ],
   i18n: {bundles: [germanImageToolCopy]},
   tools: [
+    {name: "produce-import", title: "Produktlisten importieren", icon: TagIcon, component: ProduceImportTool},
+    {name: "bakery-catalog-import", title: "Backwaren importieren", icon: DocumentsIcon, component: BakeryCatalogImportTool},
     {name: "orders-dashboard", title: "Bestellungen & Wünsche", icon: ClipboardIcon, component: OrdersDashboardTool},
   ],
   studio: {components: {toolMenu: StudioToolMenu}},
