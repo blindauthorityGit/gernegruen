@@ -18,10 +18,13 @@ wird. Weise jedes Produkt im Feld **Kategorie** einem Kategoriedokument zu.
 Ältere Produkte ohne Referenz werden vorübergehend weiterhin anhand ihrer alten
 Kategorie oder ihres Namens eingeordnet.
 
-Die Produktlisten- und Backwaren-Importwerkzeuge sind vorübergehend aus dem
-Studio-Menü ausgeblendet. Die Importimplementierung und vorhandene Daten bleiben
-erhalten. Die aktuellen Inhalte werden direkt in den jeweiligen Sanity-Feldern
-bearbeitet und wie gewohnt als Entwurf geprüft und veröffentlicht.
+Die Studio-Werkzeuge **Produktlisten importieren** und **Backwaren importieren**
+lesen `.xls`- und `.xlsx`-Dateien ein. Beide zeigen vor dem Speichern eine
+Vorschau und übernehmen bestätigte Importe als Sanity-Entwurf. Die
+Produktlisten-Vorschau prüft Pflichtfelder, Preise und doppelte Produktnamen;
+der Backwarenimport ordnet Artikel den Bereichen Brot & Gebäck oder Süßgebäck
+zu und zeigt Änderungen am bestehenden Sortiment. Entwürfe werden anschließend
+wie gewohnt geprüft und veröffentlicht.
 
 Die öffentliche Seite verwendet die zuletzt bearbeitete veröffentlichte Liste,
 die aktiviert und nicht archiviert ist. Für einen manuellen Wechsel wird die

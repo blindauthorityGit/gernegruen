@@ -56,8 +56,11 @@ Obst- & Gemüselisten und die optionale Vorschau für nächste Woche zu finden.
 zu bearbeiten und ihnen im Feld **Kategorie** eine Kategorie zuzuweisen.
 Kategorien legst du unter **Inhalte → Obst- & Gemüsekategorien** an und ordnest
   dort ihre Reihenfolge auf der Website. Die Wochenlisten gibt es nur unter
-  **Seiten → Diese Woche**, damit sie nicht doppelt in der Navigation auftauchen. Die Importwerkzeuge sind aktuell
-nicht im Studio-Menü verfügbar.
+  **Seiten → Diese Woche**, damit sie nicht doppelt in der Navigation auftauchen.
+  Über **Produktlisten importieren** bereitest du eine Wochenliste aus einer
+  Excel-Datei vor; **Backwaren importieren** aktualisiert das dauerhafte Brot-
+  und Süßgebäcksortiment. Beide Werkzeuge akzeptieren `.xls` und `.xlsx` und
+  legen nach Vorschau und Bestätigung einen Entwurf an.
 Unter **Einstellungen** findest du die globalen **Geschäftsdaten** und den
 **Footer**. Unter **Inhalte** liegen außerdem Sortimentsausgaben, Kategorien,
   Marken, Backwarensortiment und Aktionsblätter. Die Wochenliste für Obst und
