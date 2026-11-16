@@ -70,7 +70,7 @@ function createTransporter(isDev: boolean) {
   });
 }
 
-type MailPurpose = "preorder_operator" | "preorder_customer_confirmation" | "product_wish";
+type MailPurpose = "preorder_operator" | "preorder_customer_confirmation" | "product_wish" | "customer_list_upload";
 type MailError = Error & {
   code?: unknown;
   responseCode?: unknown;
@@ -255,5 +255,25 @@ export async function sendProductWishMail(wish: ProductWish) {
     subject,
     text,
     html,
+  }));
+}
+
+export async function sendCustomerListUploadMail(upload: {
+  requestId: string;
+  message: string;
+  createdAt: Date;
+  isDev: boolean;
+  files: Array<{ name: string; content: Buffer; contentType: string }>;
+}) {
+  const receivedAt = formatCreatedAt(upload.createdAt);
+  const attachmentList = upload.files.map((file) => `- ${file.name} (${(file.content.length / 1024).toFixed(0)} KB)`).join("\n");
+  const text = `${upload.isDev ? "[DEV] " : ""}Neue Listen hochgeladen\n\nNachricht\n${upload.message || "Keine Nachricht angegeben."}\n\nDateien\n${attachmentList}\n\nEingegangen am: ${receivedAt} Uhr\nAnfrage-ID: ${upload.requestId}`;
+
+  await deliverMail("customer_list_upload", upload.requestId, upload.isDev, () => ({
+    from: required("SMTP_FROM", upload.isDev),
+    to: "johannes@atelierbuchner.at",
+    subject: `${upload.isDev ? "[DEV] " : ""}Neue Listen hochgeladen`,
+    text,
+    attachments: upload.files.map((file) => ({ filename: file.name, content: file.content, contentType: file.contentType })),
   }));
 }

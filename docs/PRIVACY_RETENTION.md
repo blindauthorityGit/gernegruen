@@ -11,12 +11,15 @@ Dieses Dokument beschreibt die im Projekt umgesetzten Fristen und die notwendige
 |---|---|---|
 | Allgemeine E-Mail-/Telefonanfragen | Spätestens 6 Monate nach Abschluss; gesetzliche Pflichten oder konkrete Ansprüche können im Einzelfall entgegenstehen | Manuelle Prüfung und Löschung aus dem Postfach |
 | Produktwünsche | 180 Tage nach letzter inhaltlicher Bearbeitung, maximal 12 Monate nach Eingang | `expiresAt` wird serverseitig berechnet; Betreiber löscht die Anfrage nach Erreichen des Ablaufdatums manuell |
+| Temporäre Listen-Uploads | Nach erfolgreicher E-Mail-Zustellung sofort; nicht abgeschickte Uploads spätestens nach 1 Tag | Privater Vercel Blob; Löschung nach Mailversand und automatische Löschfrist von einem Tag |
 | Unbestätigte Backwaren-Vorbestellungen | 90 Tage nach Abholtermin | `expiresAt` bei Eingang; Statusänderung „Storniert“ erhält dieselbe Frist; manuelle Löschung nach Ablauf |
 | Bestätigte / abgeschlossene Backwaren-Vorbestellungen | 90 Tage nach Abschluss der Abholung; einzelne gesetzlich aufbewahrungspflichtige Unterlagen ausgenommen | Bei Abschluss wird `expiresAt` auf 90 Tage danach gesetzt; Betreiber löscht den operativen Firestore-Datensatz und die E-Mail manuell nach Ablauf |
 | Gesetzlich aufbewahrungspflichtige Unterlagen | Nur soweit eine konkrete gesetzliche Pflicht für das jeweilige Dokument besteht; Frist richtet sich nach Dokumentart und Gesetz | Derzeit ist kein separates Archiv für diese Formulare vorgesehen. Falls ein konkretes Dokument gesetzlich aufbewahrt werden muss, ist dies für diesen Einzelfall gesondert zu beurteilen; der operative Firestore-Datensatz wird dadurch nicht pauschal zum Langzeitarchiv |
 | Eigene Sicherheits-/Fehlerlogs | Höchstens 14 Tage, außer konkreter Vorfall erfordert befristete längere Aufbewahrung | Anwendung gibt nur generische Meldungen aus, ohne Anfrageinhalte oder Fehlerobjekte; Vercel-Logs sind Plattformlogs und kontoabhängig |
 | Betreiber-Sitzung `gg_studio_session` | Höchstens 14 Tage | HttpOnly, Secure in Produktion, auf `/api/studio` begrenzt |
+| Upload-Sitzung `gg_upload_session` | Höchstens 12 Stunden | Signiertes HttpOnly-Cookie, SameSite=Strict, Secure in Produktion |
 | Öffentliches Cookie `gg_cookie_notice` | Entfernt | Schließen des Informationshinweises wird nur im aktuellen Seitenzustand gehalten; keine Einwilligung wird eingeholt |
+
 
 ## Firestore: Status, Audit und manuelle Löschung
 
