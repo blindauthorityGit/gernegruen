@@ -29,6 +29,7 @@
     "@sanity/locale-de-de": "^1.1.37",
     "@sanity/ui": "^4.4.4",
     "@sanity/vision": "^6.18.0",
+    "@vercel/blob": "^2.9.0",
     "date-holidays": "^3.37.0",
     "exceljs": "^4.4.0",
     "firebase-admin": "^14.5.0",

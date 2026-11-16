@@ -18,7 +18,7 @@ import {deDELocale} from "@sanity/locale-de-de"
 const siteUrl = process.env.NEXT_PUBLIC_SANITY_PREVIEW_URL || (
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
-    : process.env.NEXT_PUBLIC_SITE_URL || "https://gernegruen.de"
+    : process.env.NEXT_PUBLIC_SITE_URL || "https://www.gernegruen.com"
 )
 
 const germanImageToolCopy = defineLocaleResourceBundle({
@@ -65,6 +65,11 @@ export default defineConfig({
       title: "Live-Bearbeitung",
       icon: EditIcon,
       resolve,
+      allowOrigins: [
+        "http://localhost:3000",
+        "https://gernegruen.com",
+        "https://www.gernegruen.com",
+      ],
       previewUrl: {
         initial: siteUrl,
         previewMode: {enable: "/api/draft-mode/enable"},
