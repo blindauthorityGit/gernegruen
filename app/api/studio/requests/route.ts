@@ -2,12 +2,20 @@ import {Timestamp} from "firebase-admin/firestore";
 import {NextRequest, NextResponse} from "next/server";
 import {authorizeDashboard, dashboardCollections, hasSameOrigin} from "@/lib/preorder/dashboard-auth";
 import { getPreorderFirestore } from "@/lib/preorder/firebase-admin";
+import {toOrderableBakeryCategories} from "@/lib/preorder/products";
 import {orderExpiresAt, productWishExpiresAt, unconfirmedOrderExpiresAt, effectiveExpiry} from "@/lib/preorder/retention";
+import {getBakeryCatalogData} from "@/lib/weekly/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function serialize(snapshot: FirebaseFirestore.QueryDocumentSnapshot, type: "order" | "wish") {
+type CatalogProducts = Map<string, {name: string; sourceNumber?: string}>;
+
+function serialize(
+  snapshot: FirebaseFirestore.QueryDocumentSnapshot,
+  type: "order" | "wish",
+  catalogProducts?: CatalogProducts,
+) {
   const data = snapshot.data();
   return {
     id: snapshot.id,
@@ -15,7 +23,13 @@ function serialize(snapshot: FirebaseFirestore.QueryDocumentSnapshot, type: "ord
     email: typeof data.email === "string" ? data.email : "",
     phone: typeof data.phone === "string" ? data.phone : "",
     pickupDate: typeof data.pickupDate === "string" ? data.pickupDate : "",
-    products: Array.isArray(data.products) ? data.products.map((item: Record<string, unknown>) => ({ name: item.name, quantity: item.quantity, unitPriceCents: item.unitPriceCents })) : [],
+    products: Array.isArray(data.products) ? data.products.map((item: Record<string, unknown>) => {
+      const catalogProduct = typeof item.productId === "string" ? catalogProducts?.get(item.productId) : undefined;
+      const sourceNumber = typeof item.sourceNumber === "string"
+        ? item.sourceNumber
+        : catalogProduct && catalogProduct.name === item.name ? catalogProduct.sourceNumber : undefined;
+      return {name: item.name, quantity: item.quantity, unitPriceCents: item.unitPriceCents, sourceNumber};
+    }) : [],
     totalCents: typeof data.totalCents === "number" ? data.totalCents : null,
     message: typeof data.message === "string" ? data.message : "",
     product: typeof data.product === "string" ? data.product : "",
@@ -58,8 +72,23 @@ export async function GET(request: NextRequest) {
     listActive(orders, "order", new Date()),
     listActive(wishes, "wish", new Date()),
   ]);
+  const hasLegacyItems = orderResults.documents.some((document) => {
+    const products = document.get("products");
+    return Array.isArray(products) && products.some((item) =>
+      typeof item?.productId === "string" && !item.sourceNumber && !item.productId.startsWith("weekly-"));
+  });
+  let catalogProducts: CatalogProducts | undefined;
+  if (hasLegacyItems) {
+    const {bakeryBreadCategories, bakerySweetCategories} = await getBakeryCatalogData();
+    const categories = toOrderableBakeryCategories(
+      {bread: bakeryBreadCategories, sweet: bakerySweetCategories},
+      {includeSourceNumbers: true},
+    );
+    catalogProducts = new Map(categories.flatMap((category) =>
+      category.products.map((product) => [product.id, product] as const)));
+  }
   return NextResponse.json({
-    orders: orderResults.documents.map((document) => serialize(document, "order")),
+    orders: orderResults.documents.map((document) => serialize(document, "order", catalogProducts)),
     wishes: wishResults.documents.map((document) => serialize(document, "wish")),
     hasMore: orderResults.hasMore || wishResults.hasMore,
   });

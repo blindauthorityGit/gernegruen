@@ -19,6 +19,7 @@ export type BakeryProduct = {
   price: string | number;
   note?: string;
   ingredients?: string;
+  sourceNumber?: string;
 };
 
 export type BakeryCategory = {

@@ -15,7 +15,7 @@ export const bakeryProduct = defineType({
       return Number.isFinite(price) && price > 0 || "Bitte einen gültigen Preis größer als 0 eingeben.";
     }) }),
     defineField({ name: "note", title: "Zusatzinformation", type: "string", validation: (rule) => rule.max(100) }),
-    defineField({ name: "sourceNumber", title: "Artikelnummer (technisch)", type: "string", hidden: true }),
+    defineField({ name: "sourceNumber", title: "Bestellnummer der Bäckerei", type: "string" }),
   ],
   preview: { select: { title: "name", price: "price" }, prepare: ({ title, price }) => ({ title, subtitle: price }) },
 });
