@@ -1,3 +1,5 @@
+import {createHash} from "node:crypto";
+import {sanityClient} from "@/sanity/lib/client";
 import {fetchSanity} from "@/sanity/lib/live";
 import {stegaClean} from "next-sanity";
 import {CURRENT_ASSORTMENT_QUERY} from "@/sanity/queries/assortment";
@@ -25,23 +27,34 @@ async function fetchCurrentBakeryOffers() {
 function addWeeklyOffersToPreorder(groups: {bread: BakeryCategory[]; sweet: BakeryCategory[]}, data: CurrentAssortmentData) {
   const bakery = data?.enabled === false ? undefined : data?.edition?.bakeryHighlights;
   if (!bakery) return groups;
+  const editionId = data?.edition?.id;
 
   const addOffer = (categories: BakeryCategory[], key: "bread" | "cake") => {
     const entry = bakery[key];
     if (!entry) return categories;
     const actionIndex = categories.findIndex((category) => category.title.trim().toLocaleLowerCase("de-DE") === "aktion");
     const existingAction = actionIndex >= 0 ? categories[actionIndex] : undefined;
-    const price = entry.price ?? existingAction?.products[0]?.price;
-    if (price === undefined) return categories;
+    const rawPrice = entry.price ?? existingAction?.products[0]?.price;
+    if (rawPrice === undefined) return categories;
+    const price = stegaClean(rawPrice);
+    const name = stegaClean(entry.title);
+    const ingredients = entry.ingredients ? stegaClean(entry.ingredients) : undefined;
+    const actionName = key === "bread" ? /^brot der woche\b/i : /^kuchen der woche\b/i;
+    const actionProduct = existingAction?.products.find((product) => actionName.test(stegaClean(product.name)));
+    const sourceNumber = actionProduct?.sourceNumber ? stegaClean(actionProduct.sourceNumber).trim() || undefined : undefined;
+    const offerKey = createHash("sha256")
+      .update(JSON.stringify([editionId, key, name, price, ingredients, sourceNumber]))
+      .digest("hex");
     const category = {
       _key: `weekly-${key}-action`,
       title: "Aktion",
       products: [{
-        _key: `weekly-${key}`,
-        name: stegaClean(entry.title),
+        _key: `weekly-${key}-${offerKey}`,
+        name,
         note: key === "bread" ? "500 g" : undefined,
         price,
-        ingredients: entry.ingredients ? stegaClean(entry.ingredients) : undefined,
+        ingredients,
+        sourceNumber,
       }],
     };
     if (actionIndex < 0) return [category, ...categories];
@@ -63,8 +76,13 @@ export async function getBakeryCatalogData() {
   };
 }
 
-export async function getCurrentBakeryGroups() {
-  const [catalog, offers] = await Promise.all([fetchBakeryCatalog(), fetchCurrentBakeryOffers()]);
+export async function getCurrentBakeryGroups({fresh = false} = {}) {
+  const [catalog, offers] = fresh
+    ? await Promise.all([
+      sanityClient.fetch<BakeryCatalogData | null>(CURRENT_BAKERY_CATALOG_QUERY, {}, {useCdn: false, perspective: "published", cache: "no-store"}),
+      sanityClient.fetch<CurrentAssortmentData>(CURRENT_ASSORTMENT_QUERY, {}, {useCdn: false, perspective: "published", cache: "no-store"}),
+    ])
+    : await Promise.all([fetchBakeryCatalog(), fetchCurrentBakeryOffers()]);
   return addWeeklyOffersToPreorder({
     bread: catalog?.breadCategories ?? [],
     sweet: catalog?.sweetCategories ?? [],

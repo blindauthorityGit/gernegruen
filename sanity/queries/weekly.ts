@@ -6,12 +6,12 @@ export const CURRENT_BAKERY_CATALOG_QUERY = defineQuery(/* groq */ `
     breadCategories[] {
       _key,
       title,
-      products[] { _key, name, price, note }
+      products[] { _key, name, price, note, sourceNumber }
     },
     sweetCategories[] {
       _key,
       title,
-      products[] { _key, name, price, note }
+      products[] { _key, name, price, note, sourceNumber }
     },
   }
 `);

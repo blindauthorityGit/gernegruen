@@ -19,7 +19,7 @@ const headers: Record<RowKey, string[]> = {
   name: ["artikelbezeichnung", "produktname", "produkt", "name"],
   price: ["preis", "preis in euro", "verkaufspreis"],
   note: ["zusatzinformation", "zusatzinfo", "hinweis", "notiz"],
-  sourceNumber: ["artikelnummer", "artikel-nr", "art.-nr.", "artikel nr", "code"],
+  sourceNumber: ["artikelnummer", "artikel-nr", "art.-nr.", "artikel nr", "bestellnummer", "bestell-nr.", "code"],
 }
 
 const normalize = (value: string) => value.trim().normalize("NFKC").toLocaleLowerCase("de")
@@ -137,7 +137,7 @@ export function BakeryCatalogImportTool() {
     try {
       const rawClient = client.withConfig({perspective: "raw", useCdn: false})
       const found = await rawClient.fetch<{draft: ExistingCatalog | null; published: ExistingCatalog | null}>(
-        '{"draft": *[_type == "bakeryCatalog" && _id == "drafts.bakeryCatalog-main"][0]{_id,_rev,title,sourceFileName,breadCategories[]{title,products[]{name,price,note}},sweetCategories[]{title,products[]{name,price,note}},categories[]{title,products[]{name,price,note}}},"published": *[_type == "bakeryCatalog" && _id == "bakeryCatalog-main"][0]{_id,_rev,title,sourceFileName,breadCategories[]{title,products[]{name,price,note}},sweetCategories[]{title,products[]{name,price,note}},categories[]{title,products[]{name,price,note}}}}',
+        '{"draft": *[_type == "bakeryCatalog" && _id == "drafts.bakeryCatalog-main"][0]{_id,_rev,title,sourceFileName,breadCategories[]{title,products[]{name,price,note,sourceNumber}},sweetCategories[]{title,products[]{name,price,note,sourceNumber}},categories[]{title,products[]{name,price,note,sourceNumber}}},"published": *[_type == "bakeryCatalog" && _id == "bakeryCatalog-main"][0]{_id,_rev,title,sourceFileName,breadCategories[]{title,products[]{name,price,note,sourceNumber}},sweetCategories[]{title,products[]{name,price,note,sourceNumber}},categories[]{title,products[]{name,price,note,sourceNumber}}}}',
       )
       setExisting(found.draft ?? found.published)
       setPhase("confirm")
@@ -180,7 +180,9 @@ export function BakeryCatalogImportTool() {
     const removed = [...previous.keys()].filter((key) => !next.has(key)).map((key) => previous.get(key)!.name)
     const changed = [...next.entries()].filter(([key, product]) => {
       const before = previous.get(key)
-      return before && (normalizedPrice(before.price) !== normalizedPrice(product.price) || (before.note ?? "") !== (product.note ?? ""))
+      return before && (normalizedPrice(before.price) !== normalizedPrice(product.price)
+        || (before.note ?? "") !== (product.note ?? "")
+        || (before.sourceNumber ?? "") !== (product.sourceNumber ?? ""))
     }).map(([, product]) => product.name)
     return {added, removed, changed}
   }, [existing, products])

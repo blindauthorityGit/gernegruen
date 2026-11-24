@@ -13,7 +13,7 @@ type MailOrder = {
   createdAt: Date;
   totalCents: number;
   isDev: boolean;
-  items: Array<{ name: string; quantity: number; unitPriceCents: number; lineTotalCents: number }>;
+  items: Array<{ name: string; sourceNumber?: string; quantity: number; unitPriceCents: number; lineTotalCents: number }>;
 };
 
 type ProductWish = {
@@ -30,6 +30,14 @@ const euro = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR"
 const escapeHtml = (value: string) => value.replace(/[&<>'"]/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
 }[character] ?? character));
+
+function orderItemName(item: MailOrder["items"][number], html = false) {
+  if (html) {
+    const name = escapeHtml(item.name);
+    return item.sourceNumber ? `${name}<br><small>Bestell-Nr. ${escapeHtml(item.sourceNumber)}</small>` : name;
+  }
+  return item.sourceNumber ? `${item.name} (Bestell-Nr. ${item.sourceNumber})` : item.name;
+}
 
 type MailSetting = "SMTP_HOST" | "SMTP_PORT" | "SMTP_USER" | "SMTP_PASSWORD" | "SMTP_FROM" | "ORDER_RECIPIENT";
 
@@ -143,7 +151,7 @@ export async function sendPreorderMail(order: MailOrder) {
   const subject = `${order.isDev ? "[DEV] " : ""}Neue Backwaren-Vorbestellung – ${order.name} – ${pickupDate}`;
   const rows = order.items.map((item) => `
     <tr>
-      <td style="padding:10px 8px;border-bottom:1px solid #dce3cd">${escapeHtml(item.name)}</td>
+      <td style="padding:10px 8px;border-bottom:1px solid #dce3cd">${orderItemName(item, true)}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #dce3cd;text-align:center">${item.quantity}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #dce3cd;text-align:right;white-space:nowrap">${euro.format(item.unitPriceCents / 100)}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #dce3cd;text-align:right;white-space:nowrap;font-weight:700">${euro.format(item.lineTotalCents / 100)}</td>
@@ -177,7 +185,7 @@ export async function sendPreorderMail(order: MailOrder) {
     </div></body></html>`;
 
   const itemLines = order.items.map((item) =>
-    `- ${item.quantity} × ${item.name} · ${euro.format(item.unitPriceCents / 100)} · ${euro.format(item.lineTotalCents / 100)}`,
+    `- ${item.quantity} × ${orderItemName(item)} · ${euro.format(item.unitPriceCents / 100)} · ${euro.format(item.lineTotalCents / 100)}`,
   ).join("\n");
   const text = `${order.isDev ? "[DEV] " : ""}Neue Backwaren-Vorbestellung\n\nKontaktdaten\n${order.name}\n${order.email}\n${order.phone}\n\nAbholung: ${pickupDate}\n\nProdukte\n${itemLines}\n\nGesamtsumme: ${euro.format(order.totalCents / 100)}\n\nZusätzliche Nachricht\n${order.message || "Keine zusätzliche Nachricht."}\n\nAnfrage-ID: ${order.requestId}\nAngefragt am: ${createdAt} Uhr`;
 
@@ -195,7 +203,7 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
   const pickupDate = formatDate(order.pickupDate);
   const orderItems = order.items.map((item) => `
     <tr>
-      <td style="padding:12px 8px;border-bottom:1px solid #dce3cd">${escapeHtml(item.name)}</td>
+      <td style="padding:12px 8px;border-bottom:1px solid #dce3cd">${orderItemName(item, true)}</td>
       <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:center">${item.quantity}</td>
       <td style="padding:12px 8px;border-bottom:1px solid #dce3cd;text-align:right;white-space:nowrap;font-weight:700">${euro.format(item.lineTotalCents / 100)}</td>
     </tr>`).join("");
@@ -222,7 +230,7 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
         </div>
       </div>
     </div></body></html>`;
-  const itemLines = order.items.map((item) => `- ${item.quantity} × ${item.name} · ${euro.format(item.lineTotalCents / 100)}`).join("\n");
+  const itemLines = order.items.map((item) => `- ${item.quantity} × ${orderItemName(item)} · ${euro.format(item.lineTotalCents / 100)}`).join("\n");
   const text = `Danke für deine Vorbestellung, ${order.name}!\n\nWir haben deine unverbindliche Vorbestellung erhalten. Sie verpflichtet dich nicht zum Kauf.\nGewünschte Abholung: ${pickupDate}\n\nDeine Auswahl\n${itemLines}\n\nVoraussichtliche Gesamtsumme: ${euro.format(order.totalCents / 100)}${order.message ? `\n\nDeine Nachricht\n${order.message}` : ""}\n\nRückfragen: 06103-3867347\nAnfrage-ID: ${order.requestId}`;
 
   await deliverMail("preorder_customer_confirmation", order.requestId, order.isDev, () => ({

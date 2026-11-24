@@ -5,6 +5,7 @@ export type OrderableBakeryProduct = {
   name: string;
   note?: string;
   ingredients?: string;
+  sourceNumber?: string;
   priceCents: number;
 };
 
@@ -29,7 +30,10 @@ function priceToCents(price: string | number) {
   return Number.isSafeInteger(cents) && cents > 0 ? cents : null;
 }
 
-export function toOrderableBakeryCategories(groups: {bread: BakeryCategory[]; sweet: BakeryCategory[]}): OrderableBakeryCategory[] {
+export function toOrderableBakeryCategories(
+  groups: {bread: BakeryCategory[]; sweet: BakeryCategory[]},
+  {includeSourceNumbers = false} = {},
+): OrderableBakeryCategory[] {
   return ([
     ...groups.bread.map((category) => ({category, section: "bread" as const})),
     ...groups.sweet.map((category) => ({category, section: "sweet" as const})),
@@ -44,6 +48,7 @@ export function toOrderableBakeryCategories(groups: {bread: BakeryCategory[]; sw
         name: product.name,
         note: product.note,
         ingredients: product.ingredients,
+        ...(includeSourceNumbers && {sourceNumber: product.sourceNumber?.trim()}),
         priceCents,
       }];
     }),

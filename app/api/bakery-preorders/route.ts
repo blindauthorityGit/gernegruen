@@ -84,7 +84,12 @@ export async function POST(request: NextRequest) {
     uniqueIds.add(item.productId);
   }
 
-  const categories = toOrderableBakeryCategories(await getCurrentBakeryGroups());
+  let categories;
+  try {
+    categories = toOrderableBakeryCategories(await getCurrentBakeryGroups({fresh: true}), {includeSourceNumbers: true});
+  } catch {
+    return error("Die Backwaren konnten gerade nicht geprüft werden. Bitte versuche es erneut.", 503);
+  }
   const currentProducts = new Map(categories.flatMap((category) => category.products.map((product) => [product.id, product])));
   const items = requestedItems.map((requested) => {
     const product = currentProducts.get(requested.productId as string);
@@ -92,12 +97,13 @@ export async function POST(request: NextRequest) {
     return product ? {
       productId: product.id,
       name: product.name,
+      ...(product.sourceNumber && {sourceNumber: product.sourceNumber}),
       quantity,
       unitPriceCents: product.priceCents,
       lineTotalCents: product.priceCents * quantity,
     } : null;
   });
-  if (items.some((item) => !item)) return error("Mindestens ein Produkt ist nicht mehr verfügbar. Bitte aktualisiere die Auswahl.", 409);
+  if (items.some((item) => !item)) return error("Mindestens ein Produkt ist nicht mehr verfügbar. Bitte lade die Seite neu und prüfe deine Auswahl.", 409);
 
   const orderItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
   const totalCents = orderItems.reduce((sum, item) => sum + item.lineTotalCents, 0);
