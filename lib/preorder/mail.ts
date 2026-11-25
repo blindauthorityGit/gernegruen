@@ -55,6 +55,11 @@ function required(name: MailSetting, isDev: boolean) {
   return value;
 }
 
+function bakeryOrderRecipient(isDev: boolean) {
+  if (isDev) return required("ORDER_RECIPIENT", true);
+  return process.env.BAKERY_ORDER_RECIPIENT?.trim() || required("ORDER_RECIPIENT", false);
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("de-DE", { dateStyle: "long", timeZone: "Europe/Berlin" })
     .format(new Date(`${value}T12:00:00Z`));
@@ -191,7 +196,7 @@ export async function sendPreorderMail(order: MailOrder) {
 
   await deliverMail("preorder_operator", order.requestId, order.isDev, () => ({
     from: required("SMTP_FROM", order.isDev),
-    to: required("ORDER_RECIPIENT", order.isDev),
+    to: bakeryOrderRecipient(order.isDev),
     replyTo: order.email,
     subject,
     text,
@@ -236,7 +241,7 @@ export async function sendCustomerPreorderConfirmationMail(order: MailOrder) {
   await deliverMail("preorder_customer_confirmation", order.requestId, order.isDev, () => ({
     from: required("SMTP_FROM", order.isDev),
     to: order.email,
-    replyTo: required("ORDER_RECIPIENT", order.isDev),
+    replyTo: bakeryOrderRecipient(order.isDev),
     subject,
     text,
     html,
